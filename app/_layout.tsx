@@ -24,7 +24,9 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {
+	/* ignore */
+});
 
 export const unstable_settings = {
 	anchor: "(tabs)",
@@ -47,7 +49,9 @@ export default function RootLayout() {
 
 	useEffect(() => {
 		if (loaded || error) {
-			SplashScreen.hideAsync();
+			SplashScreen.hideAsync().catch(() => {
+				// Ignore errors when the splash screen is already hidden
+			});
 		}
 	}, [loaded, error]);
 

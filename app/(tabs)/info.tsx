@@ -18,7 +18,7 @@ export default function InfoScreen() {
 				return (
 					<View className="px-5 pt-6 gap-6">
 						{/* Search Box */}
-						<View className="rounded-xl border border-gray-200 bg-white p-4">
+						<View className="rounded-lg border border-gray-200 bg-white p-4">
 							<ThemedText className="font-plus-jakarta-medium !text-gray-400">
 								N. Treno
 							</ThemedText>
@@ -48,7 +48,7 @@ export default function InfoScreen() {
 				return (
 					<View className="px-5 pt-6 gap-6">
 						{/* Search Box */}
-						<View className="rounded-xl border border-gray-200 bg-white p-4">
+						<View className="rounded-lg border border-gray-200 bg-white p-4">
 							<ThemedText className="font-plus-jakarta-medium !text-gray-400">
 								Ricerca stazione
 							</ThemedText>
@@ -94,7 +94,7 @@ export default function InfoScreen() {
 							Avvia la ricerca per visualizzare tutte le informazioni del tuo
 							treno
 						</ThemedText>
-						<Pressable className="mt-8 rounded-lg bg-[#004a4d] px-8 py-3">
+						<Pressable className="mt-8 rounded-lg bg-teal-900 px-8 py-3">
 							<ThemedText className="font-plus-jakarta-bold !text-white">
 								Ricerca treno
 							</ThemedText>
@@ -122,7 +122,7 @@ export default function InfoScreen() {
 		<View className="flex-1 bg-white">
 			{/* Header Section */}
 			<View
-				className="bg-[#004a4d] pb-6"
+				className="bg-teal-900 pb-6"
 				style={{ paddingTop: insets.top + 4 }}
 			>
 				<View className="h-14 flex-row items-center justify-between px-6 mb-2">
@@ -130,8 +130,8 @@ export default function InfoScreen() {
 						Infomobilità
 					</ThemedText>
 					<View className="flex-row items-center gap-4">
-						<Icon name="info" size={24} color="white" />
 						<Icon name="notifications" size={24} color="white" />
+						<Icon name="info" size={24} color="white" />
 					</View>
 				</View>
 
@@ -176,7 +176,7 @@ export default function InfoScreen() {
 					{/* Search Button (only for N. Treno) */}
 					{activeChip === "N. Treno" && (
 						<Pressable
-							className="h-12 w-full overflow-hidden rounded-xl"
+							className="h-12 w-full overflow-hidden rounded-lg"
 							style={{
 								elevation: 4,
 								shadowColor: "#000",

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TextStyle, TextProps } from 'react-native';
+import { Text, TextStyle, TextProps, View } from 'react-native';
 import { SvgProps } from 'react-native-svg';
 
 // Custom SVG Icons - Outline
@@ -32,6 +32,7 @@ export interface IconProps extends TextProps {
   style?: TextStyle;
   type?: MaterialSymbolStyle;
   className?: string;
+  useFont?: boolean;
 }
 
 const customIcons: Record<string, { outline: React.FC<SvgProps>; fill: React.FC<SvgProps> }> = {
@@ -58,63 +59,72 @@ const fontFamiliesByWeight = {
   700: 'MaterialSymbols_700Bold',
 };
 
-export const Icon = ({
-  name,
-  size = 24,
-  color,
-  fill = false,
-  weight = 400,
-  grade = 0,
-  style,
-  type = 'rounded',
-  className,
-  ...props
-}: IconProps) => {
-  // Check if it's a custom SVG icon
-  const customIcon = customIcons[name];
-  if (customIcon) {
-    const SvgIcon = fill ? customIcon.fill : customIcon.outline;
-    return (
-      <SvgIcon
-        width={size}
-        height={size}
-        color={color}
-        fill={color} // Material SVGs usually use fill for color
-        className={className}
-        style={style as any}
-      />
-    );
-  }
+export const Icon = React.forwardRef<any, IconProps>(
+	(
+		{
+			name,
+			size = 24,
+			color,
+			fill = false,
+			weight = 400,
+			grade = 0,
+			style,
+			type = "rounded",
+			className,
+			useFont = false,
+			...props
+		},
+		ref,
+	) => {
+		// Check if it's a custom SVG icon
+		const customIcon = customIcons[name];
+		if (customIcon && !useFont) {
+			const SvgIcon = fill ? customIcon.fill : customIcon.outline;
+			return (
+				<View ref={ref} style={[{ width: size, height: size }, style as any]}>
+					<SvgIcon
+						width={size}
+						height={size}
+						color={color}
+						fill={color} // Material SVGs usually use fill for color
+						className={className}
+					/>
+				</View>
+			);
+		}
 
-  // Fallback to Font Icon
-  const glyphMap = glyphMaps[type];
-  const glyph = (glyphMap as any)[name];
+		// Fallback to Font Icon
+		const glyphMap = glyphMaps[type];
+		const glyph = (glyphMap as any)[name];
 
-  if (!glyph) {
-    console.warn(`Icon "${name}" not found in custom set or font sets`);
-    return null;
-  }
+		if (!glyph) {
+			console.warn(`Icon "${name}" not found in custom set or font sets`);
+			return null;
+		}
 
-  const char = String.fromCharCode(glyph);
-  const fontFamily = (fontFamiliesByWeight as any)[weight] || 'MaterialSymbols_400Regular';
+		const char = String.fromCharCode(glyph);
+		const fontFamily =
+			(fontFamiliesByWeight as any)[weight] || "MaterialSymbols_400Regular";
 
-  return (
-    <Text
-      className={`text-center ${className || ''}`}
-      style={[
-        {
-          fontFamily,
-          fontSize: size,
-          color,
-          includeFontPadding: false,
-        },
-        style,
-      ]}
-      {...props}
-    >
-      {char}
-    </Text>
-  );
-};
+		return (
+			<Text
+				ref={ref}
+				className={`text-center ${className || ""}`}
+				style={[
+					{
+						fontFamily,
+						fontSize: size,
+						color,
+						includeFontPadding: false,
+					},
+					style,
+				]}
+				{...props}
+			>
+				{char}
+			</Text>
+		);
+	},
+);
 
 export default Icon;

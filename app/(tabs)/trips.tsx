@@ -54,7 +54,7 @@ export default function TripsScreen() {
 		<View className="flex-1 bg-white">
 			{/* Header Section */}
 			<View
-				className="bg-[#004a4d] pb-6"
+				className="bg-teal-900 pb-6"
 				style={{ paddingTop: insets.top + 4 }}
 			>
 				<View className="h-14 flex-row items-center px-6 mb-2">
@@ -97,9 +97,9 @@ export default function TripsScreen() {
 				{activeChip === "Biglietti" ? (
 					<>
 						{/* Saved Tickets Row */}
-						<Pressable className="flex-row items-center justify-between rounded-xl border border-gray-100 bg-white p-4">
+						<Pressable className="flex-row items-center justify-between rounded-lg border border-gray-100 bg-white p-4">
 							<View className="flex-row items-center">
-								<Icon name="bookmark" size={24} color="#004a4d" />
+								<Icon name="bookmark" size={24} color="teal-900" />
 								<ThemedText className="ml-3 font-plus-jakarta-semibold !text-gray-900">
 									Biglietti salvati
 								</ThemedText>
@@ -111,7 +111,7 @@ export default function TripsScreen() {
 						{TICKETS.map((ticket) => (
 							<View
 								key={ticket.id}
-								className="flex-row rounded-xl border border-gray-100 bg-white p-4"
+								className="flex-row rounded-lg border border-gray-100 bg-white p-4"
 							>
 								{/* Date column */}
 								<View className="mr-4 items-center border-r border-gray-100 pr-4">
@@ -148,7 +148,7 @@ export default function TripsScreen() {
 								activeChip === "Abbonamenti"
 									? "card_membership"
 									: activeChip === "Carnet"
-										? "local_activity"
+										? "view_day"
 										: activeChip === "TPL"
 											? "directions_bus"
 											: "archive"
@@ -170,7 +170,7 @@ export default function TripsScreen() {
 			{/* Bottom Button */}
 			<View className="absolute bottom-6 left-0 right-0 items-center px-5">
 				<Pressable
-					className="h-12 w-full overflow-hidden rounded-xl"
+					className="h-12 w-full overflow-hidden rounded-lg"
 					style={{
 						elevation: 4,
 						shadowColor: "#000",

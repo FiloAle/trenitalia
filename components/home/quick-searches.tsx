@@ -18,7 +18,7 @@ function QuickSearchCard({
 	typeLabelColor,
 }: SearchCardProps) {
 	return (
-		<Pressable className="mr-4 w-72 rounded-xl border border-gray-200 bg-white p-4">
+		<Pressable className="mr-4 w-72 rounded-lg border border-gray-200 bg-white p-4">
 			<View
 				className="mb-3 self-start rounded-md px-2 py-1"
 				style={{ backgroundColor: typeColor }}
@@ -68,7 +68,8 @@ export function QuickSearches() {
 			<ScrollView
 				horizontal
 				showsHorizontalScrollIndicator={false}
-				className="overflow-visible"
+				className="-mx-5"
+				contentContainerStyle={{ paddingHorizontal: 20 }}
 			>
 				{searches.map((search) => (
 					<QuickSearchCard key={search.id} {...search} />
