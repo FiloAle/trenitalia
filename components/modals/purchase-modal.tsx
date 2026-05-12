@@ -1,8 +1,8 @@
+import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import React from "react";
 import { Pressable, View } from "react-native";
-import { BottomSheet } from "@/components/modals/bottom-sheet";
 
 interface PurchaseOptionProps {
 	icon: string;
@@ -36,15 +36,11 @@ export function PurchaseModal({ isVisible, onClose }: PurchaseModalProps) {
 		<BottomSheet isVisible={isVisible} onClose={onClose} title="Acquista">
 			<View className="flex-row justify-between mb-4">
 				<PurchaseOption
-					icon="local_activity"
+					icon="confirmation_number"
 					label="Biglietti"
 					onPress={onClose}
 				/>
-				<PurchaseOption
-					icon="view_day"
-					label="Carnet"
-					onPress={onClose}
-				/>
+				<PurchaseOption icon="view_day" label="Carnet" onPress={onClose} />
 				<PurchaseOption
 					icon="credit_card"
 					label="Abbonamenti"

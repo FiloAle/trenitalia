@@ -18,7 +18,6 @@ export function SearchListItem({
 	onPress,
 	className = "",
 	showBorder = false,
-	weight = 400,
 }: SearchListItemProps) {
 	return (
 		<Pressable
@@ -27,14 +26,8 @@ export function SearchListItem({
 				showBorder ? "border-b border-gray-100" : ""
 			} ${className}`}
 		>
-			<Icon
-				name={iconName}
-				size={20}
-				className="!text-gray-950"
-				weight={weight}
-				useFont
-			/>
-			<ThemedText className="ml-3 text-[13px] font-plus-jakarta-medium !text-gray-950">
+			<Icon name={iconName} size={16} className="!text-gray-950" weight={400} />
+			<ThemedText className="ml-2 text-[13px] font-plus-jakarta-medium !text-gray-950">
 				{text}
 			</ThemedText>
 		</Pressable>

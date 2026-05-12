@@ -1,7 +1,8 @@
+import { LoyaltyCard } from "@/components/loyalty/loyalty-card";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { USER_DATA, getInitials } from "@/constants/user";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	Animated,
 	Dimensions,
@@ -15,6 +16,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const POINTS_FRECCIA = "71,68 pt";
+const POINTS_XGO = "42,50 pt";
 
 interface LoyaltyMenuProps {
 	isVisible: boolean;
@@ -23,13 +26,13 @@ interface LoyaltyMenuProps {
 
 const MENU_ITEMS = [
 	{ label: "Account", icon: "person_outline" },
-	{ label: "Profilo", icon: "crop_free" },
+	{ label: "Profilo", icon: "frame_person" },
 	{ label: "Punti CartaFRECCIA", icon: "star_outline" },
 	{ label: "Richiedi Premio", icon: "emoji_events" },
 	{ label: "I vantaggi dei partner", icon: "rocket_launch" },
-	{ label: "FrecciaFun", icon: "videogame_asset" },
+	{ label: "FrecciaFun", icon: "stadia_controller" },
 	{ label: "Assistenza CartaFRECCIA", icon: "help_outline" },
-	{ label: "Le mie promozioni", icon: "loyalty" },
+	{ label: "Le mie promozioni", icon: "percent_discount" },
 	{ label: "Assistenza", icon: "headset_mic" },
 	{ label: "Logout", icon: "logout", isDestructive: true },
 ];
@@ -39,10 +42,16 @@ export function LoyaltyMenu({ isVisible, onClose }: LoyaltyMenuProps) {
 	const slideAnim = useRef(new Animated.Value(SCREEN_WIDTH)).current;
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 	const scrollY = useRef(new Animated.Value(0)).current;
+	const cardScrollX = useRef(new Animated.Value(0)).current;
+	const [activeCardIndex, setActiveCardIndex] = useState(0);
 	const useNativeDriver = Platform.OS !== "web";
 
 	useEffect(() => {
 		if (isVisible) {
+			// Reset focus to the first card (CartaFRECCIA)
+			setActiveCardIndex(0);
+			cardScrollX.setValue(0);
+
 			Animated.parallel([
 				Animated.timing(slideAnim, {
 					toValue: 0,
@@ -91,13 +100,23 @@ export function LoyaltyMenu({ isVisible, onClose }: LoyaltyMenuProps) {
 		extrapolate: "clamp",
 	});
 
+	// Horizontal Scaling for Carousel
+	const card1ScaleH = cardScrollX.interpolate({
+		inputRange: [0, SCREEN_WIDTH],
+		outputRange: [1, 0.8],
+		extrapolate: "clamp",
+	});
+
+	const card2ScaleH = cardScrollX.interpolate({
+		inputRange: [0, SCREEN_WIDTH],
+		outputRange: [0.8, 1],
+		extrapolate: "clamp",
+	});
+
+	if (!isVisible) return null;
+
 	return (
-		<Modal
-			visible={isVisible}
-			transparent
-			animationType="none"
-			onRequestClose={handleClose}
-		>
+		<View style={[StyleSheet.absoluteFill, { zIndex: 999 }]}>
 			<View className="flex-1">
 				{/* Background Overlay */}
 				<TouchableWithoutFeedback onPress={handleClose}>
@@ -121,19 +140,23 @@ export function LoyaltyMenu({ isVisible, onClose }: LoyaltyMenuProps) {
 						height: "100%",
 						transform: [{ translateX: slideAnim }],
 						zIndex: 10,
-						backgroundColor: "white",
 						flex: 1,
 					}}
 				>
 					<View
+						className={`flex-1 transition-colors duration-500 ${
+							activeCardIndex === 1 ? "bg-emerald-50" : "bg-gray-100"
+						}`}
 						style={{
-							flex: 1,
 							paddingTop: insets.top,
-							backgroundColor: "#f3f4f6",
 						}}
 					>
 						{/* Header */}
-						<View className="h-14 flex-row items-center justify-between px-4 bg-[#f3f4f6]">
+						<View
+							className={`h-14 flex-row items-center justify-between px-4 transition-colors duration-500 ${
+								activeCardIndex === 1 ? "bg-emerald-50" : "bg-gray-100"
+							}`}
+						>
 							<Pressable onPress={handleClose} className="p-1">
 								<Icon
 									name="arrow_back"
@@ -160,24 +183,30 @@ export function LoyaltyMenu({ isVisible, onClose }: LoyaltyMenuProps) {
 								left: 0,
 								right: 0,
 								height: 96,
-								backgroundColor: "#f3f4f6",
-								flexDirection: "row",
-								alignItems: "center",
-								paddingHorizontal: 20,
-								zIndex: 20,
 								opacity: headerOpacity,
-								borderBottomWidth: 1,
-								borderBottomColor: "#e5e7eb",
+								zIndex: 20,
 							}}
 						>
-							<View className="h-20 w-32 rounded-md bg-rose-600" />
-							<View className="ml-4 flex-col gap-1">
-								<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-700">
-									Numero CartaFRECCIA
-								</ThemedText>
-								<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
-									123456789
-								</ThemedText>
+							<View
+								className={`flex-1 flex-row items-center px-5 transition-colors duration-500 border-b border-gray-200 ${
+									activeCardIndex === 1 ? "bg-emerald-50" : "bg-gray-100"
+								}`}
+							>
+								<View
+									className={`h-14 w-24 rounded-md border ${
+										activeCardIndex === 1
+											? "bg-emerald-500 border-emerald-600"
+											: "bg-rose-500 border-rose-600"
+									}`}
+								/>
+								<View className="ml-4 flex-1">
+									<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-700">
+										Numero {activeCardIndex === 1 ? "X-GO" : "CartaFRECCIA"}
+									</ThemedText>
+									<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
+										{USER_DATA.loyaltyCode}
+									</ThemedText>
+								</View>
 							</View>
 						</Animated.View>
 
@@ -192,38 +221,116 @@ export function LoyaltyMenu({ isVisible, onClose }: LoyaltyMenuProps) {
 						>
 							{/* Top Overscroll Background Filler */}
 							<View
+								className={`transition-colors duration-500 ${
+									activeCardIndex === 1 ? "bg-emerald-50" : "bg-gray-100"
+								}`}
 								style={{
 									position: "absolute",
 									top: -1000,
 									left: 0,
 									right: 0,
 									height: 1000,
-									backgroundColor: "#f3f4f6",
 								}}
 							/>
 
-							<View className="bg-[#f3f4f6] pb-6">
-								{/* Card Section */}
-								<View className="p-5 items-center">
-									<Animated.View
-										className="w-full h-[200px] bg-rose-600 rounded-xl p-5 justify-end shadow-lg"
-										style={{
-											transform: [{ scale: cardScale }],
+							<View
+								className={`pb-6 transition-colors duration-500 ${
+									activeCardIndex === 1 ? "bg-emerald-50" : "bg-gray-100"
+								}`}
+							>
+								{/* Card Section: Carousel */}
+								<View className="items-center">
+									<Animated.ScrollView
+										horizontal
+										pagingEnabled
+										showsHorizontalScrollIndicator={false}
+										onScroll={Animated.event(
+											[{ nativeEvent: { contentOffset: { x: cardScrollX } } }],
+											{
+												useNativeDriver: false,
+												listener: (event: any) => {
+													const offsetX = event.nativeEvent.contentOffset.x;
+													const index = Math.round(
+														offsetX / (SCREEN_WIDTH - 20),
+													);
+													if (index !== activeCardIndex) {
+														setActiveCardIndex(index);
+													}
+												},
+											},
+										)}
+										scrollEventThrottle={16}
+										className="w-full"
+										contentContainerStyle={{
+											paddingHorizontal: 20,
 										}}
 									>
-										{/* Placeholder for Card Content */}
-										<ThemedText className="!text-white text-[12px] font-plus-jakarta-medium opacity-80 mb-1">
-											CARTA FRECCIA
-										</ThemedText>
-										<ThemedText className="!text-white text-[20px] font-plus-jakarta-bold">
-											123456789
-										</ThemedText>
-									</Animated.View>
+										{/* Carta FRECCIA */}
+										<LoyaltyCard
+											title="CARTA FRECCIA"
+											code={USER_DATA.loyaltyCode}
+											bgClass="bg-rose-500"
+											borderClass="border-rose-600"
+											animatedStyle={{
+												transform: [
+													{ scale: cardScale },
+													{ scale: card1ScaleH },
+												],
+											}}
+										/>
+
+										{/* Carta X-GO */}
+										<LoyaltyCard
+											title="CARTA X-GO"
+											code={USER_DATA.loyaltyCode}
+											bgClass="bg-emerald-500"
+											borderClass="border-emerald-600"
+											isLast
+											animatedStyle={{
+												transform: [
+													{ scale: cardScale },
+													{ scale: card2ScaleH },
+												],
+											}}
+										/>
+									</Animated.ScrollView>
 
 									{/* Page Indicator */}
-									<View className="flex-row mt-4 gap-2">
-										<View className="h-1.5 w-4 rounded-full bg-teal-900" />
-										<View className="h-1.5 w-1.5 rounded-full bg-gray-300" />
+									<View className="flex-row mt-0 gap-2 mb-4">
+										{[0, 1].map((index) => {
+											const indicatorWidth = cardScrollX.interpolate({
+												inputRange: [
+													(index - 1) * (SCREEN_WIDTH - 20),
+													index * (SCREEN_WIDTH - 20),
+													(index + 1) * (SCREEN_WIDTH - 20),
+												],
+												outputRange: [6, 16, 6],
+												extrapolate: "clamp",
+											});
+
+											const indicatorOpacity = cardScrollX.interpolate({
+												inputRange: [
+													(index - 1) * (SCREEN_WIDTH - 20),
+													index * (SCREEN_WIDTH - 20),
+													(index + 1) * (SCREEN_WIDTH - 20),
+												],
+												outputRange: [0.3, 1, 0.3],
+												extrapolate: "clamp",
+											});
+
+											return (
+												<Animated.View
+													key={index}
+													style={{
+														height: 6,
+														width: indicatorWidth,
+														opacity: indicatorOpacity,
+														borderRadius: 3,
+														backgroundColor: "#134e4a", // teal-900
+													}}
+												/>
+											);
+										})}
 									</View>
 								</View>
 
@@ -231,11 +338,21 @@ export function LoyaltyMenu({ isVisible, onClose }: LoyaltyMenuProps) {
 								<View className="px-5">
 									<View className="flex-row items-center justify-between p-4 bg-white rounded-lg border border-gray-200">
 										<View className="flex-row items-center">
-											<View className="h-10 w-10 items-center justify-center rounded-full bg-pink-100">
+											<View
+												className={`h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${
+													activeCardIndex === 1
+														? "bg-emerald-100"
+														: "bg-pink-100"
+												}`}
+											>
 												<Icon
 													name="emoji_events"
 													size={22}
-													className="!text-red-500"
+													className={`transition-colors duration-300 ${
+														activeCardIndex === 1
+															? "!text-emerald-600"
+															: "!text-red-500"
+													}`}
 												/>
 											</View>
 											<View className="ml-4">
@@ -243,7 +360,7 @@ export function LoyaltyMenu({ isVisible, onClose }: LoyaltyMenuProps) {
 													Punti premio
 												</ThemedText>
 												<ThemedText className="text-[18px] font-plus-jakarta-bold !text-gray-950">
-													71,68 pt
+													{activeCardIndex === 1 ? POINTS_XGO : POINTS_FRECCIA}
 												</ThemedText>
 											</View>
 										</View>
@@ -266,7 +383,7 @@ export function LoyaltyMenu({ isVisible, onClose }: LoyaltyMenuProps) {
 								className="bg-white"
 								style={{ paddingBottom: insets.bottom + 20 }}
 							>
-								<View className="px-5 py-6">
+								<View className="px-5 py-4">
 									<View className="flex-row items-center p-4 bg-white rounded-lg border border-gray-200">
 										<View className="h-10 w-10 items-center justify-center rounded-full bg-cyan-100">
 											<Icon
@@ -287,48 +404,66 @@ export function LoyaltyMenu({ isVisible, onClose }: LoyaltyMenuProps) {
 								</View>
 								{/* Menu Items */}
 								<View>
-									{MENU_ITEMS.map((item) => (
-										<Pressable
-											key={item.label}
-											className="flex-row items-center px-5 py-3.5 border-b border-gray-50"
-										>
-											<Icon
-												name={item.icon}
-												size={28}
-												weight={300}
-												className={
-													item.isDestructive
-														? "!text-red-500"
-														: "!text-gray-700"
-												}
-											/>
-											<ThemedText
-												className={`ml-4 flex-1 text-[15px] font-plus-jakarta-medium ${
-													item.isDestructive
-														? "!text-red-500"
-														: "!text-gray-800"
-												}`}
+									{MENU_ITEMS.filter((item) => {
+										if (activeCardIndex === 1) {
+											return (
+												item.label !== "Richiedi Premio" &&
+												item.label !== "FrecciaFun"
+											);
+										}
+										return true;
+									}).map((item) => {
+										let displayLabel = item.label;
+										if (activeCardIndex === 1) {
+											displayLabel = displayLabel.replace(
+												"CartaFRECCIA",
+												"X-GO",
+											);
+										}
+
+										return (
+											<Pressable
+												key={item.label}
+												className="flex-row items-center px-5 py-3.5 border-b border-gray-50"
 											>
-												{item.label}
-											</ThemedText>
-											<Icon
-												name="chevron_right"
-												size={28}
-												weight={200}
-												className={
-													item.isDestructive
-														? "!text-red-500"
-														: "!text-gray-400"
-												}
-											/>
-										</Pressable>
-									))}
+												<Icon
+													name={item.icon}
+													size={28}
+													weight={300}
+													className={
+														item.isDestructive
+															? "!text-red-500"
+															: "!text-gray-700"
+													}
+												/>
+												<ThemedText
+													className={`ml-4 flex-1 text-[15px] font-plus-jakarta-medium ${
+														item.isDestructive
+															? "!text-red-500"
+															: "!text-gray-800"
+													}`}
+												>
+													{displayLabel}
+												</ThemedText>
+												<Icon
+													name="chevron_right"
+													size={28}
+													weight={200}
+													className={
+														item.isDestructive
+															? "!text-red-500"
+															: "!text-gray-400"
+													}
+												/>
+											</Pressable>
+										);
+									})}
 								</View>
 							</View>
 						</Animated.ScrollView>
 					</View>
 				</Animated.View>
 			</View>
-		</Modal>
+		</View>
 	);
 }

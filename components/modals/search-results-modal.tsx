@@ -9,6 +9,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Dimensions, Modal, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomSheet } from "@/components/modals/bottom-sheet";
+import { MainButton } from "@/components/ui/main-button";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const DATE_ITEM_WIDTH = 80;
@@ -222,7 +223,7 @@ export function SearchResultsModal({
 						</View>
 
 						<View className="flex-row items-center gap-5 mr-1 z-10">
-							<Icon name="home" size={26} className="!text-white" useFont />
+							<Icon name="home" size={26} className="!text-white" />
 							<Icon name="shopping_cart" size={26} className="!text-white" />
 						</View>
 					</View>
@@ -488,14 +489,11 @@ export function SearchResultsModal({
 								Reset
 							</ThemedText>
 						</Pressable>
-						<Pressable
+						<MainButton
+							title="Conferma"
 							onPress={() => setShowFilters(false)}
-							className="flex-[1.5] h-14 items-center justify-center rounded-lg bg-red-600"
-						>
-							<ThemedText className="text-[16px] font-plus-jakarta-bold !text-white uppercase tracking-wider">
-								Conferma
-							</ThemedText>
-						</Pressable>
+							className="flex-[1.5]"
+						/>
 					</View>
 				</BottomSheet>
 			</View>

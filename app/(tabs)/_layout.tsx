@@ -52,6 +52,7 @@ export default function TabLayout() {
 								color={`${color}`}
 								fill={focused}
 								type="sharp"
+								useFont={false}
 							/>
 						),
 					}}
@@ -68,6 +69,7 @@ export default function TabLayout() {
 								color={`${color}`}
 								fill={focused}
 								type="sharp"
+								useFont={false}
 							/>
 						),
 					}}
@@ -95,6 +97,7 @@ export default function TabLayout() {
 								color={`${color}`}
 								fill={focused}
 								type="sharp"
+								useFont={false}
 							/>
 						),
 					}}
@@ -111,6 +114,7 @@ export default function TabLayout() {
 								color={`${color}`}
 								fill={focused}
 								type="sharp"
+								useFont={false}
 							/>
 						),
 					}}
@@ -138,6 +142,7 @@ export default function TabLayout() {
 								color={`${color}`}
 								fill={focused}
 								type="sharp"
+								useFont={false}
 							/>
 						),
 					}}

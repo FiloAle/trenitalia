@@ -71,7 +71,7 @@ export const Icon = React.forwardRef<any, IconProps>(
 			style,
 			type = "rounded",
 			className,
-			useFont = false,
+			useFont = true,
 			...props
 		},
 		ref,

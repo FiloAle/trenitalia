@@ -10,11 +10,13 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import TrenitaliaLogo from "@/assets/images/trenitalia.svg";
-import TrenitaliaColorLogo from "@/assets/images/trenitalia_color.svg";
+import TrenitaliaLogo from "@/assets/logos/trenitalia.svg";
+import TrenitaliaColorLogo from "@/assets/logos/trenitalia_color.svg";
 import { SideMenu } from "@/components/modals/side-menu";
+import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Icon } from "@/components/ui/icon";
+import { USER_DATA, getInitials } from "@/constants/user";
 import { useThemeColor } from "@/hooks/use-theme-color";
 
 const HEADER_HEIGHT = 360;
@@ -22,12 +24,14 @@ const HEADER_HEIGHT = 360;
 type Props = PropsWithChildren<{
 	headerImage: ReactElement;
 	headerBackgroundColor: { dark: string; light: string };
+	onProfilePress?: () => void;
 }>;
 
 export default function ParallaxScrollView({
 	children,
 	headerImage,
 	headerBackgroundColor,
+	onProfilePress,
 }: Props) {
 	const insets = useSafeAreaInsets();
 	const [isMenuVisible, setIsMenuVisible] = React.useState(false);
@@ -163,11 +167,13 @@ export default function ParallaxScrollView({
 							size={24}
 							style={iconColorStyle}
 						/>
-						<AnimatedIcon
-							name="account_circle"
-							size={24}
-							style={iconColorStyle}
-						/>
+						<Pressable onPress={onProfilePress}>
+							<View className="h-8 w-8 items-center justify-center rounded-full bg-teal-900">
+								<ThemedText className="text-[11px] font-plus-jakarta-bold !text-white">
+									{getInitials(USER_DATA.firstName, USER_DATA.lastName)}
+								</ThemedText>
+							</View>
+						</Pressable>
 					</View>
 				</View>
 			</Animated.View>
@@ -196,6 +202,7 @@ export default function ParallaxScrollView({
 			<SideMenu
 				isVisible={isMenuVisible}
 				onClose={() => setIsMenuVisible(false)}
+				onProfilePress={onProfilePress}
 			/>
 		</View>
 	);

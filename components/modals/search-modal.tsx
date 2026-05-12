@@ -4,8 +4,13 @@ import { SearchListItem } from "@/components/search/search-list-item";
 import { SectionHeader } from "@/components/search/section-header";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
+import { MainButton } from "@/components/ui/main-button";
+import {
+	RECENT_SEARCHES,
+	SAVED_SEARCHES,
+	STATIONS,
+} from "@/constants/stations";
 import { USER_DATA, getInitials } from "@/constants/user";
-import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	Animated,
@@ -25,27 +30,33 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 interface SearchModalProps {
 	isVisible: boolean;
 	onClose: () => void;
+	initialFrom?: string;
+	initialTo?: string;
+	initialStep?: "searching" | "details";
 }
 
-const STATIONS = [
-	"Milano Centrale",
-	"Milano Porta Garibaldi",
-	"Roma Termini",
-	"Roma Tiburtina",
-];
-
-const RECENT_SEARCHES = [
-	{ from: "Milano Centrale", to: "Roma Termini" },
-	{ from: "Roma Tiburtina", to: "Firenze S.M.N." },
-];
-
-export function SearchModal({ isVisible, onClose }: SearchModalProps) {
+export function SearchModal({
+	isVisible,
+	onClose,
+	initialFrom = "",
+	initialTo = "",
+	initialStep = "searching",
+}: SearchModalProps) {
 	const insets = useSafeAreaInsets();
 	const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-	const [step, setStep] = useState<"searching" | "details">("searching");
-	const [fromText, setFromText] = useState("");
-	const [toText, setToText] = useState("");
+	const [step, setStep] = useState<"searching" | "details">(initialStep);
+	const [fromText, setFromText] = useState(initialFrom);
+	const [toText, setToText] = useState(initialTo);
 	const [activeInput, setActiveInput] = useState<"from" | "to" | null>(null);
+
+	// Sync state when props change (useful when clicking different quick search cards)
+	useEffect(() => {
+		if (isVisible) {
+			setFromText(initialFrom);
+			setToText(initialTo);
+			setStep(initialStep);
+		}
+	}, [isVisible, initialFrom, initialTo, initialStep]);
 
 	// Mock modal states
 	const [showCalendar, setShowCalendar] = useState(false);
@@ -116,7 +127,6 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 						size={18}
 						className="!text-teal-900"
 						weight={300}
-						useFont
 					/>
 					<ThemedText className="text-[14px] font-plus-jakarta-semibold !text-teal-900">
 						{label}
@@ -370,6 +380,13 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 		}
 	};
 
+	const handleRouteSelect = (from: string, to: string) => {
+		setFromText(from);
+		setToText(to);
+		setActiveInput(null);
+		setStep("details");
+	};
+
 	return (
 		<Modal
 			visible={isVisible}
@@ -463,55 +480,60 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 											text="Milano Bovisa Politecnico"
 											className="!px-0"
 											weight={300}
+											onPress={() =>
+												handleStationSelect("Milano Bovisa Politecnico")
+											}
 										/>
 
 										{/* Saved Searches */}
 										<View className="mt-5">
 											<SectionHeader title="RICERCHE SALVATE" />
-											{[
-												{
-													route: "Milano Centrale - Cesena",
-													badge: "Cesena",
-													color: "bg-teal-50 text-teal-800 border-teal-100",
-												},
-												{
-													route: "Cesena - Milano Centrale",
-													badge: "Milano",
-													color: "bg-pink-50 text-pink-800 border-pink-100",
-												},
-											].map((item, index) => (
-												<SavedSearchItem
-													key={index}
-													route={item.route}
-													badge={item.badge}
-													colorClass={item.color}
-												/>
-											))}
+											{SAVED_SEARCHES.map((item, index) => {
+												const route = `${item.from} - ${item.to}`;
+												const badge = item.to.split(" ")[0]; // Take first word of destination as badge
+												const colorClass =
+													index % 2 === 0
+														? "bg-teal-50 text-teal-800 border-teal-100"
+														: "bg-pink-50 text-pink-800 border-pink-100";
+
+												return (
+													<SavedSearchItem
+														key={index}
+														route={route}
+														badge={badge}
+														colorClass={colorClass}
+														onPress={() =>
+															handleRouteSelect(item.from, item.to)
+														}
+													/>
+												);
+											})}
 										</View>
 
 										{/* Last Searches */}
 										<View className="mt-6">
 											<SectionHeader title="ULTIME RICERCHE" />
-											{[
-												"Milano Centrale - Cesena",
-												"Milano Centrale - Roma Termini",
-												"Cesena - Milano Centrale",
-											].map((item, index) => (
-												<SearchListItem key={index} text={item} weight={300} />
+											{RECENT_SEARCHES.map((item, index) => (
+												<SearchListItem
+													key={index}
+													text={`${item.from} - ${item.to}`}
+													iconName="schedule"
+													weight={300}
+													onPress={() => handleRouteSelect(item.from, item.to)}
+												/>
 											))}
 										</View>
 
 										{/* Stations */}
 										<View className="mt-6">
 											<SectionHeader title="STAZIONI" />
-											{[
-												"Cesena",
-												"Milano Centrale",
-												"Roma Termini",
-												"Brescia",
-												"Cervia-Milano Marittima",
-											].map((item, index) => (
-												<SearchListItem key={index} text={item} weight={300} />
+											{STATIONS.map((item, index) => (
+												<SearchListItem
+													key={index}
+													text={item}
+													weight={300}
+													onPress={() => handleStationSelect(item)}
+												/>
 											))}
 										</View>
 									</View>
@@ -666,9 +688,9 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 											</ThemedText>
 											{noChanges && (
 												<Icon
-													name="close"
+													name="cancel"
 													size={16}
-													className="ml-2 !text-teal-700"
+													className="ml-2 -mr-1.5 !text-teal-700"
 												/>
 											)}
 										</Pressable>
@@ -689,9 +711,9 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 											</ThemedText>
 											{bike && (
 												<Icon
-													name="close"
+													name="cancel"
 													size={16}
-													className="ml-2 !text-teal-700"
+													className="ml-2 -mr-1.5 !text-teal-700"
 												/>
 											)}
 										</Pressable>
@@ -739,15 +761,11 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 							</ScrollView>
 
 							<View className="px-5 py-6 bg-white border-t border-gray-100">
-								<Pressable
+								<MainButton
+									title="Ricerca viaggio"
 									onPress={() => setResultsVisible(true)}
-									className="h-14 w-full items-center justify-center rounded-lg bg-red-600"
 									style={{ marginBottom: insets.bottom }}
-								>
-									<ThemedText className="text-[16px] font-plus-jakarta-bold !text-white uppercase">
-										Ricerca viaggio
-									</ThemedText>
-								</Pressable>
+								/>
 							</View>
 						</>
 					)}
@@ -813,13 +831,11 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 												setHasReturn(false);
 												setActiveCalendarTab("andata");
 											}}
-											className="pl-2"
 										>
 											<Icon
 												name="cancel"
 												size={20}
 												className="!text-gray-500"
-												useFont
 											/>
 										</Pressable>
 									)}
@@ -1039,23 +1055,10 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 						</View>
 
 						<View className="px-6 pt-4">
-							<Pressable
+							<MainButton
+								title="Conferma"
 								onPress={() => setShowCalendar(false)}
-								className="h-14 w-full overflow-hidden rounded-lg"
-							>
-								<LinearGradient
-									colors={["#8a052b", "#f73d3d"]}
-									start={{ x: 0, y: 0 }}
-									end={{ x: 1, y: 1 }}
-									style={{ flex: 1, width: "100%", height: "100%" }}
-								>
-									<View className="flex-1 items-center justify-center">
-										<ThemedText className="text-[16px] font-plus-jakarta-bold !text-white">
-											Conferma
-										</ThemedText>
-									</View>
-								</LinearGradient>
-							</Pressable>
+							/>
 						</View>
 					</View>
 				</BottomSheet>
@@ -1172,23 +1175,10 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 						</ScrollView>
 
 						<View className="px-6 py-6 border-t border-gray-100 bg-white">
-							<Pressable
+							<MainButton
+								title="Conferma"
 								onPress={() => setShowPassengers(false)}
-								className="h-14 w-full overflow-hidden rounded-lg"
-							>
-								<LinearGradient
-									colors={["#8a052b", "#f73d3d"]}
-									start={{ x: 0, y: 0 }}
-									end={{ x: 1, y: 1 }}
-									style={{ flex: 1, width: "100%", height: "100%" }}
-								>
-									<View className="flex-1 items-center justify-center">
-										<ThemedText className="text-[16px] font-plus-jakarta-bold !text-white">
-											Conferma
-										</ThemedText>
-									</View>
-								</LinearGradient>
-							</Pressable>
+							/>
 						</View>
 					</View>
 				)}
@@ -1227,7 +1217,6 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 													name="info"
 													size={18}
 													className="ml-2 !text-gray-400"
-													useFont
 												/>
 											)}
 										</View>
@@ -1351,27 +1340,14 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 						</ThemedText>
 					</Pressable>
 
-					<Pressable
+					<MainButton
+						title={`Conferma ${adults + youths} ${
+							adults + youths === 1 ? "passeggero" : "passeggeri"
+						}`}
 						onPress={() => adults + youths > 0 && setShowPassengersSheet(false)}
 						disabled={adults + youths === 0}
-						className={`h-14 w-full overflow-hidden rounded-lg ${
-							adults + youths === 0 ? "opacity-60" : ""
-						}`}
-					>
-						<LinearGradient
-							colors={["#8a052b", "#f73d3d"]}
-							start={{ x: 0, y: 0 }}
-							end={{ x: 1, y: 1 }}
-							style={{ flex: 1, width: "100%", height: "100%" }}
-						>
-							<View className="flex-1 items-center justify-center">
-								<ThemedText className="text-[16px] font-plus-jakarta-bold !text-white">
-									Conferma {adults + youths}{" "}
-									{adults + youths === 1 ? "passeggero" : "passeggeri"}
-								</ThemedText>
-							</View>
-						</LinearGradient>
-					</Pressable>
+						className="mb-8"
+					/>
 				</BottomSheet>
 				{/* Discount Code Bottom Sheet */}
 				<BottomSheet
@@ -1394,23 +1370,10 @@ export function SearchModal({ isVisible, onClose }: SearchModalProps) {
 							</ThemedText>
 						</View>
 
-						<Pressable
+						<MainButton
+							title="Conferma"
 							onPress={() => setShowDiscountSheet(false)}
-							className="h-14 w-full overflow-hidden rounded-lg"
-						>
-							<LinearGradient
-								colors={["#8a052b", "#f73d3d"]}
-								start={{ x: 0, y: 0 }}
-								end={{ x: 1, y: 1 }}
-								style={{ flex: 1, width: "100%", height: "100%" }}
-							>
-								<View className="flex-1 items-center justify-center">
-									<ThemedText className="text-[16px] font-plus-jakarta-bold !text-white">
-										Conferma
-									</ThemedText>
-								</View>
-							</LinearGradient>
-						</Pressable>
+						/>
 					</View>
 				</BottomSheet>
 			</Animated.View>

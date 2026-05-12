@@ -1,4 +1,4 @@
-import TrenitaliaLogo from "@/assets/images/trenitalia_color.svg";
+import TrenitaliaLogo from "@/assets/logos/trenitalia_color.svg";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import React, { useEffect, useRef } from "react";
@@ -23,7 +23,7 @@ const MENU_DATA = [
 	{
 		id: "RICERCA E ACQUISTO",
 		items: [
-			{ label: "Biglietti", icon: "local_activity" },
+			{ label: "Biglietti", icon: "confirmation_number" },
 			{ label: "Abbonamenti", icon: "credit_card" },
 			{ label: "Carnet", icon: "view_day" },
 			{ label: "Promo e Servizi", icon: "local_mall" },
@@ -73,13 +73,7 @@ interface SubMenuItemProps {
 function SubMenuItem({ label, icon }: SubMenuItemProps) {
 	return (
 		<Pressable className="flex-row items-center border-b border-gray-100/50 py-3 ps-2 pe-4">
-			<Icon
-				name={icon}
-				size={28}
-				className="!text-gray-700"
-				weight={300}
-				useFont={true}
-			/>
+			<Icon name={icon} size={28} className="!text-gray-700" weight={300} />
 			<ThemedText className="ml-4 flex-1 text-[14px] font-plus-jakarta-medium !text-gray-700">
 				{label}
 			</ThemedText>
@@ -125,9 +119,10 @@ function MenuItem({ label, isOpen, onToggle, children }: MenuItemProps) {
 interface SideMenuProps {
 	isVisible: boolean;
 	onClose: () => void;
+	onProfilePress?: () => void;
 }
 
-export function SideMenu({ isVisible, onClose }: SideMenuProps) {
+export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) {
 	const insets = useSafeAreaInsets();
 	const [openSection, setOpenSection] = React.useState<string | null>(
 		"RICERCA E ACQUISTO",
@@ -156,7 +151,7 @@ export function SideMenu({ isVisible, onClose }: SideMenuProps) {
 		}
 	}, [isVisible]);
 
-	const handleClose = () => {
+	const handleClose = (callback?: () => void) => {
 		Animated.parallel([
 			Animated.timing(slideAnim, {
 				toValue: -SCREEN_WIDTH,
@@ -170,19 +165,17 @@ export function SideMenu({ isVisible, onClose }: SideMenuProps) {
 			}),
 		]).start(() => {
 			onClose();
+			if (callback) callback();
 		});
 	};
 
+	if (!isVisible) return null;
+
 	return (
-		<Modal
-			visible={isVisible}
-			transparent
-			animationType="none"
-			onRequestClose={handleClose}
-		>
+		<View style={[StyleSheet.absoluteFill, { zIndex: 900 }]}>
 			<View className="flex-1">
 				{/* Background Overlay */}
-				<TouchableWithoutFeedback onPress={handleClose}>
+				<TouchableWithoutFeedback onPress={() => handleClose()}>
 					<Animated.View
 						style={[
 							StyleSheet.absoluteFill,
@@ -218,7 +211,7 @@ export function SideMenu({ isVisible, onClose }: SideMenuProps) {
 									className="!text-gray-900"
 									weight={400}
 								/>
-								<Pressable onPress={handleClose}>
+								<Pressable onPress={() => handleClose()}>
 									<Icon
 										name="close"
 										size={26}
@@ -235,7 +228,10 @@ export function SideMenu({ isVisible, onClose }: SideMenuProps) {
 							contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
 						>
 							{/* User Profile */}
-							<Pressable className="flex-row items-center border-b border-gray-100 ps-5 pe-4 py-4">
+							<Pressable
+								onPress={onProfilePress}
+								className="flex-row items-center border-b border-gray-100 ps-5 pe-4 py-4"
+							>
 								<View className="h-10 w-10 items-center justify-center rounded-full bg-teal-900">
 									<ThemedText className="text-sm font-plus-jakarta-bold !text-white">
 										{getInitials(USER_DATA.firstName, USER_DATA.lastName)}
@@ -306,6 +302,6 @@ export function SideMenu({ isVisible, onClose }: SideMenuProps) {
 					</View>
 				</Animated.View>
 			</View>
-		</Modal>
+		</View>
 	);
 }

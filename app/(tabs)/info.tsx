@@ -1,7 +1,8 @@
 import { InfoBanner } from "@/components/home/info-banner";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { LinearGradient } from "expo-linear-gradient";
+import { MainButton } from "@/components/ui/main-button";
+import { RECENT_SEARCHES, STATIONS } from "@/constants/stations";
 import React, { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -29,18 +30,19 @@ export default function InfoScreen() {
 							<ThemedText className="mb-2 text-xs font-plus-jakarta-bold !text-gray-500">
 								ULTIME RICERCHE
 							</ThemedText>
-							<View className="flex-row items-center py-2">
-								<Icon name="history" size={20} color="#1f2937" />
-								<ThemedText className="ml-3 font-plus-jakarta-semibold !text-gray-950">
-									8807 Milano Centrale - Taranto
-								</ThemedText>
-							</View>
-							<View className="flex-row items-center py-2">
-								<Icon name="history" size={20} color="#1f2937" />
-								<ThemedText className="ml-3 font-plus-jakarta-semibold !text-gray-950">
-									8806 Pescara Centrale - Milano Centrale
-								</ThemedText>
-							</View>
+							{RECENT_SEARCHES.map((search, idx) => (
+								<View key={idx} className="flex-row items-center py-2">
+									<Icon
+										name="schedule"
+										size={20}
+										color="#1f2937"
+										weight={400}
+									/>
+									<ThemedText className="ml-3 font-plus-jakarta-semibold !text-gray-950">
+										{8807 - idx} {search.from} - {search.to}
+									</ThemedText>
+								</View>
+							))}
 						</View>
 					</View>
 				);
@@ -67,12 +69,7 @@ export default function InfoScreen() {
 							<ThemedText className="mb-2 text-xs font-plus-jakarta-bold !text-gray-500">
 								STAZIONI
 							</ThemedText>
-							{[
-								"Brescia",
-								"Cervia-Milano Marittima",
-								"Bologna Centrale",
-								"Forli",
-							].map((station) => (
+							{STATIONS.map((station) => (
 								<View key={station} className="flex-row items-center py-2">
 									<Icon name="history" size={20} color="#1f2937" />
 									<ThemedText className="ml-3 font-plus-jakarta-semibold !text-gray-950">
@@ -121,10 +118,7 @@ export default function InfoScreen() {
 	return (
 		<View className="flex-1 bg-white">
 			{/* Header Section */}
-			<View
-				className="bg-teal-900 pb-6"
-				style={{ paddingTop: insets.top + 4 }}
-			>
+			<View className="bg-teal-900 pb-6" style={{ paddingTop: insets.top + 4 }}>
 				<View className="h-14 flex-row items-center justify-between px-6 mb-2">
 					<ThemedText className="text-3xl font-plus-jakarta-bold !text-white">
 						Infomobilità
@@ -175,32 +169,7 @@ export default function InfoScreen() {
 
 					{/* Search Button (only for N. Treno) */}
 					{activeChip === "N. Treno" && (
-						<Pressable
-							className="h-12 w-full overflow-hidden rounded-lg"
-							style={{
-								elevation: 4,
-								shadowColor: "#000",
-								shadowOffset: { width: 0, height: 2 },
-								shadowOpacity: 0.2,
-								shadowRadius: 4,
-							}}
-						>
-							<LinearGradient
-								colors={["#8a052b", "#f73d3d"]}
-								start={{ x: 0, y: 0 }}
-								end={{ x: 1, y: 0 }}
-								style={{
-									width: "100%",
-									height: "100%",
-									alignItems: "center",
-									justifyContent: "center",
-								}}
-							>
-								<ThemedText className="font-plus-jakarta-bold !text-white">
-									Ricerca
-								</ThemedText>
-							</LinearGradient>
-						</Pressable>
+						<MainButton title="Ricerca" onPress={() => {}} />
 					)}
 				</View>
 			)}

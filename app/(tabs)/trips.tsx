@@ -1,9 +1,9 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MainButton } from "@/components/ui/main-button";
 
 const CHIPS = ["Biglietti", "Abbonamenti", "Carnet", "TPL", "Archivio"];
 
@@ -168,35 +168,12 @@ export default function TripsScreen() {
 			</ScrollView>
 
 			{/* Bottom Button */}
-			<View className="absolute bottom-6 left-0 right-0 items-center px-5">
-				<Pressable
-					className="h-12 w-full overflow-hidden rounded-lg"
-					style={{
-						elevation: 4,
-						shadowColor: "#000",
-						shadowOffset: { width: 0, height: 2 },
-						shadowOpacity: 0.2,
-						shadowRadius: 4,
-					}}
-				>
-					<LinearGradient
-						colors={["#8a052b", "#f73d3d"]}
-						start={{ x: 0, y: 0 }}
-						end={{ x: 1, y: 0 }}
-						style={{
-							width: "100%",
-							height: "100%",
-							flexDirection: "row",
-							alignItems: "center",
-							justifyContent: "center",
-						}}
-					>
-						<Icon name="search" size={20} color="white" />
-						<ThemedText className="ml-2 font-plus-jakarta-bold !text-white">
-							Recupera biglietto
-						</ThemedText>
-					</LinearGradient>
-				</Pressable>
+			<View className="absolute bottom-6 left-0 right-0 px-5">
+				<MainButton
+					title="Recupera biglietto"
+					iconName="search"
+					onPress={() => {}}
+				/>
 			</View>
 		</View>
 	);

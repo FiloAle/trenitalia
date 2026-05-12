@@ -1,24 +1,32 @@
+import { RECENT_SEARCHES, SAVED_SEARCHES } from "@/constants/stations";
 import { ThemedText } from "@/components/themed-text";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
 interface SearchCardProps {
 	type: string;
-	route: string;
+	from: string;
+	to: string;
 	subtitle: string;
 	typeColor: string;
 	typeLabelColor: string;
+	onPress: () => void;
 }
 
 function QuickSearchCard({
 	type,
-	route,
+	from,
+	to,
 	subtitle,
 	typeColor,
 	typeLabelColor,
+	onPress,
 }: SearchCardProps) {
 	return (
-		<Pressable className="mr-4 w-72 rounded-lg border border-gray-200 bg-white p-4">
+		<Pressable
+			onPress={onPress}
+			className="mr-4 w-72 rounded-lg border border-gray-200 bg-white p-4"
+		>
 			<View
 				className="mb-3 self-start rounded-md px-2 py-1"
 				style={{ backgroundColor: typeColor }}
@@ -31,7 +39,7 @@ function QuickSearchCard({
 				</ThemedText>
 			</View>
 			<ThemedText className="mb-1 text-base font-plus-jakarta-bold !text-gray-950">
-				{route}
+				{from} - {to}
 			</ThemedText>
 			<ThemedText className="font-plus-jakarta-medium text-sm !text-gray-600">
 				{subtitle}
@@ -40,20 +48,23 @@ function QuickSearchCard({
 	);
 }
 
-export function QuickSearches() {
-	const searches = [
+interface QuickSearchesProps {
+	onSelectRoute: (from: string, to: string) => void;
+}
+
+export function QuickSearches({ onSelectRoute }: QuickSearchesProps) {
+	// We pick the first saved search and the first recent search for the home cards
+	const quickCards = [
 		{
-			id: "1",
+			...SAVED_SEARCHES[0],
 			type: "Acquisto rapido",
-			route: "Milano Centrale - Cesena",
 			subtitle: "Acquista in pochi click",
 			typeColor: "#ffe4e6",
 			typeLabelColor: "#c1152c",
 		},
 		{
-			id: "2",
+			...RECENT_SEARCHES[1], // Roma - Firenze
 			type: "Ultima ricerca",
-			route: "Roma Termini - Firenze S.M.N.",
 			subtitle: "Riprendi da dove eri rimasto",
 			typeColor: "#f0fdf4",
 			typeLabelColor: "#166534",
@@ -71,8 +82,12 @@ export function QuickSearches() {
 				className="-mx-5"
 				contentContainerStyle={{ paddingHorizontal: 20 }}
 			>
-				{searches.map((search) => (
-					<QuickSearchCard key={search.id} {...search} />
+				{quickCards.map((card, index) => (
+					<QuickSearchCard
+						key={index}
+						{...card}
+						onPress={() => onSelectRoute(card.from, card.to)}
+					/>
 				))}
 			</ScrollView>
 		</View>
