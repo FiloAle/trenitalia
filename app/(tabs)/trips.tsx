@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
+import { Link } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -109,10 +110,23 @@ export default function TripsScreen() {
 
 						{/* Tickets List */}
 						{TICKETS.map((ticket) => (
-							<View
+							<Link
 								key={ticket.id}
-								className="flex-row rounded-lg border border-gray-100 bg-white p-4"
+								href={{
+									pathname: "/ticket-detail",
+									params: {
+										id: ticket.id,
+										day: ticket.day,
+										month: ticket.month,
+										type: ticket.type,
+										route: ticket.route,
+										time: ticket.time,
+										details: ticket.details,
+									},
+								}}
+								asChild
 							>
+								<Pressable className="flex-row rounded-lg border border-gray-100 bg-white p-4">
 								{/* Date column */}
 								<View className="mr-4 items-center border-r border-gray-100 pr-4">
 									<ThemedText className="text-2xl font-plus-jakarta-bold !text-gray-900">
@@ -138,7 +152,8 @@ export default function TripsScreen() {
 										<Icon name="cloud" size={16} color="#9ca3af" />
 									</View>
 								</View>
-							</View>
+								</Pressable>
+							</Link>
 						))}
 					</>
 				) : (

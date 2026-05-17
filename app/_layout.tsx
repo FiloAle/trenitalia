@@ -65,6 +65,23 @@ export default function RootLayout() {
 		<ThemeProvider value={DefaultTheme}>
 			<Stack>
 				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+				<Stack.Screen
+					name="ticket-detail"
+					options={{
+						presentation: "modal",
+						headerShown: false,
+					}}
+				/>
+				<Stack.Screen
+					name="qr-code"
+					options={{
+						presentation: "modal",
+						headerShown: false,
+					}}
+				/>
+				<Stack.Screen name="add-services" options={{ headerShown: false }} />
+				<Stack.Screen name="complete-trip" options={{ headerShown: false }} />
+				<Stack.Screen name="summary" options={{ headerShown: false }} />
 				<Stack.Screen name="+not-found" />
 			</Stack>
 			<StatusBar style="dark" />

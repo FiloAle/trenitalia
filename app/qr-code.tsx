@@ -1,0 +1,41 @@
+import { Icon } from "@/components/ui/icon";
+import { MainButton } from "@/components/ui/main-button";
+import { router, useLocalSearchParams } from "expo-router";
+import React from "react";
+import { Dimensions, Pressable, View } from "react-native";
+import QRCode from "react-native-qrcode-svg";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const { width } = Dimensions.get("window");
+
+export default function QRCodeScreen() {
+	const insets = useSafeAreaInsets();
+	const params = useLocalSearchParams();
+	const qrValue = (params.pnr as string) || "F34VNN-891801"; // Fallback to PNR string
+
+	return (
+		<View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+			{/* Header Nav */}
+			<View className="flex-row items-center justify-end px-5 py-4">
+				<Pressable className="p-2" onPress={() => router.back()}>
+					<Icon name="close" size={28} color="black" />
+				</Pressable>
+			</View>
+
+			{/* QR Code Container */}
+			<View className="flex-1 items-center justify-center px-10">
+				<QRCode
+					value={qrValue}
+					size={width * 0.8}
+					color="black"
+					backgroundColor="white"
+				/>
+			</View>
+
+			{/* Bottom Button */}
+			<View className="px-5 pb-8 pt-4" style={{ paddingBottom: insets.bottom + 20 }}>
+				<MainButton title="Chiudi" onPress={() => router.back()} />
+			</View>
+		</View>
+	);
+}
