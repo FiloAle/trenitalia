@@ -4,6 +4,7 @@ import { Icon } from "@/components/ui/icon";
 import React, { useState, useEffect } from "react";
 import { Pressable, ScrollView, Switch, View, Platform, Dimensions } from "react-native";
 import { MainButton } from "@/components/ui/main-button";
+import { TimePickerColumn } from "@/components/ui/time-picker-column";
 
 interface FollowTrainModalProps {
 	isVisible: boolean;
@@ -122,31 +123,11 @@ export function FollowTrainModal({
 								<View className="w-[60px] h-full rounded-full bg-[#005045]" />
 							</View>
 							
-							{/* Hours */}
-							<View className="w-[60px] h-full items-center">
-								<ScrollView 
-									className="w-full"
-									showsVerticalScrollIndicator={false} 
-									snapToInterval={40}
-									decelerationRate="fast"
-									nestedScrollEnabled={true}
-									contentContainerStyle={{ paddingVertical: 44 }}
-									contentOffset={{ x: 0, y: parseInt(initialHour) * 40 }}
-									scrollEventThrottle={16}
-									onScroll={(e) => {
-										const index = Math.round(e.nativeEvent.contentOffset.y / 40);
-										if (index >= 0 && index < hours.length) setSelectedHour(hours[index]);
-									}}
-								>
-									{hours.map((h, i) => (
-										<View key={i} className={`h-[40px] items-center justify-center rounded-full w-full`}>
-											<ThemedText className={`text-lg font-plus-jakarta-bold ${h === selectedHour ? "!text-white" : "!text-gray-950"}`}>
-												{h}
-											</ThemedText>
-										</View>
-									))}
-								</ScrollView>
-							</View>
+							<TimePickerColumn
+								items={hours}
+								selectedValue={selectedHour}
+								onValueChange={setSelectedHour}
+							/>
 							
 							<View className="w-[30px] items-center justify-center">
 								<ThemedText className="text-lg font-plus-jakarta-bold !text-gray-950">
@@ -155,30 +136,11 @@ export function FollowTrainModal({
 							</View>
 							
 							{/* Minutes */}
-							<View className="w-[60px] h-full items-center">
-								<ScrollView 
-									className="w-full"
-									showsVerticalScrollIndicator={false} 
-									snapToInterval={40}
-									decelerationRate="fast"
-									nestedScrollEnabled={true}
-									contentContainerStyle={{ paddingVertical: 44 }}
-									contentOffset={{ x: 0, y: parseInt(initialMinute) * 40 }}
-									scrollEventThrottle={16}
-									onScroll={(e) => {
-										const index = Math.round(e.nativeEvent.contentOffset.y / 40);
-										if (index >= 0 && index < minutes.length) setSelectedMinute(minutes[index]);
-									}}
-								>
-									{minutes.map((m, i) => (
-										<View key={i} className={`h-[40px] items-center justify-center rounded-full w-full`}>
-											<ThemedText className={`text-lg font-plus-jakarta-bold ${m === selectedMinute ? "!text-white" : "!text-gray-950"}`}>
-												{m}
-											</ThemedText>
-										</View>
-									))}
-								</ScrollView>
-							</View>
+							<TimePickerColumn
+								items={minutes}
+								selectedValue={selectedMinute}
+								onValueChange={setSelectedMinute}
+							/>
 						</View>
 					</View>
 

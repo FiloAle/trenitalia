@@ -1,0 +1,58 @@
+import { ThemedText } from "@/components/themed-text";
+import { Icon } from "@/components/ui/icon";
+import React from "react";
+import { Pressable, View } from "react-native";
+
+export interface TrainData {
+	time: string;
+	destination: string;
+	trainName: string;
+	status: string;
+	bin: string;
+	binType: string;
+	hasMenu: boolean;
+}
+
+interface StationBoardTrainRowProps {
+	train: TrainData;
+}
+
+export function StationBoardTrainRow({ train }: StationBoardTrainRowProps) {
+	return (
+		<View className="flex-row items-center py-3 border-b border-gray-100">
+			<View className="w-[15%]">
+				<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-950">
+					{train.time}
+				</ThemedText>
+			</View>
+			<View className="w-[45%] pl-2 pr-2">
+				<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-950" numberOfLines={1}>
+					{train.destination}
+				</ThemedText>
+				<ThemedText className="text-xs font-plus-jakarta-medium !text-gray-500">
+					{train.trainName}
+				</ThemedText>
+			</View>
+			<View className="w-[20%] pr-2">
+				<ThemedText className="text-xs font-plus-jakarta-bold !text-gray-950">
+					{train.status}
+				</ThemedText>
+			</View>
+			<View className="w-[20%] flex-row items-center justify-between">
+				<View>
+					<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-950">
+						{train.bin}
+					</ThemedText>
+					<ThemedText className="text-[10px] font-plus-jakarta-medium !text-gray-500">
+						{train.binType}
+					</ThemedText>
+				</View>
+				{train.hasMenu && (
+					<Pressable className="ml-1">
+						<Icon name="more_vert" size={20} color="#9ca3af" />
+					</Pressable>
+				)}
+			</View>
+		</View>
+	);
+}

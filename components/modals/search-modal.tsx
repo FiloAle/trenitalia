@@ -15,6 +15,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
 	Animated,
 	Dimensions,
+	FlatList,
 	Modal,
 	Platform,
 	Pressable,
@@ -453,92 +454,103 @@ export function SearchModal({
 								</View>
 							</View>
 
-							<ScrollView
-								className="flex-1"
-								showsVerticalScrollIndicator={false}
-								keyboardShouldPersistTaps="handled"
-							>
-								{showSuggestions ? (
-									<View className="px-5 mt-3">
-										<SectionHeader title="SUGGERIMENTI" />
-										{filteredStations.map((station, index) => (
-											<SearchListItem
-												key={index}
-												iconName="train"
-												text={station}
-												showBorder
-												weight={300}
-												onPress={() => handleStationSelect(station)}
-											/>
-										))}
-									</View>
-								) : (
-									<View className="px-5 mt-3 pb-10">
-										{/* Current Location */}
+							{showSuggestions ? (
+								<FlatList
+									data={filteredStations}
+									keyExtractor={(item, index) => `${item}-${index}`}
+									showsVerticalScrollIndicator={false}
+									keyboardShouldPersistTaps="handled"
+									contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 40 }}
+									initialNumToRender={20}
+									maxToRenderPerBatch={20}
+									windowSize={5}
+									ListHeaderComponent={<SectionHeader title="SUGGERIMENTI" />}
+									renderItem={({ item, index }) => (
 										<SearchListItem
-											iconName="near_me"
-											text="Milano Bovisa Politecnico"
-											className="!px-0"
+											iconName="train"
+											text={item}
+											showBorder
 											weight={300}
-											onPress={() =>
-												handleStationSelect("Milano Bovisa Politecnico")
-											}
+											onPress={() => handleStationSelect(item)}
 										/>
+									)}
+								/>
+							) : (
+								<FlatList
+									data={STATIONS}
+									keyExtractor={(item, index) => `${item}-${index}`}
+									showsVerticalScrollIndicator={false}
+									keyboardShouldPersistTaps="handled"
+									contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 40 }}
+									initialNumToRender={20}
+									maxToRenderPerBatch={20}
+									windowSize={5}
+									ListHeaderComponent={
+										<View className="pb-6">
+											{/* Current Location */}
+											<SearchListItem
+												iconName="near_me"
+												text="Milano Bovisa Politecnico"
+												className="!px-0"
+												weight={300}
+												onPress={() =>
+													handleStationSelect("Milano Bovisa Politecnico")
+												}
+											/>
 
-										{/* Saved Searches */}
-										<View className="mt-5">
-											<SectionHeader title="RICERCHE SALVATE" />
-											{SAVED_SEARCHES.map((item, index) => {
-												const route = `${item.from} - ${item.to}`;
-												const badge = item.to.split(" ")[0]; // Take first word of destination as badge
-												const colorClass =
-													index % 2 === 0
-														? "bg-teal-50 text-teal-800 border-teal-100"
-														: "bg-pink-50 text-pink-800 border-pink-100";
+											{/* Saved Searches */}
+											<View className="mt-5">
+												<SectionHeader title="RICERCHE SALVATE" />
+												{SAVED_SEARCHES.map((item, index) => {
+													const route = `${item.from} - ${item.to}`;
+													const badge = item.to.split(" ")[0]; // Take first word of destination as badge
+													const colorClass =
+														index % 2 === 0
+															? "bg-teal-50 text-teal-800 border-teal-100"
+															: "bg-pink-50 text-pink-800 border-pink-100";
 
-												return (
-													<SavedSearchItem
+													return (
+														<SavedSearchItem
+															key={index}
+															route={route}
+															badge={badge}
+															colorClass={colorClass}
+															onPress={() =>
+																handleRouteSelect(item.from, item.to)
+															}
+														/>
+													);
+												})}
+											</View>
+
+											{/* Last Searches */}
+											<View className="mt-6">
+												<SectionHeader title="ULTIME RICERCHE" />
+												{RECENT_SEARCHES.map((item, index) => (
+													<SearchListItem
 														key={index}
-														route={route}
-														badge={badge}
-														colorClass={colorClass}
-														onPress={() =>
-															handleRouteSelect(item.from, item.to)
-														}
+														text={`${item.from} - ${item.to}`}
+														iconName="schedule"
+														weight={300}
+														onPress={() => handleRouteSelect(item.from, item.to)}
 													/>
-												);
-											})}
-										</View>
+												))}
+											</View>
 
-										{/* Last Searches */}
-										<View className="mt-6">
-											<SectionHeader title="ULTIME RICERCHE" />
-											{RECENT_SEARCHES.map((item, index) => (
-												<SearchListItem
-													key={index}
-													text={`${item.from} - ${item.to}`}
-													iconName="schedule"
-													weight={300}
-													onPress={() => handleRouteSelect(item.from, item.to)}
-												/>
-											))}
+											<View className="mt-6">
+												<SectionHeader title="STAZIONI" />
+											</View>
 										</View>
-
-										{/* Stations */}
-										<View className="mt-6">
-											<SectionHeader title="STAZIONI" />
-											{STATIONS.map((item, index) => (
-												<SearchListItem
-													key={index}
-													text={item}
-													weight={300}
-													onPress={() => handleStationSelect(item)}
-												/>
-											))}
-										</View>
-									</View>
-								)}
-							</ScrollView>
+									}
+									renderItem={({ item }) => (
+										<SearchListItem
+											text={item}
+											weight={300}
+											onPress={() => handleStationSelect(item)}
+										/>
+									)}
+								/>
+							)}
 						</>
 					) : (
 						<>
@@ -567,7 +579,7 @@ export function SearchModal({
 													</ThemedText>
 												</View>
 												<ThemedText className="flex-1 text-[14px] font-plus-jakarta-semibold !text-gray-950 ml-2">
-													{fromText || "Milano Centrale"}
+													{fromText || STATIONS[0]}
 												</ThemedText>
 											</Pressable>
 											<Pressable
@@ -751,7 +763,7 @@ export function SearchModal({
 									<View className="mt-4 flex-row gap-2">
 										<Icon name="info" size={18} className="!text-gray-400" />
 										<ThemedText className="flex-1 text-[12px] font-plus-jakarta-medium !text-gray-500 !leading-tight">
-											Prima di procedere con l'acquisto consulta le{" "}
+											Prima di procedere con l&apos;acquisto consulta le{" "}
 											<ThemedText className="!text-red-700 underline">
 												Modifiche della Circolazione Programmata
 											</ThemedText>
@@ -979,7 +991,7 @@ export function SearchModal({
 						<View className="border-t border-gray-100 mt-28 px-0 pt-4 pb-6 -mx-6">
 							<View className="pl-12 mb-6">
 								<ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-950">
-									Scegli l'ora
+									Scegli l&apos;ora
 								</ThemedText>
 							</View>
 							<ScrollView
@@ -1244,7 +1256,7 @@ export function SearchModal({
 					departureDate={departureDate}
 					adults={adults}
 					youths={youths}
-					children={children}
+					childrenCount={children}
 				/>
 				{/* Passengers Bottom Sheet */}
 				<BottomSheet

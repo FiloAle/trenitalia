@@ -37,7 +37,7 @@ export function TimerBar({ endTime, onExpire }: TimerBarProps) {
 	return (
 		<View className="flex-row items-center justify-between bg-[#f0f4f4] px-5 py-3">
 			<ThemedText className="font-plus-jakarta-medium text-[15px] !text-gray-900">
-				Completa l'acquisto entro
+				Completa l&apos;acquisto entro
 			</ThemedText>
 			<ThemedText className="font-plus-jakarta-bold text-[16px] !text-gray-950">
 				{formattedTime}

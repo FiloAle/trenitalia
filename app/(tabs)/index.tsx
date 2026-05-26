@@ -61,7 +61,7 @@ export default function HomeScreen() {
 									Scopri di più
 								</ThemedText>
 								<ThemedText className="text-[7px] mt-2 font-plus-jakarta-medium !text-white text-center">
-									L'offerta è soggetta a condizioni e limitazioni
+									L&apos;offerta è soggetta a condizioni e limitazioni
 								</ThemedText>
 							</View>
 						</View>

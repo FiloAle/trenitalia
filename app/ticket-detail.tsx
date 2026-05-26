@@ -1,12 +1,15 @@
 import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
+import { TicketCard } from "@/components/ticket-detail/ticket-card";
+import { TicketBottomActions } from "@/components/ticket-detail/ticket-bottom-actions";
+import { STATIONS } from "@/constants/stations";
+import { USER_DATA } from "@/constants/user";
 import { MainButton } from "@/components/ui/main-button";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { Image, Pressable, ScrollView, View } from "react-native";
-import QRCode from "react-native-qrcode-svg";
+import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TicketDetailScreen() {
@@ -16,7 +19,7 @@ export default function TicketDetailScreen() {
 	const [isDettagliOpen, setIsDettagliOpen] = useState(false);
 
 	// Extract data from params with fallbacks matching the screenshot
-	const routeStr = (params.route as string) || "Milano Centrale - Cesena";
+	const routeStr = (params.route as string) || `${STATIONS[0]} - ${STATIONS[4]}`;
 	const [origin, destination] = routeStr.split(" - ");
 	const timeStr = (params.time as string) || "18:35 - 21:27";
 	const [departureTime, arrivalTime] = timeStr.split(" - ");
@@ -49,8 +52,8 @@ export default function TicketDetailScreen() {
 					<Icon name="ios_share" size={28} color="white" />
 				</Pressable>
 				<View className="items-center">
-					<ThemedText className="text-lg font-plus-jakarta-bold !text-white">
-						Mario Rossi
+					<ThemedText className="text-[15px] font-plus-jakarta-bold !text-white uppercase">
+						{USER_DATA.firstName} {USER_DATA.lastName}
 					</ThemedText>
 					<ThemedText className="text-sm font-plus-jakarta-medium !text-white">
 						Adulto
@@ -67,138 +70,18 @@ export default function TicketDetailScreen() {
 				contentContainerStyle={{ paddingBottom: 220 }}
 			>
 				{/* Main Ticket Card */}
-				<View className="mt-4 overflow-hidden rounded-xl bg-white shadow-sm">
-					{/* Top row: Train and Date */}
-					<View className="flex-row items-center justify-between border-b border-gray-100 p-5">
-						<View className="flex-row items-center">
-							<View>
-								<Image 
-									source={require("../assets/logos/frecciarossa.png")} 
-									style={{ width: 100, height: 16 }} 
-									resizeMode="contain"
-								/>
-							</View>
-							<ThemedText className="ml-2 text-sm font-plus-jakarta-bold !text-gray-900">
-								8825
-							</ThemedText>
-						</View>
-						<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-900">
-							{dateString}
-						</ThemedText>
-					</View>
-
-					{/* Middle section: Route and Times */}
-					<View className="p-5">
-						<View className="flex-row items-center justify-between mb-4">
-							<View className="flex-1">
-								<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-900">
-									{origin}
-								</ThemedText>
-								<ThemedText className="text-3xl font-plus-jakarta-bold !text-gray-900 mt-1">
-									{departureTime}
-								</ThemedText>
-							</View>
-
-							<View className="px-4">
-								<Icon name="arrow_forward" size={24} color="#9ca3af" />
-							</View>
-
-							<View className="flex-1 items-end">
-								<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-900">
-									{destination}
-								</ThemedText>
-								<ThemedText className="text-3xl font-plus-jakarta-bold !text-gray-900 mt-1">
-									{arrivalTime}
-								</ThemedText>
-							</View>
-						</View>
-
-						{/* Codes row */}
-						<View className="flex-row justify-between mb-6 gap-2">
-							<View className="flex-1 rounded-lg bg-gray-100 p-3">
-								<View className="flex-row items-center justify-between mb-1">
-									<ThemedText className="text-xs font-plus-jakarta-medium !text-gray-500">
-										PNR
-									</ThemedText>
-									<Icon name="content_copy" size={12} color="#6b7280" />
-								</View>
-								<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-900">
-									F34VNN
-								</ThemedText>
-							</View>
-							<View className="flex-1 rounded-lg bg-gray-100 p-3">
-								<ThemedText className="text-xs font-plus-jakarta-medium !text-gray-500 mb-1">
-									CP
-								</ThemedText>
-								<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-900">
-									891801
-								</ThemedText>
-							</View>
-							<View className="flex-1 rounded-lg bg-gray-100 p-3">
-								<ThemedText className="text-xs font-plus-jakarta-medium !text-gray-500 mb-1">
-									CARR.-POSTO
-								</ThemedText>
-								<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-900">
-									7-15D
-								</ThemedText>
-							</View>
-						</View>
-
-						{/* QR Code Block */}
-						<Pressable 
-							className="items-center justify-center py-0"
-							onPress={() => router.push({ pathname: "/qr-code", params: { pnr: "F34VNN" } })}
-						>
-							<QRCode
-								value="F34VNN"
-								size={100}
-								color="black"
-								backgroundColor="white"
-							/>
-						</Pressable>
-					</View>
-
-					{/* Ticket Type and Price */}
-					<View className="flex-row items-center justify-between border-t border-gray-100 p-5">
-						<View className="flex-row items-center">
-							<Icon name="confirmation_number" size={24} color="#000" />
-							<ThemedText className="ml-2 text-sm font-plus-jakarta-medium !text-gray-900">
-								STANDARD / Super Economy
-							</ThemedText>
-						</View>
-						<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-900">
-							19,70€
-						</ThemedText>
-					</View>
-
-					{/* Maggiori Dettagli */}
-					<Pressable 
-						className="border-t border-gray-100 py-4 active:bg-gray-50"
-						onPress={() => setIsDettagliOpen(true)}
-					>
-						<ThemedText className="text-center text-[15px] font-plus-jakarta-bold !text-gray-900">
-							Maggiori Dettagli
-						</ThemedText>
-					</Pressable>
-				</View>
+				<TicketCard
+					dateString={dateString}
+					origin={origin}
+					destination={destination}
+					departureTime={departureTime}
+					arrivalTime={arrivalTime}
+					onOpenDettagli={() => setIsDettagliOpen(true)}
+				/>
 			</ScrollView>
 
 			{/* Bottom Fixed Actions */}
-			<View className="absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4">
-				<Pressable className="mb-3 !h-16 flex-row items-center justify-center rounded-xl bg-[#1c1c1e] active:opacity-80 shadow-md">
-					{/* Wallet Icon approximation using SVG or generic Icon */}
-					<Icon name="wallet" size={24} color="white" className="mr-2" />
-					<ThemedText className="text-[20px] font-plus-jakarta-bold !text-white">
-						Aggiungi a Wallet
-					</ThemedText>
-				</Pressable>
-				
-				<MainButton 
-					title="Gestisci" 
-					className="!h-16" 
-					onPress={() => setIsGestisciOpen(true)} 
-				/>
-			</View>
+			<TicketBottomActions onGestisci={() => setIsGestisciOpen(true)} />
 
 			{/* Bottom Sheets */}
 			<BottomSheet 
@@ -217,7 +100,7 @@ export default function TicketDetailScreen() {
 							// Give modal time to close before navigating
 							setTimeout(() => {
 								router.push({
-									pathname: "/add-services",
+									pathname: "/add-services" as any,
 									params: { endTime: Date.now() + 10 * 60 * 1000 }
 								});
 							}, 300);

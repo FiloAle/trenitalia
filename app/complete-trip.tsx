@@ -1,6 +1,8 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
+import { PassengerSelection } from "@/components/complete-trip/passenger-selection";
+import { STATIONS } from "@/constants/stations";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Image, Pressable, ScrollView, View } from "react-native";
@@ -38,7 +40,7 @@ export default function CompleteTripScreen() {
 							<ThemedText className="text-lg font-plus-jakarta-bold !text-gray-950 mr-2">
 								Viaggia con il tuo cane
 							</ThemedText>
-							<Icon name="info_outline" size={18} color="#4b5563" />
+							<Icon name="info" size={18} color="#4b5563" />
 						</View>
 						<Icon name="expand_less" size={24} color="#4b5563" />
 					</View>
@@ -60,7 +62,7 @@ export default function CompleteTripScreen() {
 						</ThemedText>
 					</View>
 					<ThemedText className="text-base font-plus-jakarta-bold !text-gray-950 mb-1">
-						Milano Centrale - Cesena
+						{STATIONS[0]} - {STATIONS[4]}
 					</ThemedText>
 					<View className="flex-row items-center">
 						<Icon name="calendar_today" size={16} color="#4b5563" className="mr-1" />
@@ -75,62 +77,11 @@ export default function CompleteTripScreen() {
 				</View>
 
 				{/* Passenger Selection */}
-				<View className="px-5 py-6">
-					<ThemedText className="text-[15px] font-plus-jakarta-medium !text-gray-600 mb-6">
-						Seleziona i passeggeri che viaggiano con il cane
-					</ThemedText>
-
-					<View className="flex-row items-center justify-between mb-6">
-						<View className="flex-row items-center">
-							<View className="h-12 w-12 rounded-full bg-[#005045]/10 items-center justify-center mr-3">
-								<ThemedText className="font-plus-jakarta-bold text-[#005045]">
-									MR
-								</ThemedText>
-							</View>
-							<View>
-								<ThemedText className="text-base font-plus-jakarta-bold !text-gray-950 uppercase">
-									Mario Rossi
-								</ThemedText>
-								<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-600">
-									Adulto
-								</ThemedText>
-							</View>
-						</View>
-
-						<View className="flex-row items-center">
-							<ThemedText className="text-base font-plus-jakarta-medium !text-gray-600 mr-3">
-								{price.toFixed(2).replace(".", ",")}€
-							</ThemedText>
-							{/* Mock Checkbox */}
-							<View className="h-5 w-5 rounded bg-[#005045] items-center justify-center">
-								<Icon name="check" size={16} color="white" weight={600} />
-							</View>
-						</View>
-					</View>
-
-					{/* Tipologia Box */}
-					<View className="border border-gray-200 rounded-lg p-3 mb-8">
-						<ThemedText className="text-xs font-plus-jakarta-medium !text-gray-500 mb-1">
-							Tipologia
-						</ThemedText>
-						<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-400">
-							Viaggia con il tuo cane
-						</ThemedText>
-					</View>
-
-					{/* Terms */}
-					<Pressable
-						className="flex-row items-center"
-						onPress={() => setAcceptedTerms(!acceptedTerms)}
-					>
-						<View className={`h-5 w-5 rounded items-center justify-center mr-3 border ${acceptedTerms ? 'bg-[#005045] border-[#005045]' : 'border-gray-400'}`}>
-							{acceptedTerms && <Icon name="check" size={16} color="white" weight={600} />}
-						</View>
-						<ThemedText className="text-[15px] font-plus-jakarta-medium !text-gray-700">
-							Ho letto le <ThemedText className="!text-[#8a052b] underline">condizioni di utilizzo</ThemedText>
-						</ThemedText>
-					</Pressable>
-				</View>
+				<PassengerSelection
+					price={price}
+					acceptedTerms={acceptedTerms}
+					onToggleTerms={() => setAcceptedTerms(!acceptedTerms)}
+				/>
 			</ScrollView>
 
 			{/* Bottom Footer */}
@@ -148,7 +99,7 @@ export default function CompleteTripScreen() {
 						title="Conferma"
 						onPress={() => {
 							router.push({
-								pathname: "/summary",
+								pathname: "/summary" as any,
 								params: { endTime, price },
 							});
 						}}

@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import { TimerBar } from "@/components/ui/timer-bar";
+import { ServiceCard } from "@/components/services/service-card";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -72,69 +73,14 @@ export default function AddServicesScreen() {
 				</ThemedText>
 
 				<View className="gap-4">
-					{services.map((service) => {
-						const isSelected = selectedService === service.id;
-
-						return (
-							<Pressable
-								key={service.id}
-								onPress={() => setSelectedService(service.id)}
-								className={`overflow-hidden rounded-xl bg-white border-2 flex-row ${
-									isSelected ? "border-[#005045]" : "border-gray-200"
-								}`}
-							>
-								{/* Placeholder for left image */}
-								<View
-									className="w-28"
-									style={{ backgroundColor: service.imageBg }}
-								/>
-
-								<View className="flex-1 p-4">
-									<View className="flex-row items-start justify-between">
-										<ThemedText className="flex-1 pr-2 text-base font-plus-jakarta-bold !text-gray-950">
-											{service.title}
-										</ThemedText>
-										{!isSelected && (
-											<Icon name="favorite_border" size={24} color="#1f2937" />
-										)}
-									</View>
-
-									<ThemedText className="mt-1 text-sm font-plus-jakarta-medium !text-gray-600">
-										{service.description}
-									</ThemedText>
-
-									<View className="mt-4 flex-row items-center justify-between">
-										{service.priceLabel ? (
-											<View className="rounded bg-blue-50 px-2 py-1">
-												<ThemedText className="text-xs font-plus-jakarta-bold !text-blue-900">
-													{service.priceLabel}
-												</ThemedText>
-											</View>
-										) : (
-											<ThemedText className="text-base font-plus-jakarta-bold !text-gray-950">
-												{service.price.toFixed(2).replace(".", ",")} €
-											</ThemedText>
-										)}
-
-										{isSelected ? (
-											<View className="flex-row items-center gap-3">
-												<View className="rounded bg-[#005045]/20 px-3 py-1">
-													<ThemedText className="text-sm font-plus-jakarta-bold !text-[#005045]">
-														Aggiunto
-													</ThemedText>
-												</View>
-												<Pressable onPress={() => setSelectedService(null)}>
-													<Icon name="delete_outline" size={24} color="#1f2937" />
-												</Pressable>
-											</View>
-										) : (
-											<Icon name="add" size={24} color="#1f2937" />
-										)}
-									</View>
-								</View>
-							</Pressable>
-						);
-					})}
+					{services.map((service) => (
+						<ServiceCard
+							key={service.id}
+							service={service}
+							isSelected={selectedService === service.id}
+							onSelect={setSelectedService}
+						/>
+					))}
 				</View>
 			</ScrollView>
 
@@ -154,7 +100,7 @@ export default function AddServicesScreen() {
 						onPress={() => {
 							if (selectedService) {
 								router.push({
-									pathname: "/complete-trip",
+									pathname: "/complete-trip" as any,
 									params: { endTime, service: selectedService, price: selectedPrice },
 								});
 							}

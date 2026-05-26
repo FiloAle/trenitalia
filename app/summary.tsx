@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import { TimerBar } from "@/components/ui/timer-bar";
+import { STATIONS } from "@/constants/stations";
 import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
 import { Image, Pressable, ScrollView, View } from "react-native";
@@ -47,8 +48,8 @@ export default function SummaryScreen() {
 						</ThemedText>
 					</View>
 
-					<ThemedText className="text-lg font-plus-jakarta-bold !text-gray-950 mb-4">
-						Milano Centrale - Cesena
+					<ThemedText className="text-base font-plus-jakarta-bold !text-gray-950 mb-1">
+						{STATIONS[0]} - {STATIONS[4]}
 					</ThemedText>
 
 					{/* Andata / Ritorno Switch */}
@@ -77,7 +78,7 @@ export default function SummaryScreen() {
 							<ThemedText className="text-[15px] font-plus-jakarta-medium !text-gray-600 mr-1">
 								Biglietto Singolo
 							</ThemedText>
-							<Icon name="info_outline" size={16} color="#9ca3af" />
+							<Icon name="info" size={16} color="#9ca3af" />
 						</View>
 
 						<View className="flex-row items-center justify-between">
@@ -92,8 +93,8 @@ export default function SummaryScreen() {
 										8825
 									</ThemedText>
 								</View>
-								<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950 mb-1">
-									Milano Centrale - Cesena
+								<ThemedText className="text-[13px] font-plus-jakarta-bold !text-gray-950">
+									{STATIONS[0]} - {STATIONS[4]}
 								</ThemedText>
 								<View className="flex-row items-center">
 									<Icon name="calendar_today" size={14} color="#4b5563" className="mr-1" />
@@ -125,7 +126,7 @@ export default function SummaryScreen() {
 						<ThemedText className="text-[16px] font-plus-jakarta-medium !text-gray-950 mr-1">
 							Viaggio da modificare
 						</ThemedText>
-						<Icon name="info_outline" size={16} color="#9ca3af" />
+						<Icon name="info" size={16} color="#9ca3af" />
 					</View>
 					<ThemedText className="text-[16px] font-plus-jakarta-bold !text-gray-950">
 						38,70 €

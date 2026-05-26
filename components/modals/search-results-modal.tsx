@@ -70,7 +70,7 @@ interface SearchResultsModalProps {
 	departureDate: Date;
 	adults: number;
 	youths: number;
-	children: number;
+	childrenCount: number;
 }
 
 export function SearchResultsModal({
@@ -81,7 +81,7 @@ export function SearchResultsModal({
 	departureDate,
 	adults,
 	youths,
-	children,
+	childrenCount,
 }: SearchResultsModalProps) {
 	const insets = useSafeAreaInsets();
 	const [showFilters, setShowFilters] = useState(false);
@@ -166,7 +166,7 @@ export function SearchResultsModal({
 	const passengerText = [
 		adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : "",
 		youths > 0 ? `${youths} Ragazz${youths > 1 ? "i" : "o"}` : "",
-		children > 0 ? `${children} Bambin${children > 1 ? "i" : "o"}` : "",
+		childrenCount > 0 ? `${childrenCount} Bambin${childrenCount > 1 ? "i" : "o"}` : "",
 	]
 		.filter(Boolean)
 		.join(", ");

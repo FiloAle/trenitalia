@@ -25,31 +25,31 @@ const MENU_DATA = [
 	{
 		id: "RICERCA E ACQUISTO",
 		items: [
-			{ label: "Biglietti", icon: "confirmation_number" },
+			{ label: "Biglietti", icon: "confirmation_number", action: "open_search" },
 			{ label: "Abbonamenti", icon: "credit_card" },
 			{ label: "Carnet", icon: "view_day" },
 			{ label: "Promo e Servizi", icon: "local_mall" },
 			{ label: "Carte regalo", icon: "card_giftcard" },
-			{ label: "Acquisto rapido", icon: "bolt" },
+			{ label: "Acquisto rapido", icon: "bolt", route: "/purchase" },
 			{ label: "Completa il tuo viaggio", icon: "add_circle" },
 		],
 	},
 	{
 		id: "IN VIAGGIO",
 		items: [
-			{ label: "Infomobilità", icon: "train" },
+			{ label: "Infomobilità", icon: "train", route: "/info" },
 			{ label: "In caso di sciopero", icon: "campaign" },
 			{ label: "Notizie in tempo reale", icon: "feed" },
-			{ label: "Tabellone partenze/arrivi", icon: "view_list" },
+			{ label: "Tabellone partenze/arrivi", icon: "view_list", route: "/station-board" },
 			{ label: "FrecciaPlay", icon: "play_circle" },
 		],
 	},
 	{
 		id: "LE MIE INFORMAZIONI",
 		items: [
-			{ label: "I miei viaggi", icon: "confirmation_number" },
+			{ label: "I miei viaggi", icon: "confirmation_number", route: "/trips" },
 			{ label: "Recupera biglietto", icon: "search" },
-			{ label: "CartaFreccia", icon: "credit_card" },
+			{ label: "CartaFreccia", icon: "credit_card", action: "open_loyalty" },
 			{ label: "X-GO", icon: "credit_card" },
 			{ label: "Le mie promo", icon: "loyalty" },
 			{ label: "Richiedi premio CartaFreccia", icon: "emoji_events" },
@@ -70,12 +70,15 @@ const MENU_DATA = [
 interface SubMenuItemProps {
 	label: string;
 	icon: string;
-	onPress?: () => void;
+	onItemPress?: () => void;
 }
 
-function SubMenuItem({ label, icon, onPress }: SubMenuItemProps) {
+function SubMenuItem({ label, icon, onItemPress }: SubMenuItemProps) {
 	return (
-		<Pressable onPress={onPress} className="flex-row items-center border-b border-gray-100/50 py-3 ps-2 pe-4">
+		<Pressable 
+			onPress={onItemPress}
+			className="flex-row items-center border-b border-gray-100/50 py-3 ps-2 pe-4"
+		>
 			<Icon name={icon} size={28} className="!text-gray-700" weight={300} />
 			<ThemedText className="ml-4 flex-1 text-[14px] font-plus-jakarta-medium !text-gray-700">
 				{label}
@@ -270,30 +273,24 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 											)
 										}
 									>
-										{section.items.map((item) => {
-											let onPress = undefined;
-											
-											if (item.label === "Biglietti") {
-												onPress = () => setIsSearchModalVisible(true);
-											} else if (item.label === "Acquisto rapido") {
-												onPress = () => { handleClose(); router.navigate("/purchase"); };
-											} else if (item.label === "Infomobilità") {
-												onPress = () => { handleClose(); router.navigate("/info"); };
-											} else if (item.label === "Tabellone partenze/arrivi") {
-												onPress = () => { handleClose(); router.navigate("/station-board"); };
-											} else if (item.label === "I miei viaggi") {
-												onPress = () => { handleClose(); router.navigate("/trips"); };
-											}
-
-											return (
-												<SubMenuItem
-													key={item.label}
-													label={item.label}
-													icon={item.icon}
-													onPress={onPress}
-												/>
-											);
-										})}
+										{section.items.map((item) => (
+											<SubMenuItem
+												key={item.label}
+												label={item.label}
+												icon={item.icon}
+												onItemPress={() => {
+													if (item.action === "open_loyalty") {
+														handleClose(() => {
+															if (onProfilePress) onProfilePress();
+														});
+													} else if (item.action === "open_search") {
+														setIsSearchModalVisible(true);
+													} else if (item.route) {
+														handleClose(() => router.navigate(item.route as any));
+													}
+												}}
+											/>
+										))}
 									</MenuItem>
 								))}
 								<Pressable className="border-b border-gray-100 py-3 px-5 bg-gray-100">

@@ -1,20 +1,22 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { Link } from "expo-router";
+import { MainButton } from "@/components/ui/main-button";
+import { EmptyState } from "@/components/trips/empty-state";
+import { TicketItem, TicketProps } from "@/components/trips/ticket-item";
+import { STATIONS } from "@/constants/stations";
 import React, { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MainButton } from "@/components/ui/main-button";
 
 const CHIPS = ["Biglietti", "Abbonamenti", "Carnet", "TPL", "Archivio"];
 
-const TICKETS = [
+const TICKETS: TicketProps[] = [
 	{
 		id: "1",
 		day: "29",
 		month: "Apr",
 		type: "Biglietto",
-		route: "Milano Centrale - Cesena",
+		route: `${STATIONS[0]} - ${STATIONS[4]}`,
 		time: "18:35 - 21:27",
 		details: "Diretto",
 	},
@@ -23,7 +25,7 @@ const TICKETS = [
 		day: "3",
 		month: "Mag",
 		type: "Biglietto",
-		route: "Cesena - Milano Centrale",
+		route: `${STATIONS[4]} - ${STATIONS[0]}`,
 		time: "07:27 - 10:10",
 		details: "Diretto",
 	},
@@ -32,7 +34,7 @@ const TICKETS = [
 		day: "28",
 		month: "Mag",
 		type: "Biglietto",
-		route: "Milano Centrale - Cesena",
+		route: `${STATIONS[0]} - ${STATIONS[4]}`,
 		time: "18:35 - 21:27",
 		details: "Diretto",
 	},
@@ -41,7 +43,7 @@ const TICKETS = [
 		day: "2",
 		month: "Giu",
 		type: "Biglietto",
-		route: "Cesena - Milano Centrale",
+		route: `${STATIONS[4]} - ${STATIONS[0]}`,
 		time: "08:28 - 11:10",
 		details: "Diretto",
 	},
@@ -110,75 +112,11 @@ export default function TripsScreen() {
 
 						{/* Tickets List */}
 						{TICKETS.map((ticket) => (
-							<Link
-								key={ticket.id}
-								href={{
-									pathname: "/ticket-detail",
-									params: {
-										id: ticket.id,
-										day: ticket.day,
-										month: ticket.month,
-										type: ticket.type,
-										route: ticket.route,
-										time: ticket.time,
-										details: ticket.details,
-									},
-								}}
-								asChild
-							>
-								<Pressable className="flex-row rounded-lg border border-gray-100 bg-white p-4">
-								{/* Date column */}
-								<View className="mr-4 items-center border-r border-gray-100 pr-4">
-									<ThemedText className="text-2xl font-plus-jakarta-bold !text-gray-900">
-										{ticket.day}
-									</ThemedText>
-									<ThemedText className="text-sm font-plus-jakarta-semibold !text-gray-900">
-										{ticket.month}
-									</ThemedText>
-								</View>
-
-								{/* Info column */}
-								<View className="flex-1">
-									<ThemedText className="mb-0.5 text-xs font-plus-jakarta-medium !text-gray-500">
-										{ticket.type}
-									</ThemedText>
-									<ThemedText className="mb-1 text-[15px] font-plus-jakarta-bold !text-gray-950">
-										{ticket.route}
-									</ThemedText>
-									<View className="flex-row items-center">
-										<ThemedText className="mr-2 text-sm font-plus-jakarta-medium !text-gray-500">
-											{ticket.time} · {ticket.details}
-										</ThemedText>
-										<Icon name="cloud" size={16} color="#9ca3af" />
-									</View>
-								</View>
-								</Pressable>
-							</Link>
+							<TicketItem key={ticket.id} ticket={ticket} />
 						))}
 					</>
 				) : (
-					<View className="mt-20 items-center justify-center px-10">
-						<Icon
-							name={
-								activeChip === "Abbonamenti"
-									? "card_membership"
-									: activeChip === "Carnet"
-										? "view_day"
-										: activeChip === "TPL"
-											? "directions_bus"
-											: "archive"
-							}
-							size={64}
-							color="#d1d5db"
-						/>
-						<ThemedText className="mt-6 text-center text-xl font-plus-jakarta-bold !text-gray-950">
-							Nessun {activeChip.toLowerCase()} trovato
-						</ThemedText>
-						<ThemedText className="mt-2 text-center font-plus-jakarta-medium !text-gray-500">
-							Una volta acquistato un {activeChip.toLowerCase()} lo potrai
-							vedere qui
-						</ThemedText>
-					</View>
+					<EmptyState activeChip={activeChip} />
 				)}
 			</ScrollView>
 

@@ -127,4 +127,6 @@ export const Icon = React.forwardRef<any, IconProps>(
 	},
 );
 
+Icon.displayName = "Icon";
+
 export default Icon;
