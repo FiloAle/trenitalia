@@ -13,7 +13,9 @@ import {
 	TouchableWithoutFeedback,
 	View,
 } from "react-native";
+import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SearchModal } from "@/components/modals/search-modal";
 
 import { USER_DATA, getInitials } from "@/constants/user";
 
@@ -68,11 +70,12 @@ const MENU_DATA = [
 interface SubMenuItemProps {
 	label: string;
 	icon: string;
+	onPress?: () => void;
 }
 
-function SubMenuItem({ label, icon }: SubMenuItemProps) {
+function SubMenuItem({ label, icon, onPress }: SubMenuItemProps) {
 	return (
-		<Pressable className="flex-row items-center border-b border-gray-100/50 py-3 ps-2 pe-4">
+		<Pressable onPress={onPress} className="flex-row items-center border-b border-gray-100/50 py-3 ps-2 pe-4">
 			<Icon name={icon} size={28} className="!text-gray-700" weight={300} />
 			<ThemedText className="ml-4 flex-1 text-[14px] font-plus-jakarta-medium !text-gray-700">
 				{label}
@@ -127,6 +130,7 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 	const [openSection, setOpenSection] = React.useState<string | null>(
 		"RICERCA E ACQUISTO",
 	);
+	const [isSearchModalVisible, setIsSearchModalVisible] = React.useState(false);
 	const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 	const useNativeDriver = Platform.OS !== "web";
@@ -266,13 +270,30 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 											)
 										}
 									>
-										{section.items.map((item) => (
-											<SubMenuItem
-												key={item.label}
-												label={item.label}
-												icon={item.icon}
-											/>
-										))}
+										{section.items.map((item) => {
+											let onPress = undefined;
+											
+											if (item.label === "Biglietti") {
+												onPress = () => setIsSearchModalVisible(true);
+											} else if (item.label === "Acquisto rapido") {
+												onPress = () => { handleClose(); router.navigate("/purchase"); };
+											} else if (item.label === "Infomobilità") {
+												onPress = () => { handleClose(); router.navigate("/info"); };
+											} else if (item.label === "Tabellone partenze/arrivi") {
+												onPress = () => { handleClose(); router.navigate("/station-board"); };
+											} else if (item.label === "I miei viaggi") {
+												onPress = () => { handleClose(); router.navigate("/trips"); };
+											}
+
+											return (
+												<SubMenuItem
+													key={item.label}
+													label={item.label}
+													icon={item.icon}
+													onPress={onPress}
+												/>
+											);
+										})}
 									</MenuItem>
 								))}
 								<Pressable className="border-b border-gray-100 py-3 px-5 bg-gray-100">
@@ -302,6 +323,11 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 					</View>
 				</Animated.View>
 			</View>
+
+			<SearchModal 
+				isVisible={isSearchModalVisible}
+				onClose={() => setIsSearchModalVisible(false)}
+			/>
 		</View>
 	);
 }

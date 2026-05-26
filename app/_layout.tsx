@@ -82,6 +82,8 @@ export default function RootLayout() {
 				<Stack.Screen name="add-services" options={{ headerShown: false }} />
 				<Stack.Screen name="complete-trip" options={{ headerShown: false }} />
 				<Stack.Screen name="summary" options={{ headerShown: false }} />
+				<Stack.Screen name="train-details" options={{ headerShown: false }} />
+				<Stack.Screen name="station-board" options={{ headerShown: false }} />
 				<Stack.Screen name="+not-found" />
 			</Stack>
 			<StatusBar style="dark" />

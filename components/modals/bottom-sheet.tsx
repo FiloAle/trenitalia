@@ -17,8 +17,9 @@ const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 interface BottomSheetProps {
 	isVisible: boolean;
 	onClose: () => void;
-	title: string;
+	title?: string;
 	children: React.ReactNode;
+	hideCloseButton?: boolean;
 }
 
 export function BottomSheet({
@@ -26,6 +27,7 @@ export function BottomSheet({
 	onClose,
 	title,
 	children,
+	hideCloseButton = false,
 }: BottomSheetProps) {
 	const insets = useSafeAreaInsets();
 	const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -98,19 +100,23 @@ export function BottomSheet({
 						paddingBottom: insets.bottom + 20,
 					}}
 				>
-					<View className="flex-row justify-between items-center mb-4">
-						<ThemedText className="text-[18px] font-plus-jakarta-bold !text-gray-950">
-							{title}
-						</ThemedText>
-						<Pressable onPress={handleClose}>
-							<Icon
-								name="close"
-								size={28}
-								className="!text-gray-800"
-								weight={300}
-							/>
-						</Pressable>
-					</View>
+					{(title || !hideCloseButton) && (
+						<View className="flex-row justify-between items-center mb-4">
+							<ThemedText className="text-[18px] font-plus-jakarta-bold !text-gray-950">
+								{title || ""}
+							</ThemedText>
+							{!hideCloseButton && (
+								<Pressable onPress={handleClose}>
+									<Icon
+										name="close"
+										size={28}
+										className="!text-gray-800"
+										weight={300}
+									/>
+								</Pressable>
+							)}
+						</View>
+					)}
 					{children}
 				</Animated.View>
 			</View>

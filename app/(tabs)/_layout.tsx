@@ -21,6 +21,7 @@ export default function TabLayout() {
 					headerShown: false,
 					tabBarButton: HapticTab,
 					tabBarShowLabel: true,
+					tabBarHideOnKeyboard: true,
 					tabBarLabelPosition: "below-icon",
 					tabBarLabel: ({ children, color }) => (
 						<Text
