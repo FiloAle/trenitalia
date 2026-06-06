@@ -12,6 +12,11 @@ export interface TicketProps {
 	route: string;
 	time: string;
 	details: string;
+	pnr: string;
+	trainType?: string;
+	cp?: string;
+	carrozza?: string;
+	posto?: string;
 }
 
 interface TicketItemProps {
@@ -31,6 +36,11 @@ export function TicketItem({ ticket }: TicketItemProps) {
 					route: ticket.route,
 					time: ticket.time,
 					details: ticket.details,
+					pnr: ticket.pnr,
+					trainType: ticket.trainType,
+					cp: ticket.cp,
+					carrozza: ticket.carrozza,
+					posto: ticket.posto,
 				},
 			}}
 			asChild

@@ -49,7 +49,7 @@ export default function PaymentProcessingScreen() {
 					Attendi
 				</ThemedText>
 				<ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-950 text-center leading-tight">
-					Stiamo procedendo con l'operazione.{"\n"}A breve verrai reindirizzato nella schermata{"\n"}di riepilogo.
+					Stiamo procedendo con l&apos;operazione.{"\n"}A breve verrai reindirizzato nella schermata{"\n"}di riepilogo.
 				</ThemedText>
 			</View>
 		</View>

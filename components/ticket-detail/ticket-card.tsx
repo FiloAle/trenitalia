@@ -1,9 +1,10 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { router } from "expo-router";
-import React from "react";
-import { Image, Pressable, View } from "react-native";
-import QRCode from "react-native-qrcode-svg";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Image, Pressable, View } from "react-native";
+import { USER_DATA } from "@/constants/user";
+import { generateAztec, getCachedAztec } from "@/utils/aztec";
 
 interface TicketCardProps {
 	dateString: string;
@@ -11,6 +12,11 @@ interface TicketCardProps {
 	destination: string;
 	departureTime: string;
 	arrivalTime: string;
+	pnr: string;
+	trainType?: string;
+	cp?: string;
+	carrozza?: string;
+	posto?: string;
 	onOpenDettagli: () => void;
 }
 
@@ -20,8 +26,43 @@ export function TicketCard({
 	destination,
 	departureTime,
 	arrivalTime,
+	pnr,
+	trainType = "Frecciarossa",
+	cp,
+	carrozza,
+	posto,
 	onOpenDettagli,
 }: TicketCardProps) {
+	const qrValue =
+		USER_DATA.firstName +
+		"|" +
+		USER_DATA.lastName +
+		"|" +
+		USER_DATA.loyaltyCode +
+		"|" +
+		pnr;
+
+	const getTrainLogo = () => {
+		switch (trainType) {
+			case "Regionale":
+				return require("../../assets/logos/regionale.png");
+			case "Intercity":
+				return require("../../assets/logos/intercity.png");
+			case "Frecciarossa":
+			default:
+				return require("../../assets/logos/frecciarossa.png");
+		}
+	};
+
+	const [aztecImageUri, setAztecImageUri] = useState<string | null>(getCachedAztec(qrValue, 16));
+
+	useEffect(() => {
+		// Use scale 16 here as well so it's pre-cached for the full-screen modal!
+		generateAztec(qrValue, 16)
+			.then((uri) => setAztecImageUri(uri))
+			.catch((err) => console.error("Aztec code generation error:", err));
+	}, [qrValue]);
+
 	return (
 		<View className="mt-1.5 overflow-hidden rounded-lg bg-white border border-gray-200">
 			{/* Top row: Train and Date */}
@@ -29,7 +70,7 @@ export function TicketCard({
 				<View className="flex-row items-center">
 					<View>
 						<Image
-							source={require("../../assets/logos/frecciarossa.png")}
+							source={getTrainLogo()}
 							style={{ width: 100, height: 16 }}
 							resizeMode="contain"
 						/>
@@ -82,38 +123,50 @@ export function TicketCard({
 							<Icon name="content_copy" size={14} color="#6b7280" />
 						</View>
 						<ThemedText className="text-base font-plus-jakarta-bold !text-gray-900">
-							F34VNN
+							{pnr}
 						</ThemedText>
 					</View>
-					<View className="flex-1 rounded-lg bg-gray-100 p-2">
-						<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500 mb-0.5">
-							CP
-						</ThemedText>
-						<ThemedText className="text-base font-plus-jakarta-bold !text-gray-900">
-							891801
-						</ThemedText>
-					</View>
-					<View className="flex-1 rounded-lg bg-gray-100 p-2">
-						<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500 mb-0.5" numberOfLines={1} adjustsFontSizeToFit>
-							CARR.-POSTO
-						</ThemedText>
-						<ThemedText className="text-base font-plus-jakarta-bold !text-gray-900">
-							7-15D
-						</ThemedText>
-					</View>
+					{/* Conditionally render CP */}
+					{cp && (
+						<View className="flex-1 rounded-lg bg-gray-100 p-2">
+							<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500 mb-0.5">
+								CP
+							</ThemedText>
+							<ThemedText className="text-base font-plus-jakarta-bold !text-gray-900">
+								{cp}
+							</ThemedText>
+						</View>
+					)}
+
+					{/* Conditionally render Carrozza/Posto (Not for Regionale) */}
+					{trainType !== "Regionale" && carrozza && posto && (
+						<View className="flex-1 rounded-lg bg-gray-100 p-2">
+							<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500 mb-0.5" numberOfLines={1} adjustsFontSizeToFit>
+								CARR.-POSTO
+							</ThemedText>
+							<View className="flex-row items-center justify-between">
+								<ThemedText className="text-base font-plus-jakarta-bold !text-gray-900">
+									{carrozza}-{posto}
+								</ThemedText>
+							</View>
+						</View>
+					)}
 				</View>
 
 				{/* QR Code Block */}
 				<Pressable
 					className="items-center justify-center py-3"
-					onPress={() => router.push({ pathname: "/qr-code" as any, params: { pnr: "F34VNN" } })}
+					onPress={() => router.push({ pathname: "/qr-code" as any, params: { pnr } })}
 				>
-					<QRCode
-						value="F34VNN"
-						size={100}
-						color="black"
-						backgroundColor="white"
-					/>
+					{aztecImageUri ? (
+						<Image
+							source={{ uri: aztecImageUri }}
+							style={{ width: 100, height: 100 }}
+							resizeMode="contain"
+						/>
+					) : (
+						<ActivityIndicator size="small" color="#005045" />
+					)}
 				</Pressable>
 			</View>
 

@@ -1,8 +1,8 @@
 import { ThemedText } from "@/components/themed-text";
-import { Icon } from "@/components/ui/icon";
-import { MainButton } from "@/components/ui/main-button";
 import { EmptyState } from "@/components/trips/empty-state";
 import { TicketItem, TicketProps } from "@/components/trips/ticket-item";
+import { Icon } from "@/components/ui/icon";
+import { MainButton } from "@/components/ui/main-button";
 import { STATIONS } from "@/constants/stations";
 import React, { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -19,6 +19,11 @@ const TICKETS: TicketProps[] = [
 		route: `${STATIONS[1178].name} - ${STATIONS[583].name}`,
 		time: "18:35 - 21:27",
 		details: "Diretto",
+		pnr: "Y7B9Q2",
+		trainType: "Frecciarossa",
+		cp: "891801",
+		carrozza: "7",
+		posto: "15D",
 	},
 	{
 		id: "2",
@@ -28,6 +33,11 @@ const TICKETS: TicketProps[] = [
 		route: `${STATIONS[583].name} - ${STATIONS[1178].name}`,
 		time: "07:27 - 10:10",
 		details: "Diretto",
+		pnr: "M4X8P1",
+		trainType: "Frecciarossa",
+		cp: "901234",
+		carrozza: "5",
+		posto: "8B",
 	},
 	{
 		id: "3",
@@ -37,6 +47,11 @@ const TICKETS: TicketProps[] = [
 		route: `${STATIONS[1178].name} - ${STATIONS[583].name}`,
 		time: "18:35 - 21:27",
 		details: "Diretto",
+		pnr: "K9L2W5",
+		trainType: "Frecciarossa",
+		cp: "723910",
+		carrozza: "3",
+		posto: "12A",
 	},
 	{
 		id: "4",
@@ -46,6 +61,11 @@ const TICKETS: TicketProps[] = [
 		route: `${STATIONS[583].name} - ${STATIONS[1178].name}`,
 		time: "08:28 - 11:10",
 		details: "Diretto",
+		pnr: "R3T7Z9",
+		trainType: "Frecciarossa",
+		cp: "456123",
+		carrozza: "11",
+		posto: "2C",
 	},
 ];
 
@@ -56,10 +76,7 @@ export default function TripsScreen() {
 	return (
 		<View className="flex-1 bg-white">
 			{/* Header Section */}
-			<View
-				className="bg-teal-900 pb-6"
-				style={{ paddingTop: insets.top + 4 }}
-			>
+			<View className="bg-teal-900 pb-6" style={{ paddingTop: insets.top + 4 }}>
 				<View className="h-14 flex-row items-center px-6 mb-2">
 					<ThemedText className="text-3xl font-plus-jakarta-bold !text-white">
 						I miei viaggi

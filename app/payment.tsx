@@ -160,7 +160,7 @@ export default function PaymentScreen() {
 								<ThemedText className="!text-[#c1152c] underline">
 									condizioni di trasporto
 								</ThemedText>{" "}
-								del vettore ed ho preso visione dell'informativa per la{" "}
+								del vettore ed ho preso visione dell&apos;informativa per la{" "}
 								<ThemedText className="!text-[#c1152c] underline">
 									protezione dei dati personali
 								</ThemedText>

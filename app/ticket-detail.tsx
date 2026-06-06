@@ -43,6 +43,11 @@ export default function TicketDetailScreen() {
 	const monthNum = monthMap[params.month as string] || "05";
 	const day = (params.day as string) || "28";
 	const dateString = `${day.padStart(2, "0")}/${monthNum}/2026`;
+	const pnr = (params.pnr as string) || "F34VNN";
+	const trainType = (params.trainType as string) || "Frecciarossa";
+	const cp = params.cp as string | undefined;
+	const carrozza = params.carrozza as string | undefined;
+	const posto = params.posto as string | undefined;
 
 	return (
 		<View className="flex-1 bg-white">
@@ -89,6 +94,11 @@ export default function TicketDetailScreen() {
 					destination={destination}
 					departureTime={departureTime}
 					arrivalTime={arrivalTime}
+					pnr={pnr}
+					trainType={trainType}
+					cp={cp}
+					carrozza={carrozza}
+					posto={posto}
 					onOpenDettagli={() => setIsDettagliOpen(true)}
 				/>
 			</ScrollView>
