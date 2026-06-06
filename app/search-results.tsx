@@ -1,3 +1,5 @@
+import { searchJourneys, setSelectedSolutionCache } from "@/api/search";
+import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { SectionHeader } from "@/components/search/section-header";
 import {
 	TravelSolution,
@@ -5,92 +7,94 @@ import {
 } from "@/components/search/travel-solution-card";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Dimensions, Modal, Pressable, ScrollView, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { MainButton } from "@/components/ui/main-button";
+import { router } from "expo-router";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+	ActivityIndicator,
+	Dimensions,
+	Pressable,
+	ScrollView,
+	View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const DATE_ITEM_WIDTH = 80;
 
-const MOCK_SOLUTIONS: TravelSolution[] = [
-	{
-		id: "1",
-		trains: [
-			{ type: "Intercity", number: "669" },
-			{ type: "Regionale", number: "2045" },
-		],
-		departureTime: "14:05",
-		arrivalTime: "23:48",
-		duration: "9h 43min",
-		price: 61.65,
-		offerName: "Vedi offerte",
-	},
-	{
-		id: "2",
-		trains: [{ type: "Frecciarossa", number: "9543" }],
-		departureTime: "14:10",
-		arrivalTime: "17:49",
-		duration: "3h 39min",
-		price: 86.7,
-		originalPrice: 102.0,
-		offerName: "Standard BASE",
-		delay: "+2 MIN",
-	},
-	{
-		id: "3",
-		trains: [{ type: "Frecciarossa", number: "9639" }],
-		departureTime: "14:30",
-		arrivalTime: "17:40",
-		duration: "3h 10min",
-		price: 118.2,
-		originalPrice: 139.0,
-		offerName: "Business BASE",
-		status: "not_started",
-	},
-	{
-		id: "4",
-		trains: [{ type: "Frecciarossa", number: "9641" }],
-		departureTime: "15:00",
-		arrivalTime: "18:15",
-		duration: "3h 15min",
-		price: 86.7,
-		originalPrice: 102.0,
-		offerName: "Standard BASE",
-		delay: "+2 MIN",
-	},
-];
+// MOCK_SOLUTIONS removed in favor of live API
 
-interface SearchResultsModalProps {
-	isVisible: boolean;
-	onClose: () => void;
-	route: { from: string; to: string };
-	travelType: string;
-	departureDate: Date;
-	adults: number;
-	youths: number;
-	childrenCount: number;
-}
+import { useLocalSearchParams } from "expo-router";
 
-export function SearchResultsModal({
-	isVisible,
-	onClose,
-	route,
-	travelType: initialTravelType,
-	departureDate,
-	adults,
-	youths,
-	childrenCount,
-}: SearchResultsModalProps) {
+export default function SearchResultsScreen() {
+	const params = useLocalSearchParams();
+	const from = (params.from as string) || "";
+	const to = (params.to as string) || "";
+	const dateStr = params.dateStr as string;
+	const passengerText = (params.passengerText as string) || "1 Adulto";
+
+	const route = { from, to };
+	const departureDate = dateStr ? new Date(dateStr) : new Date();
+
 	const insets = useSafeAreaInsets();
 	const [showFilters, setShowFilters] = useState(false);
-	const [activeTravelType, setActiveTravelType] = useState(initialTravelType);
+	const [activeTravelType, setActiveTravelType] = useState(
+		"Principali Soluzioni",
+	);
 
 	const [localFrom, setLocalFrom] = useState(route.from);
 	const [localTo, setLocalTo] = useState(route.to);
 	const [currentSelectedDate, setCurrentSelectedDate] = useState(departureDate);
+	const [solutions, setSolutions] = useState<TravelSolution[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
 	const dateScrollRef = useRef<ScrollView>(null);
+
+	const fetchSolutions = async () => {
+		setIsLoading(true);
+		try {
+			const result = await searchJourneys(
+				localFrom,
+				localTo,
+				currentSelectedDate,
+			);
+			if (result.data && result.data.routes) {
+				const mapped: TravelSolution[] = result.data.routes.map(
+					(r: any, idx: number) => {
+						const parsedPrice = r.pr ? parseFloat(r.pr.replace(",", ".")) : 0;
+						return {
+							id: r.dx.toString() + r.ns + idx,
+							trains: r.l.map((leg: any) => ({
+								type: leg.ts,
+								number: leg.n,
+								origin: leg.ds,
+								destination: leg.as,
+								departureTime: leg.dt,
+								arrivalTime: leg.at,
+							})),
+							departureTime: r.dt,
+							arrivalTime: r.at,
+							duration: r.dur.replace("'", "min").replace("h", "h "),
+							price: isNaN(parsedPrice) ? 0 : parsedPrice,
+							offerName: r.tk?.[0]?.sf || r.tk?.[0]?.c?.[0] || "Standard",
+							tickets: r.tk || [],
+						};
+					},
+				);
+				setSolutions(mapped);
+			} else {
+				setSolutions([]);
+			}
+		} catch (err: any) {
+			console.error(err);
+			setSolutions([]);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchSolutions();
+	}, [localFrom, localTo, currentSelectedDate]);
 
 	// Generate dates from today - 2 to today + 365
 	const dates = useMemo(() => {
@@ -130,10 +134,10 @@ export function SearchResultsModal({
 	};
 
 	useEffect(() => {
-		if (isVisible && selectedDateIndex !== -1 && dateScrollRef.current) {
+		if (selectedDateIndex !== -1 && dateScrollRef.current) {
 			scrollToDate(selectedDateIndex, false);
 		}
-	}, [isVisible, selectedDateIndex, snapOffsets]);
+	}, [selectedDateIndex, snapOffsets]);
 
 	// Formatters
 	const formatDisplayDate = (date: Date) => {
@@ -163,27 +167,11 @@ export function SearchResultsModal({
 		return `${days[date.getDay()]} ${date.getDate()}`;
 	};
 
-	const passengerText = [
-		adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : "",
-		youths > 0 ? `${youths} Ragazz${youths > 1 ? "i" : "o"}` : "",
-		childrenCount > 0 ? `${childrenCount} Bambin${childrenCount > 1 ? "i" : "o"}` : "",
-	]
-		.filter(Boolean)
-		.join(", ");
-
 	const isPast = (d: Date) => {
 		const now = new Date();
 		now.setHours(0, 0, 0, 0);
 		return d < now;
 	};
-
-	// Update local state when prop changes
-	React.useEffect(() => {
-		setActiveTravelType(initialTravelType);
-		setLocalFrom(route.from);
-		setLocalTo(route.to);
-		setCurrentSelectedDate(departureDate);
-	}, [initialTravelType, route, isVisible, departureDate]);
 
 	const handleSwitch = () => {
 		const temp = localFrom;
@@ -191,89 +179,95 @@ export function SearchResultsModal({
 		setLocalTo(temp);
 	};
 
-	const filteredSolutions = MOCK_SOLUTIONS.filter((sol) => {
-		if (activeTravelType === "Principali Soluzioni") return true;
-		if (activeTravelType === "Frecce") {
-			return sol.trains.every((t) => t.type.includes("Freccia"));
-		}
-		if (activeTravelType === "Intercity") {
-			return sol.trains.every((t) => t.type === "Intercity");
-		}
-		if (activeTravelType === "Regionali") {
-			return sol.trains.every((t) => t.type === "Regionale");
-		}
-		return true;
-	});
+	const filteredSolutions = solutions
+		.filter((sol) => {
+			if (activeTravelType === "Principali Soluzioni") return true;
+			if (activeTravelType === "Frecce") {
+				return sol.trains.every((t) => t.type.includes("Freccia"));
+			}
+			if (activeTravelType === "Intercity") {
+				return sol.trains.every((t) => t.type === "Intercity");
+			}
+			if (activeTravelType === "Regionali") {
+				return sol.trains.every((t) => t.type === "Regionale");
+			}
+			return true;
+		})
+		.filter(
+			(solution: TravelSolution) =>
+				!solution.trains.some((t) => t.type.toLowerCase().includes("italo")),
+		);
 
 	return (
-		<Modal visible={isVisible} animationType="slide" transparent={false}>
-			<View className="flex-1 bg-white">
-				{/* Top Green Header */}
-				<View className="bg-[#004a4d] px-5" style={{ paddingTop: insets.top }}>
-					{/* Navigation Row */}
-					<View className="flex-row items-center justify-between relative">
-						<Pressable onPress={onClose} className="p-2 -ml-2 z-10">
-							<Icon name="arrow_back" size={26} className="!text-white" />
-						</Pressable>
+		<View className="flex-1 bg-white">
+			{/* Top Green Header */}
+			<View className="bg-[#004a4d] px-5" style={{ paddingTop: insets.top }}>
+				{/* Navigation Row */}
+				<View className="flex-row items-center justify-between relative">
+					<Pressable onPress={() => router.back()} className="p-2 -ml-2 z-10">
+						<Icon name="arrow_back" size={26} className="!text-white" />
+					</Pressable>
 
-						<View className="absolute left-0 right-0 top-0 bottom-0 items-center justify-center">
-							<ThemedText className="text-[17px] font-plus-jakarta-bold !text-white">
-								Andata
-							</ThemedText>
-						</View>
+					<View className="absolute left-0 right-0 top-0 bottom-0 items-center justify-center">
+						<ThemedText className="text-[17px] font-plus-jakarta-bold !text-white">
+							Andata
+						</ThemedText>
+					</View>
 
-						<View className="flex-row items-center gap-5 mr-1 z-10">
+					<View className="flex-row items-center gap-5 mr-1 z-10">
+						<Pressable onPress={() => router.navigate("/")}>
 							<Icon name="home" size={26} className="!text-white" />
-							<Icon name="shopping_cart" size={26} className="!text-white" />
-						</View>
-					</View>
-
-					{/* Stations Card */}
-					<View className="bg-white/10 rounded-xl px-4 mt-3 flex-row items-center h-[56px]">
-						<ThemedText
-							numberOfLines={1}
-							className="flex-1 text-[14px] font-plus-jakarta-semibold !text-white"
-						>
-							{localFrom}
-						</ThemedText>
-
-						<Pressable
-							onPress={handleSwitch}
-							className="h-10 w-10 bg-white rounded-full items-center justify-center mx-4"
-						>
-							<Icon name="swap_horiz" size={24} className="!text-teal-900" />
 						</Pressable>
+						<Icon name="shopping_cart" size={26} className="!text-white" />
+					</View>
+				</View>
 
-						<ThemedText
-							numberOfLines={1}
-							className="flex-1 text-[14px] font-plus-jakarta-semibold !text-white"
-						>
-							{localTo}
+				{/* Stations Card */}
+				<View className="bg-white/10 rounded-xl px-4 mt-3 flex-row items-center h-[56px]">
+					<ThemedText
+						numberOfLines={1}
+						className="flex-1 text-[14px] font-plus-jakarta-semibold !text-white"
+					>
+						{localFrom}
+					</ThemedText>
+
+					<Pressable
+						onPress={handleSwitch}
+						className="h-10 w-10 bg-white rounded-full items-center justify-center mx-4"
+					>
+						<Icon name="swap_horiz" size={24} className="!text-teal-900" />
+					</Pressable>
+
+					<ThemedText
+						numberOfLines={1}
+						className="flex-1 text-[14px] font-plus-jakarta-semibold !text-white"
+					>
+						{localTo}
+					</ThemedText>
+				</View>
+
+				{/* Info Row */}
+				<View className="flex-row gap-3 mt-3">
+					<View className="flex-1 bg-white/10 rounded-xl p-3.5 h-[56px] justify-center">
+						<ThemedText className="text-[12px] font-plus-jakarta-medium !text-white/60 mb-0.5">
+							Andata
+						</ThemedText>
+						<ThemedText className="text-[15px] font-plus-jakarta-bold !text-white">
+							{formatDisplayDate(currentSelectedDate)}
 						</ThemedText>
 					</View>
-
-					{/* Info Row */}
-					<View className="flex-row gap-3 mt-3">
-						<View className="flex-1 bg-white/10 rounded-xl p-3.5 h-[56px] justify-center">
-							<ThemedText className="text-[12px] font-plus-jakarta-medium !text-white/60 mb-0.5">
-								Andata
-							</ThemedText>
-							<ThemedText className="text-[15px] font-plus-jakarta-bold !text-white">
-								{formatDisplayDate(departureDate)}
-							</ThemedText>
-						</View>
-						<View className="flex-1 bg-white/10 rounded-xl p-3.5 h-[56px] justify-center">
-							<ThemedText className="text-[12px] font-plus-jakarta-medium !text-white/60 mb-0.5">
-								Passeggeri
-							</ThemedText>
-							<ThemedText
-								numberOfLines={1}
-								className="text-[15px] font-plus-jakarta-bold !text-white"
-							>
-								{passengerText}
-							</ThemedText>
-						</View>
+					<View className="flex-1 bg-white/10 rounded-xl p-3.5 h-[56px] justify-center">
+						<ThemedText className="text-[12px] font-plus-jakarta-medium !text-white/60 mb-0.5">
+							Passeggeri
+						</ThemedText>
+						<ThemedText
+							numberOfLines={1}
+							className="text-[15px] font-plus-jakarta-bold !text-white"
+						>
+							{passengerText}
+						</ThemedText>
 					</View>
+				</View>
 
 					{/* Date Selector Strip */}
 					<View className="mt-4 -mx-5">
@@ -345,19 +339,40 @@ export function SearchResultsModal({
 							</ThemedText>
 						</Pressable>
 
-						{filteredSolutions.map((solution) => (
-							<TravelSolutionCard
-								key={solution.id}
-								solution={solution}
-								route={route}
-							/>
-						))}
-						{filteredSolutions.length === 0 && (
-							<View className="items-center py-10">
-								<ThemedText className="text-gray-500 font-plus-jakarta-medium">
-									Nessuna soluzione trovata per questa tipologia.
-								</ThemedText>
+						{isLoading ? (
+							<View className="py-10">
+								<ActivityIndicator size="large" color="#005045" />
 							</View>
+						) : (
+							<>
+								{filteredSolutions.map((solution) => (
+									<TravelSolutionCard
+										key={solution.id}
+										solution={solution}
+										route={route}
+										searchDate={currentSelectedDate}
+										onPress={() => {
+											if (!solution.price) return;
+											setSelectedSolutionCache(solution);
+											router.push({
+												pathname: "/select-offer",
+												params: {
+													routeStr: `${route.from} - ${route.to}`,
+													dateStr: currentSelectedDate.toISOString(),
+													passengerText: passengerText,
+												},
+											});
+										}}
+									/>
+								))}
+								{filteredSolutions.length === 0 && (
+									<View className="items-center py-10">
+										<ThemedText className="text-gray-500 font-plus-jakarta-medium">
+											Nessuna soluzione trovata per questa tipologia.
+										</ThemedText>
+									</View>
+								)}
+							</>
 						)}
 					</View>
 				</ScrollView>
@@ -406,7 +421,7 @@ export function SearchResultsModal({
 													<Icon
 														name="info"
 														size={16}
-														className="ml-2 !text-gray-400"
+														className="ml-2 !text-gray-600"
 													/>
 												)}
 											</View>
@@ -496,7 +511,6 @@ export function SearchResultsModal({
 						/>
 					</View>
 				</BottomSheet>
-			</View>
-		</Modal>
+		</View>
 	);
 }

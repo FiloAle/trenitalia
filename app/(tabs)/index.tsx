@@ -1,7 +1,6 @@
 import { QuickSearches } from "@/components/home/quick-searches";
 import { TicketPurchaseCard } from "@/components/home/ticket-purchase-card";
 import { LoyaltyMenu } from "@/components/modals/loyalty-menu";
-import { SearchModal } from "@/components/modals/search-modal";
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { ThemedView } from "@/components/themed-view";
 import { Image } from "expo-image";
@@ -12,24 +11,20 @@ import { InfoBanner } from "@/components/home/info-banner";
 import { PromoCarousel } from "@/components/home/promo-carousel";
 import { TravelSection } from "@/components/home/travel-section";
 import { ThemedText } from "@/components/themed-text";
+import { router } from "expo-router";
 
 export default function HomeScreen() {
-	const [searchVisible, setSearchVisible] = useState(false);
 	const [loyaltyVisible, setLoyaltyVisible] = useState(false);
-	const [searchParams, setSearchParams] = useState<{
-		from?: string;
-		to?: string;
-		step?: "searching" | "details";
-	}>({});
 
 	const handleOpenSearch = () => {
-		setSearchParams({});
-		setSearchVisible(true);
+		router.push("/search");
 	};
 
 	const handleQuickSearch = (from: string, to: string) => {
-		setSearchParams({ from, to, step: "details" });
-		setSearchVisible(true);
+		router.push({
+			pathname: "/search",
+			params: { initialFrom: from, initialTo: to, initialStep: "details" },
+		});
 	};
 
 	return (
@@ -71,7 +66,7 @@ export default function HomeScreen() {
 				<ThemedView className="gap-8 pb-10">
 					<ThemedView className="gap-4">
 						<TicketPurchaseCard onPress={handleOpenSearch} />
-						<InfoBanner />
+						<InfoBanner description="Vai alle notizie" />
 					</ThemedView>
 					<QuickSearches onSelectRoute={handleQuickSearch} />
 					<PromoCarousel />
@@ -85,13 +80,7 @@ export default function HomeScreen() {
 				</ThemedView>
 			</ParallaxScrollView>
 
-			<SearchModal
-				isVisible={searchVisible}
-				onClose={() => setSearchVisible(false)}
-				initialFrom={searchParams.from}
-				initialTo={searchParams.to}
-				initialStep={searchParams.step}
-			/>
+
 
 			<LoyaltyMenu
 				isVisible={loyaltyVisible}

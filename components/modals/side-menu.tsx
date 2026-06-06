@@ -15,7 +15,6 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SearchModal } from "@/components/modals/search-modal";
 
 import { USER_DATA, getInitials } from "@/constants/user";
 
@@ -133,7 +132,6 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 	const [openSection, setOpenSection] = React.useState<string | null>(
 		"RICERCA E ACQUISTO",
 	);
-	const [isSearchModalVisible, setIsSearchModalVisible] = React.useState(false);
 	const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 	const useNativeDriver = Platform.OS !== "web";
@@ -284,7 +282,7 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 															if (onProfilePress) onProfilePress();
 														});
 													} else if (item.action === "open_search") {
-														setIsSearchModalVisible(true);
+														handleClose(() => router.push("/search"));
 													} else if (item.route) {
 														handleClose(() => router.navigate(item.route as any));
 													}
@@ -321,10 +319,7 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 				</Animated.View>
 			</View>
 
-			<SearchModal 
-				isVisible={isSearchModalVisible}
-				onClose={() => setIsSearchModalVisible(false)}
-			/>
+
 		</View>
 	);
 }

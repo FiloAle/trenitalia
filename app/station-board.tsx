@@ -1,17 +1,19 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { StationBoardTrainRow } from "@/components/station-board/station-board-train-row";
-import { PARTENZE_TRAINS, ARRIVI_TRAINS } from "@/constants/station-board-mock";
-import { router } from "expo-router";
+import { getStationBoardTrains } from "@/constants/station-board-mock";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function StationBoardScreen() {
 	const insets = useSafeAreaInsets();
+	const params = useLocalSearchParams<{ station?: string }>();
 	const [activeTab, setActiveTab] = useState("Partenze");
 
-	const displayTrains = activeTab === "Partenze" ? PARTENZE_TRAINS : ARRIVI_TRAINS;
+	const stationName = params.station || "Stazione";
+	const displayTrains = getStationBoardTrains(stationName, activeTab as "Partenze" | "Arrivi");
 
 	return (
 		<View className="flex-1 bg-white">
@@ -19,7 +21,7 @@ export default function StationBoardScreen() {
 			<View className="flex-row items-center justify-between px-5 pt-1 pb-2 bg-white" style={{ paddingTop: insets.top + 16 }}>
 				<View className="w-10" />
 				<ThemedText className="flex-1 text-center text-[15px] font-plus-jakarta-bold !text-gray-950">
-					Bologna Centrale
+					{stationName}
 				</ThemedText>
 				<Pressable onPress={() => router.back()} className="p-2 -mr-2">
 					<Icon name="close" size={28} className="!text-gray-800" weight={300} />
@@ -30,7 +32,14 @@ export default function StationBoardScreen() {
 			<View className="px-5 mb-4 mt-2">
 				<View className="flex-row rounded-full bg-[#f3f4f6] p-1">
 					<Pressable 
-						className={`flex-1 rounded-full items-center py-2 ${activeTab === 'Partenze' ? 'bg-white shadow-sm' : ''}`}
+						className={`flex-1 rounded-full items-center py-2 ${activeTab === 'Partenze' ? 'bg-white' : ''}`}
+						style={activeTab === 'Partenze' ? {
+							shadowColor: '#000',
+							shadowOffset: { width: 0, height: 1 },
+							shadowOpacity: 0.05,
+							shadowRadius: 2,
+							elevation: 1,
+						} : undefined}
 						onPress={() => setActiveTab('Partenze')}
 					>
 						<ThemedText className={`text-[15px] ${activeTab === 'Partenze' ? 'font-plus-jakarta-bold !text-gray-950' : 'font-plus-jakarta-medium !text-gray-600'}`}>
@@ -38,7 +47,14 @@ export default function StationBoardScreen() {
 						</ThemedText>
 					</Pressable>
 					<Pressable 
-						className={`flex-1 rounded-full items-center py-2 ${activeTab === 'Arrivi' ? 'bg-white shadow-sm' : ''}`}
+						className={`flex-1 rounded-full items-center py-2 ${activeTab === 'Arrivi' ? 'bg-white' : ''}`}
+						style={activeTab === 'Arrivi' ? {
+							shadowColor: '#000',
+							shadowOffset: { width: 0, height: 1 },
+							shadowOpacity: 0.05,
+							shadowRadius: 2,
+							elevation: 1,
+						} : undefined}
 						onPress={() => setActiveTab('Arrivi')}
 					>
 						<ThemedText className={`text-[15px] ${activeTab === 'Arrivi' ? 'font-plus-jakarta-bold !text-gray-950' : 'font-plus-jakarta-medium !text-gray-600'}`}>

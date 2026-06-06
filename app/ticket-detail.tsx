@@ -19,7 +19,7 @@ export default function TicketDetailScreen() {
 	const [isDettagliOpen, setIsDettagliOpen] = useState(false);
 
 	// Extract data from params with fallbacks matching the screenshot
-	const routeStr = (params.route as string) || `${STATIONS[0]} - ${STATIONS[4]}`;
+	const routeStr = (params.route as string) || `${STATIONS[0].name} - ${STATIONS[4].name}`;
 	const [origin, destination] = routeStr.split(" - ");
 	const timeStr = (params.time as string) || "18:35 - 21:27";
 	const [departureTime, arrivalTime] = timeStr.split(" - ");
@@ -34,19 +34,21 @@ export default function TicketDetailScreen() {
 	const dateString = `${day.padStart(2, '0')}/${monthNum}/2026`;
 
 	return (
-		<View className="flex-1 bg-[#f3f4f6]">
+		<View className="flex-1 bg-white">
 			{/* Gradient Header Background */}
-			<LinearGradient
-				colors={["#8a052b", "#f73d3d"]}
-				start={{ x: 0, y: 0 }}
-				end={{ x: 1, y: 1 }}
-				className="absolute left-0 right-0 top-0 h-64"
-			/>
+			<View className="absolute left-0 right-0 top-0 h-64">
+				<LinearGradient
+					colors={["#8a052b", "#f73d3d"]}
+					start={{ x: 0, y: 0 }}
+					end={{ x: 1, y: 0 }}
+					style={{ flex: 1 }}
+				/>
+			</View>
 
 			{/* Header Nav */}
 			<View
 				className="flex-row items-center justify-between px-5 pb-4"
-				style={{ paddingTop: insets.top + 16 }}
+				style={{ paddingTop: insets.top + 4 }}
 			>
 				<Pressable className="p-2">
 					<Icon name="ios_share" size={28} color="white" />

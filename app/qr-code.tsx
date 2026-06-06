@@ -34,7 +34,7 @@ export default function QRCodeScreen() {
 
 			{/* Bottom Button */}
 			<View className="px-5 pb-8 pt-4" style={{ paddingBottom: insets.bottom + 20 }}>
-				<MainButton title="Chiudi" onPress={() => router.back()} />
+				<MainButton title="Chiudi" onPress={() => router.back()} className="!h-16" />
 			</View>
 		</View>
 	);

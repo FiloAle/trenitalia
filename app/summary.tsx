@@ -49,7 +49,7 @@ export default function SummaryScreen() {
 					</View>
 
 					<ThemedText className="text-base font-plus-jakarta-bold !text-gray-950 mb-1">
-						{STATIONS[0]} - {STATIONS[4]}
+						{STATIONS[0].name} - {STATIONS[4].name}
 					</ThemedText>
 
 					{/* Andata / Ritorno Switch */}
@@ -94,7 +94,7 @@ export default function SummaryScreen() {
 									</ThemedText>
 								</View>
 								<ThemedText className="text-[13px] font-plus-jakarta-bold !text-gray-950">
-									{STATIONS[0]} - {STATIONS[4]}
+									{STATIONS[0].name} - {STATIONS[4].name}
 								</ThemedText>
 								<View className="flex-row items-center">
 									<Icon name="calendar_today" size={14} color="#4b5563" className="mr-1" />

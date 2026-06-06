@@ -23,6 +23,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -62,31 +63,39 @@ export default function RootLayout() {
 	}
 
 	return (
-		<ThemeProvider value={DefaultTheme}>
-			<Stack>
-				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-				<Stack.Screen
-					name="ticket-detail"
-					options={{
-						presentation: "modal",
-						headerShown: false,
-					}}
-				/>
-				<Stack.Screen
-					name="qr-code"
-					options={{
-						presentation: "modal",
-						headerShown: false,
-					}}
-				/>
-				<Stack.Screen name="add-services" options={{ headerShown: false }} />
-				<Stack.Screen name="complete-trip" options={{ headerShown: false }} />
-				<Stack.Screen name="summary" options={{ headerShown: false }} />
-				<Stack.Screen name="train-details" options={{ headerShown: false }} />
-				<Stack.Screen name="station-board" options={{ headerShown: false }} />
-				<Stack.Screen name="+not-found" />
-			</Stack>
-			<StatusBar style="dark" />
-		</ThemeProvider>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<ThemeProvider value={DefaultTheme}>
+				<Stack>
+					<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+					<Stack.Screen name="search" options={{ animation: "slide_from_bottom", headerShown: false }} />
+					<Stack.Screen name="search-results" options={{ animation: "slide_from_right", headerShown: false }} />
+					<Stack.Screen
+						name="ticket-detail"
+						options={{
+							headerShown: false,
+						}}
+					/>
+					<Stack.Screen
+						name="qr-code"
+						options={{
+							animation: "slide_from_bottom",
+							headerShown: false,
+						}}
+					/>
+					<Stack.Screen name="add-services" options={{ headerShown: false }} />
+					<Stack.Screen name="complete-trip" options={{ presentation: "fullScreenModal", headerShown: false }} />
+					<Stack.Screen name="electronic-credit" options={{ presentation: "fullScreenModal", headerShown: false }} />
+					<Stack.Screen name="payment-processing" options={{ headerShown: false }} />
+					<Stack.Screen name="payment-success" options={{ headerShown: false }} />
+					<Stack.Screen name="select-offer" options={{ headerShown: false }} />
+					<Stack.Screen name="passenger-data" options={{ headerShown: false }} />
+					<Stack.Screen name="summary" options={{ headerShown: false }} />
+					<Stack.Screen name="train-details" options={{ headerShown: false }} />
+					<Stack.Screen name="station-board" options={{ headerShown: false }} />
+					<Stack.Screen name="+not-found" />
+				</Stack>
+				<StatusBar style="dark" />
+			</ThemeProvider>
+		</GestureHandlerRootView>
 	);
 }

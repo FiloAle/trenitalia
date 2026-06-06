@@ -4,16 +4,54 @@ import { MainButton } from "@/components/ui/main-button";
 import { TimerBar } from "@/components/ui/timer-bar";
 import { ServiceCard } from "@/components/services/service-card";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import { useFocusEffect } from "expo-router";
+import React, { useState, useCallback } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { CheckoutHeader } from "@/components/checkout-header";
+import { StickyFooter } from "@/components/select-offer/sticky-footer";
+
+export let newlyAddedService: string | null = null;
+export function setNewlyAddedService(val: string | null) {
+	newlyAddedService = val;
+}
 
 export default function AddServicesScreen() {
 	const insets = useSafeAreaInsets();
 	const params = useLocalSearchParams();
 	const endTime = Number(params.endTime);
+	const basePrice = Number(params.price) || 0;
 
-	const [selectedService, setSelectedService] = useState<string | null>(null);
+	const addedServiceParam = params.addedService as string;
+
+	const [selectedService, setSelectedService] = useState<string | null>(addedServiceParam || null);
+
+	React.useEffect(() => {
+		if (addedServiceParam) {
+			setSelectedService(addedServiceParam);
+		}
+	}, [addedServiceParam]);
+
+	useFocusEffect(
+		useCallback(() => {
+			if (newlyAddedService) {
+				setSelectedService(newlyAddedService);
+				newlyAddedService = null;
+			}
+		}, [])
+	);
+
+	const handleServiceSelect = (id: string | null) => {
+		if (id) {
+			const extraPrice = services.find(s => s.id === id)?.price || 0;
+			router.push({
+				pathname: "/complete-trip" as any,
+				params: { endTime, service: id, price: extraPrice, basePrice },
+			});
+		} else {
+			setSelectedService(null);
+		}
+	};
 
 	const services = [
 		{
@@ -43,27 +81,8 @@ export default function AddServicesScreen() {
 	const selectedPrice = services.find((s) => s.id === selectedService)?.price || 0;
 
 	return (
-		<View className="flex-1 bg-[#f3f4f6]">
-			{/* Top Bar */}
-			<View
-				className="bg-[#005045] flex-row items-center justify-between px-5 pb-4"
-				style={{ paddingTop: insets.top + 16 }}
-			>
-				<Pressable onPress={() => router.back()} className="p-2 -ml-2">
-					<Icon name="arrow_back" size={24} color="white" />
-				</Pressable>
-				<ThemedText className="text-lg font-plus-jakarta-bold !text-white">
-					Completa il viaggio
-				</ThemedText>
-				<View className="flex-row items-center">
-					<Pressable className="p-2 mr-2">
-						<Icon name="home" size={24} color="white" />
-					</Pressable>
-					<Pressable className="p-2 -mr-2">
-						<Icon name="shopping_cart" size={24} color="white" />
-					</Pressable>
-				</View>
-			</View>
+		<View className="flex-1 bg-white">
+			<CheckoutHeader title="Completa il viaggio" />
 
 			<TimerBar endTime={endTime} />
 
@@ -78,37 +97,25 @@ export default function AddServicesScreen() {
 							key={service.id}
 							service={service}
 							isSelected={selectedService === service.id}
-							onSelect={setSelectedService}
+							onSelect={handleServiceSelect}
 						/>
 					))}
 				</View>
 			</ScrollView>
 
-			{/* Bottom Footer */}
-			<View className="absolute bottom-0 left-0 right-0 bg-white px-5 py-4 flex-row items-center justify-between shadow-lg" style={{ paddingBottom: insets.bottom + 16 }}>
-				<View>
-					<ThemedText className="text-xl font-plus-jakarta-bold !text-gray-950">
-						{selectedPrice.toFixed(2).replace(".", ",")} €
-					</ThemedText>
-					<ThemedText className="text-sm font-plus-jakarta-medium !text-[#8a052b]">
-						Vedi carrello
-					</ThemedText>
-				</View>
-				<View className="w-1/2">
-					<MainButton
-						title="Continua"
-						onPress={() => {
-							if (selectedService) {
-								router.push({
-									pathname: "/complete-trip" as any,
-									params: { endTime, service: selectedService, price: selectedPrice },
-								});
-							}
-						}}
-						disabled={!selectedService}
-					/>
-				</View>
-			</View>
+			<StickyFooter
+				totalPrice={basePrice + selectedPrice}
+				basePrice={basePrice}
+				buttonTitle="Continua"
+				hideSeatSelection={true}
+				disabled={false}
+				onPress={() => {
+					router.push({
+						pathname: "/payment" as any,
+						params: { endTime, price: basePrice + selectedPrice },
+					});
+				}}
+			/>
 		</View>
 	);
 }

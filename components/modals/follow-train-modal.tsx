@@ -112,7 +112,7 @@ export function FollowTrainModal({
 					{/* Time Selector (Mocked Scroll) */}
 					<View className="mb-8">
 						<ThemedText className="text-xs font-plus-jakarta-bold !text-gray-950 mb-4 bg-gray-100 py-2 -mx-5 px-5">
-							RICEVI NOTIFICHE A QUEST'ORA:
+							RICEVI NOTIFICHE A QUEST&apos;ORA:
 						</ThemedText>
 						
 						<View className="flex-row justify-center items-center h-32 relative">

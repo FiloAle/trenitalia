@@ -10,7 +10,7 @@ interface InfoBannerProps {
 
 export function InfoBanner({
 	title = "Informazioni sulla circolazione",
-	description = "Vai alle notizie",
+	description,
 }: InfoBannerProps) {
 	return (
 		<Pressable className="flex-row items-center rounded-lg bg-[#eef4ff] px-4 py-3">
@@ -18,20 +18,22 @@ export function InfoBanner({
 				<Icon name="info" size={24} color="#003594" />
 			</View>
 			<View className="flex-1">
-				<ThemedText className="font-plus-jakarta-semibold text-[13px] !text-gray-800">
+				<ThemedText className={`font-plus-jakarta-semibold text-[13px] !text-gray-800 ${!description ? "leading-snug font-plus-jakarta-medium" : ""}`}>
 					{title}
 				</ThemedText>
-				<View className="flex-row items-center">
-					<ThemedText className="mr-1 font-plus-jakarta-medium text-[13px] !text-gray-500">
-						{description}
-					</ThemedText>
-					<Icon
-						name="open_in_new"
-						size={12}
-						color="#6b7280"
-						className="!mt-0.5"
-					/>
-				</View>
+				{description && (
+					<View className="flex-row items-center">
+						<ThemedText className="mr-1 font-plus-jakarta-medium text-[13px] !text-gray-500">
+							{description}
+						</ThemedText>
+						<Icon
+							name="open_in_new"
+							size={12}
+							color="#6b7280"
+							className="!mt-0.5"
+						/>
+					</View>
+				)}
 			</View>
 		</Pressable>
 	);

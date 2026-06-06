@@ -16,7 +16,7 @@ const TICKETS: TicketProps[] = [
 		day: "29",
 		month: "Apr",
 		type: "Biglietto",
-		route: `${STATIONS[0]} - ${STATIONS[4]}`,
+		route: `${STATIONS[1178].name} - ${STATIONS[583].name}`,
 		time: "18:35 - 21:27",
 		details: "Diretto",
 	},
@@ -25,7 +25,7 @@ const TICKETS: TicketProps[] = [
 		day: "3",
 		month: "Mag",
 		type: "Biglietto",
-		route: `${STATIONS[4]} - ${STATIONS[0]}`,
+		route: `${STATIONS[583].name} - ${STATIONS[1178].name}`,
 		time: "07:27 - 10:10",
 		details: "Diretto",
 	},
@@ -34,7 +34,7 @@ const TICKETS: TicketProps[] = [
 		day: "28",
 		month: "Mag",
 		type: "Biglietto",
-		route: `${STATIONS[0]} - ${STATIONS[4]}`,
+		route: `${STATIONS[1178].name} - ${STATIONS[583].name}`,
 		time: "18:35 - 21:27",
 		details: "Diretto",
 	},
@@ -43,7 +43,7 @@ const TICKETS: TicketProps[] = [
 		day: "2",
 		month: "Giu",
 		type: "Biglietto",
-		route: `${STATIONS[4]} - ${STATIONS[0]}`,
+		route: `${STATIONS[583].name} - ${STATIONS[1178].name}`,
 		time: "08:28 - 11:10",
 		details: "Diretto",
 	},
@@ -95,12 +95,12 @@ export default function TripsScreen() {
 			<ScrollView
 				className="flex-1 px-5 pt-6"
 				showsVerticalScrollIndicator={false}
-				contentContainerStyle={{ gap: 16, paddingBottom: 100 }}
+				contentContainerStyle={{ gap: 10, paddingBottom: 100 }}
 			>
 				{activeChip === "Biglietti" ? (
 					<>
 						{/* Saved Tickets Row */}
-						<Pressable className="flex-row items-center justify-between rounded-lg border border-gray-100 bg-white p-4">
+						<Pressable className="flex-row items-center justify-between rounded-lg border border-gray-200 bg-white p-4">
 							<View className="flex-row items-center">
 								<Icon name="bookmark" size={24} color="teal-900" />
 								<ThemedText className="ml-3 font-plus-jakarta-semibold !text-gray-900">

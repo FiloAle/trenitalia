@@ -24,40 +24,26 @@ import {
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SearchResultsModal } from "./search-results-modal";
+import { useLocalSearchParams, router } from "expo-router";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-interface SearchModalProps {
-	isVisible: boolean;
-	onClose: () => void;
-	initialFrom?: string;
-	initialTo?: string;
-	initialStep?: "searching" | "details";
-}
-
-export function SearchModal({
-	isVisible,
-	onClose,
-	initialFrom = "",
-	initialTo = "",
-	initialStep = "searching",
-}: SearchModalProps) {
+export default function SearchScreen() {
+	const params = useLocalSearchParams();
+	const initialFrom = params.initialFrom as string || "";
+	const initialTo = params.initialTo as string || "";
+	const initialStep = (params.initialStep as "searching" | "details") || "searching";
 	const insets = useSafeAreaInsets();
-	const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 	const [step, setStep] = useState<"searching" | "details">(initialStep);
 	const [fromText, setFromText] = useState(initialFrom);
 	const [toText, setToText] = useState(initialTo);
 	const [activeInput, setActiveInput] = useState<"from" | "to" | null>(null);
 
-	// Sync state when props change (useful when clicking different quick search cards)
 	useEffect(() => {
-		if (isVisible) {
-			setFromText(initialFrom);
-			setToText(initialTo);
-			setStep(initialStep);
-		}
-	}, [isVisible, initialFrom, initialTo, initialStep]);
+		setFromText(initialFrom);
+		setToText(initialTo);
+		setStep(initialStep);
+	}, [initialFrom, initialTo, initialStep]);
 
 	// Mock modal states
 	const [showCalendar, setShowCalendar] = useState(false);
@@ -159,8 +145,6 @@ export function SearchModal({
 		</Pressable>
 	);
 	const [currentMonth, setCurrentMonth] = useState(new Date());
-
-	const [resultsVisible, setResultsVisible] = useState(false);
 
 	const useNativeDriver = Platform.OS !== "web";
 
@@ -285,17 +269,7 @@ export function SearchModal({
 		return days;
 	};
 
-	useEffect(() => {
-		if (isVisible) {
-			Animated.timing(slideAnim, {
-				toValue: 0,
-				duration: 300,
-				useNativeDriver,
-			}).start();
-		} else {
-			slideAnim.setValue(SCREEN_HEIGHT);
-		}
-	}, [isVisible]);
+	// Screen focus animations could be added here if needed
 
 	useEffect(() => {
 		if (showCalendar) {
@@ -315,45 +289,12 @@ export function SearchModal({
 	}, [showCalendar, activeCalendarTab]);
 
 	const handleClose = () => {
-		Animated.timing(slideAnim, {
-			toValue: SCREEN_HEIGHT,
-			duration: 250,
-			useNativeDriver,
-		}).start(() => {
-			onClose();
-			// Reset Step and Stations
-			setStep("searching");
-			setFromText("");
-			setToText("");
-			setActiveInput(null);
-			setResultsVisible(false);
-
-			// Reset Dates
-			const now = new Date();
-			now.setMinutes(0, 0, 0);
-			const next = new Date(now);
-			next.setHours(next.getHours() + 1);
-
-			setDepartureDate(now);
-			setReturnDate(next);
-			setHasReturn(false);
-			setCurrentMonth(now);
-
-			// Reset Passengers
-			setAdults(1);
-			setYouths(0);
-			setChildren(0);
-
-			// Reset Trip Type & Options
-			setTravelType("Principali Soluzioni");
-			setNoChanges(false);
-			setBike(false);
-		});
+		router.back();
 	};
 
 	const filteredStations = STATIONS.filter((s) => {
 		const text = activeInput === "from" ? fromText : toText;
-		return text.length > 0 && s.toLowerCase().includes(text.toLowerCase());
+		return text.length > 0 && s.name.toLowerCase().includes(text.toLowerCase());
 	});
 
 	const showSuggestions =
@@ -389,20 +330,8 @@ export function SearchModal({
 	};
 
 	return (
-		<Modal
-			visible={isVisible}
-			transparent
-			animationType="none"
-			onRequestClose={handleClose}
-		>
-			<Animated.View
-				style={{
-					flex: 1,
-					backgroundColor: "white",
-					transform: [{ translateY: slideAnim }],
-				}}
-			>
-				<View style={{ flex: 1, paddingTop: insets.top }}>
+		<View style={{ flex: 1, backgroundColor: "white" }}>
+			<View style={{ flex: 1, paddingTop: insets.top }}>
 					{step === "searching" ? (
 						<>
 							{/* Header Searching */}
@@ -468,17 +397,17 @@ export function SearchModal({
 									renderItem={({ item, index }) => (
 										<SearchListItem
 											iconName="train"
-											text={item}
+											text={item.name}
 											showBorder
 											weight={300}
-											onPress={() => handleStationSelect(item)}
+											onPress={() => handleStationSelect(item.name)}
 										/>
 									)}
 								/>
 							) : (
 								<FlatList
 									data={STATIONS}
-									keyExtractor={(item, index) => `${item}-${index}`}
+									keyExtractor={(item, index) => `${item.name}-${index}`}
 									showsVerticalScrollIndicator={false}
 									keyboardShouldPersistTaps="handled"
 									contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 40 }}
@@ -544,9 +473,9 @@ export function SearchModal({
 									}
 									renderItem={({ item }) => (
 										<SearchListItem
-											text={item}
+											text={item.name}
 											weight={300}
-											onPress={() => handleStationSelect(item)}
+											onPress={() => handleStationSelect(item.name)}
 										/>
 									)}
 								/>
@@ -579,7 +508,7 @@ export function SearchModal({
 													</ThemedText>
 												</View>
 												<ThemedText className="flex-1 text-[14px] font-plus-jakarta-semibold !text-gray-950 ml-2">
-													{fromText || STATIONS[0]}
+													{fromText || STATIONS[0].name}
 												</ThemedText>
 											</Pressable>
 											<Pressable
@@ -775,7 +704,17 @@ export function SearchModal({
 							<View className="px-5 py-6 bg-white border-t border-gray-100">
 								<MainButton
 									title="Ricerca viaggio"
-									onPress={() => setResultsVisible(true)}
+									onPress={() => {
+										router.push({
+											pathname: "/search-results",
+											params: {
+												from: fromText,
+												to: toText,
+												dateStr: departureDate.toISOString(),
+												passengerText: `${adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : ""}${youths > 0 ? ` ${youths} Ragazz${youths > 1 ? "i" : "o"}` : ""}${children > 0 ? ` ${children} Bambin${children > 1 ? "i" : "i"}` : ""}`.trim()
+											}
+										});
+									}}
 									style={{ marginBottom: insets.bottom }}
 								/>
 							</View>
@@ -1248,16 +1187,6 @@ export function SearchModal({
 					</View>
 				</BottomSheet>
 
-				<SearchResultsModal
-					isVisible={resultsVisible}
-					onClose={() => setResultsVisible(false)}
-					route={{ from: fromText, to: toText }}
-					travelType={travelType}
-					departureDate={departureDate}
-					adults={adults}
-					youths={youths}
-					childrenCount={children}
-				/>
 				{/* Passengers Bottom Sheet */}
 				<BottomSheet
 					isVisible={showPassengersSheet}
@@ -1388,7 +1317,6 @@ export function SearchModal({
 						/>
 					</View>
 				</BottomSheet>
-			</Animated.View>
-		</Modal>
+			</View>
 	);
 }

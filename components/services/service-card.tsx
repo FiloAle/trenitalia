@@ -22,7 +22,7 @@ export function ServiceCard({ service, isSelected, onSelect }: ServiceCardProps)
 	return (
 		<Pressable
 			onPress={() => onSelect(isSelected ? null : service.id)}
-			className={`overflow-hidden rounded-xl bg-white border-2 flex-row ${
+			className={`overflow-hidden rounded-xl bg-white border flex-row ${
 				isSelected ? "border-[#005045]" : "border-gray-200"
 			}`}
 		>
@@ -37,9 +37,7 @@ export function ServiceCard({ service, isSelected, onSelect }: ServiceCardProps)
 					<ThemedText className="flex-1 pr-2 text-base font-plus-jakarta-bold !text-gray-950">
 						{service.title}
 					</ThemedText>
-					{!isSelected && (
-						<Icon name="favorite_border" size={24} color="#1f2937" />
-					)}
+					<Icon name="favorite_border" size={24} color="#1f2937" />
 				</View>
 
 				<ThemedText className="mt-1 text-sm font-plus-jakarta-medium !text-gray-600">

@@ -23,9 +23,9 @@ export function TicketCard({
 	onOpenDettagli,
 }: TicketCardProps) {
 	return (
-		<View className="mt-4 overflow-hidden rounded-xl bg-white shadow-sm">
+		<View className="mt-1.5 overflow-hidden rounded-lg bg-white border border-gray-200">
 			{/* Top row: Train and Date */}
-			<View className="flex-row items-center justify-between border-b border-gray-100 p-5">
+			<View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-3">
 				<View className="flex-row items-center">
 					<View>
 						<Image
@@ -34,36 +34,39 @@ export function TicketCard({
 							resizeMode="contain"
 						/>
 					</View>
-					<ThemedText className="ml-2 text-sm font-plus-jakarta-bold !text-gray-900">
+					<ThemedText className="ml-2 text-base font-plus-jakarta-medium !text-gray-900">
 						8825
 					</ThemedText>
 				</View>
-				<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-900">
+				<ThemedText className="text-base font-plus-jakarta-bold !text-gray-900">
 					{dateString}
 				</ThemedText>
 			</View>
 
 			{/* Middle section: Route and Times */}
-			<View className="p-5">
-				<View className="flex-row items-center justify-between mb-4">
-					<View className="flex-1">
-						<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-900">
+			<View className="px-5 pb-5 pt-3">
+				<View className="mb-4">
+					{/* Station Names Row */}
+					<View className="flex-row justify-between items-center mb-0.5">
+						<ThemedText className="flex-1 text-base font-plus-jakarta !text-gray-900">
 							{origin}
 						</ThemedText>
-						<ThemedText className="text-3xl font-plus-jakarta-bold !text-gray-900 mt-1">
-							{departureTime}
-						</ThemedText>
-					</View>
-
-					<View className="px-4">
-						<Icon name="arrow_forward" size={24} color="#9ca3af" />
-					</View>
-
-					<View className="flex-1 items-end">
-						<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-900">
+						<ThemedText className="flex-1 text-right text-base font-plus-jakarta !text-gray-900">
 							{destination}
 						</ThemedText>
-						<ThemedText className="text-3xl font-plus-jakarta-bold !text-gray-900 mt-1">
+					</View>
+
+					{/* Times and Arrow Row */}
+					<View className="flex-row items-center justify-between">
+						<ThemedText className="flex-1 text-[26px] font-plus-jakarta-bold !text-gray-900">
+							{departureTime}
+						</ThemedText>
+						
+						<View className="px-4">
+							<Icon name="arrow_forward" size={24} color="#9ca3af" />
+						</View>
+						
+						<ThemedText className="flex-1 text-right text-[26px] font-plus-jakarta-bold !text-gray-900">
 							{arrivalTime}
 						</ThemedText>
 					</View>
@@ -71,30 +74,30 @@ export function TicketCard({
 
 				{/* Codes row */}
 				<View className="flex-row justify-between mb-6 gap-2">
-					<View className="flex-1 rounded-lg bg-gray-100 p-3">
-						<View className="flex-row items-center justify-between mb-1">
-							<ThemedText className="text-xs font-plus-jakarta-medium !text-gray-500">
+					<View className="flex-1 rounded-lg bg-gray-100 p-2">
+						<View className="flex-row items-center justify-between mb-0.5">
+							<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500">
 								PNR
 							</ThemedText>
-							<Icon name="content_copy" size={12} color="#6b7280" />
+							<Icon name="content_copy" size={14} color="#6b7280" />
 						</View>
-						<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-900">
+						<ThemedText className="text-base font-plus-jakarta-bold !text-gray-900">
 							F34VNN
 						</ThemedText>
 					</View>
-					<View className="flex-1 rounded-lg bg-gray-100 p-3">
-						<ThemedText className="text-xs font-plus-jakarta-medium !text-gray-500 mb-1">
+					<View className="flex-1 rounded-lg bg-gray-100 p-2">
+						<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500 mb-0.5">
 							CP
 						</ThemedText>
-						<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-900">
+						<ThemedText className="text-base font-plus-jakarta-bold !text-gray-900">
 							891801
 						</ThemedText>
 					</View>
-					<View className="flex-1 rounded-lg bg-gray-100 p-3">
-						<ThemedText className="text-xs font-plus-jakarta-medium !text-gray-500 mb-1">
+					<View className="flex-1 rounded-lg bg-gray-100 p-2">
+						<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500 mb-0.5" numberOfLines={1} adjustsFontSizeToFit>
 							CARR.-POSTO
 						</ThemedText>
-						<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-900">
+						<ThemedText className="text-base font-plus-jakarta-bold !text-gray-900">
 							7-15D
 						</ThemedText>
 					</View>
@@ -102,7 +105,7 @@ export function TicketCard({
 
 				{/* QR Code Block */}
 				<Pressable
-					className="items-center justify-center py-0"
+					className="items-center justify-center py-3"
 					onPress={() => router.push({ pathname: "/qr-code" as any, params: { pnr: "F34VNN" } })}
 				>
 					<QRCode
@@ -115,14 +118,14 @@ export function TicketCard({
 			</View>
 
 			{/* Ticket Type and Price */}
-			<View className="flex-row items-center justify-between border-t border-gray-100 p-5">
+			<View className="flex-row items-center justify-between border-t border-gray-100 px-5 py-3">
 				<View className="flex-row items-center">
 					<Icon name="confirmation_number" size={24} color="#000" />
-					<ThemedText className="ml-2 text-sm font-plus-jakarta-medium !text-gray-900">
+					<ThemedText className="ml-2 text-base font-plus-jakarta-medium !text-gray-900">
 						STANDARD / Super Economy
 					</ThemedText>
 				</View>
-				<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-900">
+				<ThemedText className="text-lg font-plus-jakarta-bold !text-gray-900">
 					19,70€
 				</ThemedText>
 			</View>

@@ -49,7 +49,7 @@ export const TIMELINE_STATIONS: TimelineStation[] = [
 		bin: "2",
 		events: [
 			{ label: "Arrivo Programmato", time: "13:22" },
-			{ label: "Arrivo Stimato", time: "13:34", isActual: true },
+			{ label: "Arrivo Stimato", time: "13:34", isActual: false },
 		],
 	},
 ];
