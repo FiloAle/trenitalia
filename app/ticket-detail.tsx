@@ -1,11 +1,11 @@
 import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { ThemedText } from "@/components/themed-text";
-import { Icon } from "@/components/ui/icon";
-import { TicketCard } from "@/components/ticket-detail/ticket-card";
 import { TicketBottomActions } from "@/components/ticket-detail/ticket-bottom-actions";
+import { TicketCard } from "@/components/ticket-detail/ticket-card";
+import { Icon } from "@/components/ui/icon";
+import { MainButton } from "@/components/ui/main-button";
 import { STATIONS } from "@/constants/stations";
 import { USER_DATA } from "@/constants/user";
-import { MainButton } from "@/components/ui/main-button";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
@@ -19,19 +19,30 @@ export default function TicketDetailScreen() {
 	const [isDettagliOpen, setIsDettagliOpen] = useState(false);
 
 	// Extract data from params with fallbacks matching the screenshot
-	const routeStr = (params.route as string) || `${STATIONS[0].name} - ${STATIONS[4].name}`;
+	const routeStr =
+		(params.route as string) || `${STATIONS[0].name} - ${STATIONS[4].name}`;
 	const [origin, destination] = routeStr.split(" - ");
 	const timeStr = (params.time as string) || "18:35 - 21:27";
 	const [departureTime, arrivalTime] = timeStr.split(" - ");
-	
+
 	// Map month to number for the date string (simplified)
 	const monthMap: Record<string, string> = {
-		"Gen": "01", "Feb": "02", "Mar": "03", "Apr": "04", "Mag": "05", "Giu": "06",
-		"Lug": "07", "Ago": "08", "Set": "09", "Ott": "10", "Nov": "11", "Dic": "12"
+		Gen: "01",
+		Feb: "02",
+		Mar: "03",
+		Apr: "04",
+		Mag: "05",
+		Giu: "06",
+		Lug: "07",
+		Ago: "08",
+		Set: "09",
+		Ott: "10",
+		Nov: "11",
+		Dic: "12",
 	};
-	const monthNum = monthMap[(params.month as string)] || "05";
+	const monthNum = monthMap[params.month as string] || "05";
 	const day = (params.day as string) || "28";
-	const dateString = `${day.padStart(2, '0')}/${monthNum}/2026`;
+	const dateString = `${day.padStart(2, "0")}/${monthNum}/2026`;
 
 	return (
 		<View className="flex-1 bg-white">
@@ -66,8 +77,8 @@ export default function TicketDetailScreen() {
 				</Pressable>
 			</View>
 
-			<ScrollView 
-				className="flex-1 px-5" 
+			<ScrollView
+				className="flex-1 px-5"
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{ paddingBottom: 220 }}
 			>
@@ -86,16 +97,18 @@ export default function TicketDetailScreen() {
 			<TicketBottomActions onGestisci={() => setIsGestisciOpen(true)} />
 
 			{/* Bottom Sheets */}
-			<BottomSheet 
-				isVisible={isGestisciOpen} 
-				onClose={() => setIsGestisciOpen(false)} 
+			<BottomSheet
+				isVisible={isGestisciOpen}
+				onClose={() => setIsGestisciOpen(false)}
 				title="Gestisci"
 			>
 				<View className="gap-3">
 					<Pressable className="border border-gray-200 rounded-lg p-4 items-center active:bg-gray-50">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900">Smart Refund</ThemedText>
+						<ThemedText className="font-plus-jakarta-bold !text-gray-900">
+							Smart Refund
+						</ThemedText>
 					</Pressable>
-					<Pressable 
+					<Pressable
 						className="border border-gray-200 rounded-lg p-4 items-center active:bg-gray-50"
 						onPress={() => {
 							setIsGestisciOpen(false);
@@ -103,39 +116,59 @@ export default function TicketDetailScreen() {
 							setTimeout(() => {
 								router.push({
 									pathname: "/add-services" as any,
-									params: { endTime: Date.now() + 10 * 60 * 1000 }
+									params: { endTime: Date.now() + 10 * 60 * 1000 },
 								});
 							}, 300);
 						}}
 					>
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900">Aggiungi servizi</ThemedText>
+						<ThemedText className="font-plus-jakarta-bold !text-gray-900">
+							Aggiungi servizi
+						</ThemedText>
 					</Pressable>
 					<Pressable className="border border-gray-200 rounded-lg p-4 items-center active:bg-gray-50">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900">Indennizzo</ThemedText>
+						<ThemedText className="font-plus-jakarta-bold !text-gray-900">
+							Indennizzo
+						</ThemedText>
 					</Pressable>
 				</View>
 			</BottomSheet>
 
-			<BottomSheet 
-				isVisible={isDettagliOpen} 
-				onClose={() => setIsDettagliOpen(false)} 
+			<BottomSheet
+				isVisible={isDettagliOpen}
+				onClose={() => setIsDettagliOpen(false)}
 				title="Maggiori Dettagli"
 			>
 				<View className="gap-4 mb-6 mt-2">
 					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">N. CartaFreccia/X-GO</ThemedText>
-						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">199933282</ThemedText>
+						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">
+							N. CartaFreccia/X-GO
+						</ThemedText>
+						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">
+							{USER_DATA.loyaltyCode}
+						</ThemedText>
 					</View>
 					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">Punti CartaFreccia/X-GO</ThemedText>
-						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">19.70</ThemedText>
+						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">
+							Punti CartaFreccia/X-GO
+						</ThemedText>
+						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">
+							19.70
+						</ThemedText>
 					</View>
 					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">CO2 rispetto al viaggio in auto:</ThemedText>
-						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">-24.88 Kg</ThemedText>
+						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">
+							CO2 rispetto al viaggio in auto:
+						</ThemedText>
+						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">
+							-24.88 Kg
+						</ThemedText>
 					</View>
 				</View>
-				<MainButton title="Chiudi" className="!h-16" onPress={() => setIsDettagliOpen(false)} />
+				<MainButton
+					title="Chiudi"
+					className="!h-16"
+					onPress={() => setIsDettagliOpen(false)}
+				/>
 			</BottomSheet>
 		</View>
 	);
