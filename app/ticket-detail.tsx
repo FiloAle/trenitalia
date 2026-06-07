@@ -11,6 +11,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { getPurchasedTrips } from "@/utils/trips-store";
 
 export default function TicketDetailScreen() {
 	const params = useLocalSearchParams();
@@ -18,36 +19,23 @@ export default function TicketDetailScreen() {
 	const [isGestisciOpen, setIsGestisciOpen] = useState(false);
 	const [isDettagliOpen, setIsDettagliOpen] = useState(false);
 
-	// Extract data from params with fallbacks matching the screenshot
-	const routeStr =
-		(params.route as string) || `${STATIONS[0].name} - ${STATIONS[4].name}`;
-	const [origin, destination] = routeStr.split(" - ");
-	const timeStr = (params.time as string) || "18:35 - 21:27";
-	const [departureTime, arrivalTime] = timeStr.split(" - ");
+	const tripId = params.tripId as string;
+	// Retrieve from global store
+	const trip = getPurchasedTrips().find(t => t.id === tripId);
 
-	// Map month to number for the date string (simplified)
-	const monthMap: Record<string, string> = {
-		Gen: "01",
-		Feb: "02",
-		Mar: "03",
-		Apr: "04",
-		Mag: "05",
-		Giu: "06",
-		Lug: "07",
-		Ago: "08",
-		Set: "09",
-		Ott: "10",
-		Nov: "11",
-		Dic: "12",
-	};
-	const monthNum = monthMap[params.month as string] || "05";
-	const day = (params.day as string) || "28";
-	const dateString = `${day.padStart(2, "0")}/${monthNum}/2026`;
-	const pnr = (params.pnr as string) || "F34VNN";
-	const trainType = (params.trainType as string) || "Frecciarossa";
-	const cp = params.cp as string | undefined;
-	const carrozza = params.carrozza as string | undefined;
-	const posto = params.posto as string | undefined;
+	if (!trip) {
+		return (
+			<View className="flex-1 items-center justify-center bg-white">
+				<ThemedText>Biglietto non trovato.</ThemedText>
+				<MainButton title="Torna indietro" onPress={() => router.back()} />
+			</View>
+		);
+	}
+
+	const dateObj = new Date(trip.date || new Date());
+	const day = dateObj.getDate().toString().padStart(2, "0");
+	const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+	const dateString = `${day}/${month}/${dateObj.getFullYear()}`;
 
 	return (
 		<View className="flex-1 bg-white">
@@ -85,22 +73,29 @@ export default function TicketDetailScreen() {
 			<ScrollView
 				className="flex-1 px-5"
 				showsVerticalScrollIndicator={false}
-				contentContainerStyle={{ paddingBottom: 220 }}
+				contentContainerStyle={{ paddingBottom: 220, gap: 16 }}
 			>
-				{/* Main Ticket Card */}
-				<TicketCard
-					dateString={dateString}
-					origin={origin}
-					destination={destination}
-					departureTime={departureTime}
-					arrivalTime={arrivalTime}
-					pnr={pnr}
-					trainType={trainType}
-					cp={cp}
-					carrozza={carrozza}
-					posto={posto}
-					onOpenDettagli={() => setIsDettagliOpen(true)}
-				/>
+				{/* Multi-Segment Ticket Cards */}
+				{trip.trains.map((train, index) => (
+					<TicketCard
+						key={index}
+						dateString={dateString}
+						origin={train.origin || ""}
+						destination={train.destination || ""}
+						departureTime={train.departureTime || ""}
+						arrivalTime={train.arrivalTime || ""}
+						pnr={train.pnr || ""}
+						trainType={train.type || ""}
+						trainNumber={train.number || ""}
+						cp={train.cp}
+						carrozza={train.coach}
+						posto={train.seat}
+						passengerClass={train.selectedClass || "Standard"}
+						offer={train.selectedOffer || "Super Economy"}
+						price={train.price}
+						onOpenDettagli={() => setIsDettagliOpen(true)}
+					/>
+				))}
 			</ScrollView>
 
 			{/* Bottom Fixed Actions */}
@@ -126,7 +121,7 @@ export default function TicketDetailScreen() {
 							setTimeout(() => {
 								router.push({
 									pathname: "/add-services" as any,
-									params: { endTime: Date.now() + 10 * 60 * 1000 },
+									params: { endTime: Date.now() + 10 * 60 * 1000, isAddService: "true" },
 								});
 							}, 300);
 						}}

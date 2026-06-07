@@ -29,7 +29,15 @@ export type TrainType = string;
 
 export interface TravelSolution {
   id: string;
-  trains: { type: TrainType; number: string }[];
+  date?: string;
+  trains: { 
+    type: TrainType; 
+    number: string;
+    origin?: string;
+    destination?: string;
+    departureTime?: string;
+    arrivalTime?: string;
+  }[];
   departureTime: string;
   arrivalTime: string;
   duration: string;
@@ -37,6 +45,7 @@ export interface TravelSolution {
   originalPrice?: number;
   offerName: string;
   delay?: string;
+  tickets?: any[];
   status?: "not_started" | "on_time" | "delayed";
 }
 

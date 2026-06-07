@@ -1,16 +1,20 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { Stack, router } from "expo-router";
+import { Stack, router, useLocalSearchParams } from "expo-router";
 import React, { useEffect } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PaymentProcessingScreen() {
+	const params = useLocalSearchParams();
 	const insets = useSafeAreaInsets();
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
-			router.replace("/payment-success");
+			router.replace({
+				pathname: "/payment-success" as any,
+				params: { isAddService: params.isAddService }
+			});
 		}, 2000);
 
 		return () => clearTimeout(timer);

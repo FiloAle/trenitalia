@@ -194,7 +194,10 @@ export default function PaymentScreen() {
 				hideSeatSelection={true}
 				disabled={!acceptedTerms}
 				onPress={() => {
-					router.push("/payment-processing");
+					router.push({
+						pathname: "/payment-processing" as any,
+						params: { isAddService: params.isAddService }
+					});
 				}}
 			/>
 		</View>

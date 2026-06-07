@@ -63,6 +63,7 @@ export default function SearchResultsScreen() {
 						const parsedPrice = r.pr ? parseFloat(r.pr.replace(",", ".")) : 0;
 						return {
 							id: r.dx.toString() + r.ns + idx,
+							date: currentSelectedDate.toISOString(),
 							trains: r.l.map((leg: any) => ({
 								type: leg.ts,
 								number: leg.n,

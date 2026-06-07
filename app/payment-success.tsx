@@ -1,14 +1,61 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
-import { Stack, router } from "expo-router";
-import React, { useState } from "react";
+import { Stack, router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import { Pressable, Switch, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { selectedSolutionCache } from "@/api/search";
+import { addPurchasedTrip } from "@/utils/trips-store";
 
 export default function PaymentSuccessScreen() {
+	const params = useLocalSearchParams();
 	const insets = useSafeAreaInsets();
 	const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+	const savedRef = useRef(false);
+
+	useEffect(() => {
+		if (savedRef.current) return;
+		savedRef.current = true;
+
+		if (selectedSolutionCache && params.isAddService !== "true") {
+			const sol = selectedSolutionCache;
+			const generateCode = (len: number) => {
+				const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+				let res = "";
+				for (let i = 0; i < len; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+				return res;
+			};
+			const generateNumCode = (len: number) => {
+				const chars = "0123456789";
+				let res = "";
+				for (let i = 0; i < len; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+				return res;
+			};
+
+			const enrichedTrains = sol.trains.map((train: any) => {
+				const isRegionale = train.type === "Regionale" || train.type?.toLowerCase().includes("reg");
+				return {
+					...train,
+					pnr: generateCode(6),
+					cp: isRegionale ? undefined : generateNumCode(6),
+					coach: isRegionale ? undefined : (Math.floor(Math.random() * 11) + 1).toString(),
+					seat: isRegionale ? undefined : `${Math.floor(Math.random() * 18) + 1}${["A", "B", "C", "D"][Math.floor(Math.random() * 4)]}`
+				};
+			});
+
+			addPurchasedTrip({
+				id: Math.random().toString(36).substring(7),
+				date: sol.date,
+				departureTime: sol.departureTime,
+				arrivalTime: sol.arrivalTime,
+				duration: sol.duration,
+				price: sol.price,
+				offerName: sol.offerName,
+				trains: enrichedTrains,
+			});
+		}
+	}, []);
 
 	return (
 		<View className="flex-1 bg-[#005045]">

@@ -455,11 +455,27 @@ export default function SelectOfferScreen() {
 				}
 				basePrice={basePrice}
 				onPress={() => {
+					const finalPrice = getPriceForSelection(selectedClasses, selectedOffers) * passengerCount;
+					
+					if (selectedSolutionCache) {
+						selectedSolutionCache.price = finalPrice;
+						selectedSolutionCache.trains = selectedSolutionCache.trains.map((train: any, idx: number) => {
+							const cName = selectedClasses[idx] || "Standard";
+							const oName = selectedOffers[idx] || "Super Economy";
+							return {
+								...train,
+								selectedClass: cName,
+								selectedOffer: oName,
+								price: getPriceForSegment(idx, cName, oName) * passengerCount
+							};
+						});
+					}
+
 					router.push({
 						pathname: "/passenger-data" as any,
 						params: {
 							...params,
-							totalPrice: getPriceForSelection(selectedClasses, selectedOffers) * passengerCount,
+							totalPrice: finalPrice,
 							basePrice: basePrice
 						}
 					});

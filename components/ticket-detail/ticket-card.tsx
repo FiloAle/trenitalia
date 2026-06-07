@@ -1,10 +1,10 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
+import { USER_DATA } from "@/constants/user";
+import { generateAztec, getCachedAztec } from "@/utils/aztec";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Pressable, View } from "react-native";
-import { USER_DATA } from "@/constants/user";
-import { generateAztec, getCachedAztec } from "@/utils/aztec";
 
 interface TicketCardProps {
 	dateString: string;
@@ -14,11 +14,30 @@ interface TicketCardProps {
 	arrivalTime: string;
 	pnr: string;
 	trainType?: string;
+	trainNumber: string;
 	cp?: string;
 	carrozza?: string;
 	posto?: string;
+	passengerClass?: string;
+	offer?: string;
+	price?: number;
 	onOpenDettagli: () => void;
 }
+
+const LOGOS: Record<string, any> = {
+	Frecciarossa: require("../../assets/logos/frecciarossa.png"),
+	FRRossa: require("../../assets/logos/frecciarossa.png"),
+	Intercity: require("../../assets/logos/intercity.png"),
+	InterCity: require("../../assets/logos/intercity.png"),
+	IntercityNotte: require("../../assets/logos/intercity.png"),
+	ICNotte: require("../../assets/logos/intercity.png"),
+	Regionale: require("../../assets/logos/regionale.png"),
+	Reg: require("../../assets/logos/regionale.png"),
+	RegV: require("../../assets/logos/regionale.png"),
+	Regv: require("../../assets/logos/regionale.png"),
+	"Reg Tper": require("../../assets/logos/tper.png"),
+	"Regv Tper": require("../../assets/logos/tper.png"),
+};
 
 export function TicketCard({
 	dateString,
@@ -28,9 +47,13 @@ export function TicketCard({
 	arrivalTime,
 	pnr,
 	trainType = "Frecciarossa",
+	trainNumber,
 	cp,
 	carrozza,
 	posto,
+	passengerClass = "Standard",
+	offer = "Super Economy",
+	price,
 	onOpenDettagli,
 }: TicketCardProps) {
 	const qrValue =
@@ -43,18 +66,23 @@ export function TicketCard({
 		pnr;
 
 	const getTrainLogo = () => {
-		switch (trainType) {
-			case "Regionale":
-				return require("../../assets/logos/regionale.png");
-			case "Intercity":
-				return require("../../assets/logos/intercity.png");
-			case "Frecciarossa":
-			default:
-				return require("../../assets/logos/frecciarossa.png");
-		}
+		const normalizedType = trainType.trim().toLowerCase();
+		const logoKey = Object.keys(LOGOS).find(
+			(k) => k.toLowerCase() === normalizedType,
+		);
+		return logoKey ? LOGOS[logoKey] : LOGOS["Frecciarossa"];
 	};
 
-	const [aztecImageUri, setAztecImageUri] = useState<string | null>(getCachedAztec(qrValue, 16));
+	const getLogoWidth = () => {
+		const normalizedType = trainType.trim().toLowerCase();
+		return normalizedType.includes("frecciarossa") || normalizedType === "frrossa"
+			? 90
+			: 55;
+	};
+
+	const [aztecImageUri, setAztecImageUri] = useState<string | null>(
+		getCachedAztec(qrValue, 16),
+	);
 
 	useEffect(() => {
 		// Use scale 16 here as well so it's pre-cached for the full-screen modal!
@@ -71,12 +99,12 @@ export function TicketCard({
 					<View>
 						<Image
 							source={getTrainLogo()}
-							style={{ width: 100, height: 16 }}
+							style={{ width: getLogoWidth(), height: 16 }}
 							resizeMode="contain"
 						/>
 					</View>
 					<ThemedText className="ml-2 text-base font-plus-jakarta-medium !text-gray-900">
-						8825
+						{trainNumber}
 					</ThemedText>
 				</View>
 				<ThemedText className="text-base font-plus-jakarta-bold !text-gray-900">
@@ -102,11 +130,11 @@ export function TicketCard({
 						<ThemedText className="flex-1 text-[26px] font-plus-jakarta-bold !text-gray-900">
 							{departureTime}
 						</ThemedText>
-						
+
 						<View className="px-4">
 							<Icon name="arrow_forward" size={24} color="#9ca3af" />
 						</View>
-						
+
 						<ThemedText className="flex-1 text-right text-[26px] font-plus-jakarta-bold !text-gray-900">
 							{arrivalTime}
 						</ThemedText>
@@ -117,8 +145,14 @@ export function TicketCard({
 				<View className="flex-row justify-between mb-6 gap-2">
 					<View className="flex-1 rounded-lg bg-gray-100 p-2">
 						<View className="flex-row items-center justify-between mb-0.5">
-							<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500">
-								PNR
+							<ThemedText
+								className="text-sm font-plus-jakarta-medium !text-gray-500"
+								numberOfLines={1}
+								adjustsFontSizeToFit
+							>
+								{trainType?.toLowerCase().includes("reg")
+									? "CODICE BIGLIETTO"
+									: "PNR"}
 							</ThemedText>
 							<Icon name="content_copy" size={14} color="#6b7280" />
 						</View>
@@ -139,9 +173,13 @@ export function TicketCard({
 					)}
 
 					{/* Conditionally render Carrozza/Posto (Not for Regionale) */}
-					{trainType !== "Regionale" && carrozza && posto && (
+					{!trainType?.toLowerCase().includes("reg") && carrozza && posto && (
 						<View className="flex-1 rounded-lg bg-gray-100 p-2">
-							<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500 mb-0.5" numberOfLines={1} adjustsFontSizeToFit>
+							<ThemedText
+								className="text-sm font-plus-jakarta-medium !text-gray-500 mb-0.5"
+								numberOfLines={1}
+								adjustsFontSizeToFit
+							>
 								CARR.-POSTO
 							</ThemedText>
 							<View className="flex-row items-center justify-between">
@@ -156,7 +194,9 @@ export function TicketCard({
 				{/* QR Code Block */}
 				<Pressable
 					className="items-center justify-center py-3"
-					onPress={() => router.push({ pathname: "/qr-code" as any, params: { pnr } })}
+					onPress={() =>
+						router.push({ pathname: "/qr-code" as any, params: { pnr } })
+					}
 				>
 					{aztecImageUri ? (
 						<Image
@@ -172,15 +212,17 @@ export function TicketCard({
 
 			{/* Ticket Type and Price */}
 			<View className="flex-row items-center justify-between border-t border-gray-100 px-5 py-3">
-				<View className="flex-row items-center">
+				<View className="flex-row items-center flex-1 pr-2">
 					<Icon name="confirmation_number" size={24} color="#000" />
-					<ThemedText className="ml-2 text-base font-plus-jakarta-medium !text-gray-900">
-						STANDARD / Super Economy
+					<ThemedText className="ml-2 text-base font-plus-jakarta-medium !text-gray-900 shrink">
+						{passengerClass.toUpperCase()} / {offer}
 					</ThemedText>
 				</View>
-				<ThemedText className="text-lg font-plus-jakarta-bold !text-gray-900">
-					19,70€
-				</ThemedText>
+				{price !== undefined && (
+					<ThemedText className="text-lg font-plus-jakarta-bold !text-gray-900">
+						{price.toFixed(2).replace(".", ",")}€
+					</ThemedText>
+				)}
 			</View>
 
 			{/* Maggiori Dettagli */}

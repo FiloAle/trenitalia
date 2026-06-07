@@ -112,7 +112,7 @@ export default function AddServicesScreen() {
 				onPress={() => {
 					router.push({
 						pathname: "/payment" as any,
-						params: { endTime, price: basePrice + selectedPrice },
+						params: { endTime, price: basePrice + selectedPrice, isAddService: params.isAddService },
 					});
 				}}
 			/>

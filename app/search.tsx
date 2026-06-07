@@ -71,7 +71,6 @@ export default function SearchScreen() {
 	>("andata");
 	const [departureDate, setDepartureDate] = useState(() => {
 		const d = new Date();
-		d.setMinutes(0);
 		d.setSeconds(0);
 		d.setMilliseconds(0);
 		return d;
@@ -79,7 +78,6 @@ export default function SearchScreen() {
 	const [returnDate, setReturnDate] = useState(() => {
 		const d = new Date();
 		d.setHours(d.getHours() + 1);
-		d.setMinutes(0);
 		d.setSeconds(0);
 		d.setMilliseconds(0);
 		return d;
