@@ -11,13 +11,13 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getPurchasedTrips } from "@/utils/trips-store";
+import { getPurchasedTrips, toggleSavedTrip } from "@/utils/trips-store";
 
 export default function TicketDetailScreen() {
 	const params = useLocalSearchParams();
 	const insets = useSafeAreaInsets();
 	const [isGestisciOpen, setIsGestisciOpen] = useState(false);
-	const [isDettagliOpen, setIsDettagliOpen] = useState(false);
+	const [forceRender, setForceRender] = useState(0);
 
 	const tripId = params.tripId as string;
 	// Retrieve from global store
@@ -39,34 +39,21 @@ export default function TicketDetailScreen() {
 
 	return (
 		<View className="flex-1 bg-white">
-			{/* Gradient Header Background */}
-			<View className="absolute left-0 right-0 top-0 h-64">
-				<LinearGradient
-					colors={["#8a052b", "#f73d3d"]}
-					start={{ x: 0, y: 0 }}
-					end={{ x: 1, y: 0 }}
-					style={{ flex: 1 }}
-				/>
-			</View>
-
 			{/* Header Nav */}
 			<View
-				className="flex-row items-center justify-between px-5 pb-4"
-				style={{ paddingTop: insets.top + 4 }}
+				className="flex-row items-center justify-between px-5 pb-4 bg-teal-900"
+				style={{ paddingTop: insets.top + 10 }}
 			>
-				<Pressable className="p-2">
-					<Icon name="ios_share" size={28} color="white" />
+				<Pressable className="p-2" onPress={() => router.back()}>
+					<Icon name="arrow_back_ios" size={24} color="white" />
 				</Pressable>
 				<View className="items-center">
-					<ThemedText className="text-[15px] font-plus-jakarta-bold !text-white uppercase">
-						{USER_DATA.firstName} {USER_DATA.lastName}
-					</ThemedText>
-					<ThemedText className="text-sm font-plus-jakarta-medium !text-white">
-						Adulto
+					<ThemedText className="text-[18px] font-plus-jakarta-bold !text-white">
+						Biglietto
 					</ThemedText>
 				</View>
-				<Pressable className="p-2" onPress={() => router.back()}>
-					<Icon name="close" size={28} color="white" />
+				<Pressable className="p-2">
+					<Icon name="ios_share" size={24} color="white" />
 				</Pressable>
 			</View>
 
@@ -92,8 +79,7 @@ export default function TicketDetailScreen() {
 						posto={train.seat}
 						passengerClass={train.selectedClass || "Standard"}
 						offer={train.selectedOffer || "Super Economy"}
-						price={train.price}
-						onOpenDettagli={() => setIsDettagliOpen(true)}
+						price={train.price ?? trip.price}
 					/>
 				))}
 			</ScrollView>
@@ -108,6 +94,18 @@ export default function TicketDetailScreen() {
 				title="Gestisci"
 			>
 				<View className="gap-3">
+					<Pressable 
+						className={`rounded-lg p-4 items-center active:opacity-80 ${trip.isSaved ? 'bg-red-600' : 'bg-[#005045]'}`}
+						onPress={() => {
+							toggleSavedTrip(trip.id);
+							setForceRender(prev => prev + 1);
+							setIsGestisciOpen(false);
+						}}
+					>
+						<ThemedText className="font-plus-jakarta-bold !text-white">
+							{trip.isSaved ? "Rimuovi dai salvati" : "Salva biglietto"}
+						</ThemedText>
+					</Pressable>
 					<Pressable className="border border-gray-200 rounded-lg p-4 items-center active:bg-gray-50">
 						<ThemedText className="font-plus-jakarta-bold !text-gray-900">
 							Smart Refund
@@ -117,7 +115,6 @@ export default function TicketDetailScreen() {
 						className="border border-gray-200 rounded-lg p-4 items-center active:bg-gray-50"
 						onPress={() => {
 							setIsGestisciOpen(false);
-							// Give modal time to close before navigating
 							setTimeout(() => {
 								router.push({
 									pathname: "/add-services" as any,
@@ -136,44 +133,6 @@ export default function TicketDetailScreen() {
 						</ThemedText>
 					</Pressable>
 				</View>
-			</BottomSheet>
-
-			<BottomSheet
-				isVisible={isDettagliOpen}
-				onClose={() => setIsDettagliOpen(false)}
-				title="Maggiori Dettagli"
-			>
-				<View className="gap-4 mb-6 mt-2">
-					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">
-							N. CartaFreccia/X-GO
-						</ThemedText>
-						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">
-							{USER_DATA.loyaltyCode}
-						</ThemedText>
-					</View>
-					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">
-							Punti CartaFreccia/X-GO
-						</ThemedText>
-						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">
-							19.70
-						</ThemedText>
-					</View>
-					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">
-							CO2 rispetto al viaggio in auto:
-						</ThemedText>
-						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">
-							-24.88 Kg
-						</ThemedText>
-					</View>
-				</View>
-				<MainButton
-					title="Chiudi"
-					className="!h-16"
-					onPress={() => setIsDettagliOpen(false)}
-				/>
 			</BottomSheet>
 		</View>
 	);

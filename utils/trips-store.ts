@@ -25,6 +25,7 @@ export interface PurchasedTrip {
 	price: number;
 	offerName: string;
 	trains: PurchasedTrain[];
+	isSaved?: boolean;
 }
 
 let purchasedTrips: PurchasedTrip[] = [
@@ -120,7 +121,99 @@ let purchasedTrips: PurchasedTrip[] = [
 			},
 		],
 	},
+	{
+		id: "5",
+		date: "2026-06-14T18:35:00.000Z",
+		departureTime: "18:35",
+		arrivalTime: "21:27",
+		duration: "2h 52min",
+		price: 49.9,
+		offerName: "Super Economy",
+		trains: [
+			{
+				type: "Frecciarossa",
+				number: "8825",
+				origin: STATIONS[1178].name,
+				destination: STATIONS[583].name,
+				departureTime: "18:35",
+				arrivalTime: "21:27",
+				pnr: "Y7B9Q2",
+				cp: "891801",
+				coach: "7",
+				seat: "15D",
+			},
+		],
+	},
+	{
+		id: "6",
+		date: "2026-07-04T10:15:00.000Z",
+		departureTime: "10:15",
+		arrivalTime: "14:40",
+		duration: "4h 25min",
+		price: 89.9,
+		offerName: "Base",
+		trains: [
+			{
+				type: "Frecciarossa",
+				number: "9510",
+				origin: STATIONS[583].name,
+				destination: "Bologna Centrale",
+				departureTime: "10:15",
+				arrivalTime: "11:30",
+				pnr: "Z9A1C3",
+				cp: "314159",
+				coach: "2",
+				seat: "8A",
+			},
+			{
+				type: "Regionale",
+				number: "4023",
+				origin: "Bologna Centrale",
+				destination: STATIONS[1178].name,
+				departureTime: "11:50",
+				arrivalTime: "14:40",
+				pnr: "X8Y9Z0",
+				coach: "-",
+				seat: "-",
+			},
+		],
+	},
 ];
+
+// Add a dynamic ticket for today
+const today = new Date();
+const currentHour = today.getHours();
+const depHour = (currentHour + 1) % 24;
+const arrHour = (currentHour + 3) % 24;
+const depTimeStr = `${depHour.toString().padStart(2, '0')}:00`;
+const arrTimeStr = `${arrHour.toString().padStart(2, '0')}:00`;
+
+const todayTripDate = new Date();
+todayTripDate.setHours(depHour, 0, 0, 0);
+
+purchasedTrips.push({
+	id: "today-mock",
+	date: todayTripDate.toISOString(),
+	departureTime: depTimeStr,
+	arrivalTime: arrTimeStr,
+	duration: "2h 00min",
+	price: 35.5,
+	offerName: "Base",
+	trains: [
+		{
+			type: "Frecciarossa",
+			number: "9510",
+			origin: STATIONS[583].name,
+			destination: STATIONS[1178].name,
+			departureTime: depTimeStr,
+			arrivalTime: arrTimeStr,
+			pnr: "TODAY1",
+			cp: "123456",
+			coach: "9",
+			seat: "1A",
+		},
+	],
+});
 
 purchasedTrips.sort((a, b) => {
 	const dateA = a.date ? new Date(a.date).getTime() : 0;
@@ -141,4 +234,11 @@ export const addPurchasedTrip = (trip: PurchasedTrip) => {
 
 export const deletePurchasedTrip = (id: string) => {
 	purchasedTrips = purchasedTrips.filter((t) => t.id !== id);
+};
+
+export const toggleSavedTrip = (id: string) => {
+	const trip = purchasedTrips.find((t) => t.id === id);
+	if (trip) {
+		trip.isSaved = !trip.isSaved;
+	}
 };

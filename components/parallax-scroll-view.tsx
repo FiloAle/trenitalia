@@ -167,13 +167,6 @@ export default function ParallaxScrollView({
 							size={24}
 							style={iconColorStyle}
 						/>
-						<Pressable onPress={onProfilePress}>
-							<View className="h-8 w-8 items-center justify-center rounded-full bg-teal-900">
-								<ThemedText className="text-[11px] font-plus-jakarta-bold !text-white">
-									{getInitials(USER_DATA.firstName, USER_DATA.lastName)}
-								</ThemedText>
-							</View>
-						</Pressable>
 					</View>
 				</View>
 			</Animated.View>

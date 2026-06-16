@@ -6,11 +6,9 @@ import { Text, View, Pressable } from "react-native";
 import { HapticTab } from "@/components/haptic-tab";
 import { Colors } from "@/constants/theme";
 import { PurchaseModal } from "@/components/modals/purchase-modal";
-import { LoyaltyMenu } from "@/components/modals/loyalty-menu";
 
 export default function TabLayout() {
 	const [isPurchaseModalVisible, setIsPurchaseModalVisible] = useState(false);
-	const [isLoyaltyMenuVisible, setIsLoyaltyMenuVisible] = useState(false);
 
 	return (
 		<>
@@ -124,17 +122,6 @@ export default function TabLayout() {
 					name="loyalty"
 					options={{
 						title: "Carte fedeltà",
-						tabBarButton: ({ ref, ...props }: any) => (
-							<Pressable
-								ref={ref}
-								{...props}
-								onPress={(e) => {
-									// Prevent default navigation
-									e?.preventDefault?.();
-									setIsLoyaltyMenuVisible(true);
-								}}
-							/>
-						),
 						tabBarIcon: ({ color, focused }) => (
 							<Icon
 								name="credit_card_heart"
@@ -153,11 +140,6 @@ export default function TabLayout() {
 			<PurchaseModal
 				isVisible={isPurchaseModalVisible}
 				onClose={() => setIsPurchaseModalVisible(false)}
-			/>
-
-			<LoyaltyMenu
-				isVisible={isLoyaltyMenuVisible}
-				onClose={() => setIsLoyaltyMenuVisible(false)}
 			/>
 		</>
 	);
