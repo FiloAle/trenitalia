@@ -1,9 +1,9 @@
 function isIE() {
     // Internet Explorer 6-11
-    var isIE = /*@cc_on!@*/false || !!document.documentMode;
+    let isIE = /*@cc_on!@*/false || !!document.documentMode;
 
     // Edge 20+
-    var isEdge = !isIE && !!window.StyleMedia;
+    let isEdge = !isIE && !!window.StyleMedia;
 
     return isIE || isEdge;// || isEdge;
 }
@@ -41,14 +41,14 @@ function apriFermateSuccessive(trenoid) {
 
     var popup = $("#FermateSuccessive_" + trenoid);
     popup.on('mousedown', function (e) {
-        var dr = $(this).addClass("drag").css("cursor", "move");
+        let dr = $(this).addClass("drag").css("cursor", "move");
         height = dr.outerHeight();
         width = dr.outerWidth();
         ypos = dr.offset().top + height - e.pageY,
         xpos = dr.offset().left + width - e.pageX;
         $(document.body).on('mousemove', function (e) {
-            var itop = e.pageY + ypos - height;
-            var ileft = e.pageX + xpos - width;
+            let itop = e.pageY + ypos - height;
+            let ileft = e.pageX + xpos - width;
             if (dr.hasClass("drag")) {
                 dr.offset({ top: itop, left: ileft });
             }
@@ -60,14 +60,14 @@ function apriFermateSuccessive(trenoid) {
     
     var popup = $("#FermateSuccessive_" + trenoid);
     popup.on('touchstart', function (e) {
-        var dr = $(this).addClass("drag").css("cursor", "move");
+        let dr = $(this).addClass("drag").css("cursor", "move");
         height = dr.outerHeight();
         width = dr.outerWidth();
         ypos = dr.offset().top + height - e.pageY,
         xpos = dr.offset().left + width - e.pageX;
         $(document.body).on('touchmove', function (e) {
-            var itop = e.pageY + ypos - height;
-            var ileft = e.pageX + xpos - width;
+            let itop = e.pageY + ypos - height;
+            let ileft = e.pageX + xpos - width;
             if (dr.hasClass("drag")) {
                 dr.offset({ top: itop, left: ileft });
             }
@@ -78,8 +78,8 @@ function apriFermateSuccessive(trenoid) {
      
 
     //  var popup = $("#Provadelleprove" );
-    var pos = $('#btn_'+ trenoid).offset();
-    var top = pos.top - 300;
+    let pos = $('#btn_'+ trenoid).offset();
+    let top = pos.top - 300;
     popup.css({
         position: 'absolute',
         top: top
@@ -92,16 +92,16 @@ function apriFermateSuccessive(trenoid) {
 
 function chiudiInfo(trenoid)
 {
-    var popup = $("#FermateSuccessive_" + trenoid);
+    let popup = $("#FermateSuccessive_" + trenoid);
     popup.hide();
 }
 
 
 //lento ma IE non supporta le CSS var()
 function animateTextLoopIE(div) {
-    var conteiners = $(div);
-    for (var i = 0; i < conteiners.length; i++) {
-        var content = $(conteiners[i]).html();
+    let conteiners = $(div);
+    for (let i = 0; i < conteiners.length; i++) {
+        let content = $(conteiners[i]).html();
         $(conteiners[i]).html("<marquee>" + content + "</marquee>");
     }
     $(div).addClass("move");
@@ -109,11 +109,11 @@ function animateTextLoopIE(div) {
 }
 
 function animateGroup(cssClass, cssVar) {
-    var parentWidth = $($(cssClass)[0]).outerWidth();
-    var maxWidth = 0;
-    var elements = $(cssClass + " div");
+    let parentWidth = $($(cssClass)[0]).outerWidth();
+    let maxWidth = 0;
+    let elements = $(cssClass + " div");
     $.each(elements, function (i, v) {
-        var width = $(v).outerWidth();
+        let width = $(v).outerWidth();
         if (width > maxWidth)
             maxWidth = width;
 
@@ -127,9 +127,9 @@ function animateGroup(cssClass, cssVar) {
             animateTextLoopIE(cssClass + " .m");
         }
         else {
-            var dim = (maxWidth * -1) + "px";
-            var conteiners = $(cssClass + " .m");
-            for (var i = 0; i < conteiners.length; i++) {
+            let dim = (maxWidth * -1) + "px";
+            let conteiners = $(cssClass + " .m");
+            for (let i = 0; i < conteiners.length; i++) {
                 conteiners[i].style.setProperty(cssVar, dim);
             }
             $(cssClass + " .m").addClass("move");
@@ -150,8 +150,8 @@ function stopFooterAmination() {
 }
 
 function animateFooter() {
-    var parentWidth = $($(".footer")[0]).outerWidth();
-    var width = $(".footer div").outerWidth();
+    let parentWidth = $($(".footer")[0]).outerWidth();
+    let width = $(".footer div").outerWidth();
 
     if (width > parentWidth) {
         $(".footer div").addClass("move");
@@ -172,10 +172,10 @@ function getTime(date) {
 
     try {
 
-        var time = date.split("T")[1].split("Z")[0].split(":");
-        var h = checkLenght("" + time[0]);
-        var m = checkLenght("" + time[1]);
-        var s = checkLenght("" + time[2]);
+        let time = date.split("T")[1].split("Z")[0].split(":");
+        let h = checkLenght("" + time[0]);
+        let m = checkLenght("" + time[1]);
+        let s = checkLenght("" + time[2]);
 
         return h + ":" + m + ":" + s;
     }
@@ -187,12 +187,12 @@ function getTime(date) {
 }
 
 function getSDate(date) {
-    var time = getTime(date);
+    let time = getTime(date);
 
-    var jDate = new Date(date);
-    var d = checkLenght("" + jDate.getDate());
-    var m = checkLenght("" + (jDate.getMonth() + 1));
-    var y = checkLenght("" + jDate.getFullYear());
+    let jDate = new Date(date);
+    let d = checkLenght("" + jDate.getDate());
+    let m = checkLenght("" + (jDate.getMonth() + 1));
+    let y = checkLenght("" + jDate.getFullYear());
 
     return d + "/" + m + "/" + y + " " + time;
 }

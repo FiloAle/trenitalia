@@ -7,11 +7,45 @@ import { router } from "expo-router";
 
 interface TimelineEventRowProps {
 	station: TimelineStation;
+	nextStation?: TimelineStation;
 	isFirst: boolean;
 	isLast: boolean;
+	isTruncatedTop?: boolean;
+	isTruncatedBottom?: boolean;
 }
 
-export function TimelineEventRow({ station, isFirst, isLast }: TimelineEventRowProps) {
+const TrackLine = ({ isDashed, isActual, className, style, isReverse = false }: any) => {
+	if (isDashed) {
+		return (
+			<View 
+				className={`absolute z-0 ${className}`} 
+				style={[style, { backgroundColor: 'transparent', width: 10 }]}
+			>
+				{Array.from({ length: 3 }).map((_, i) => (
+					<View 
+						key={i} 
+						style={{ 
+							width: 10, 
+							height: 10, 
+							borderRadius: 5,
+							backgroundColor: isActual ? '#005045' : '#e5e7eb',
+							position: 'absolute',
+							...(isReverse ? { bottom: i * 14 + 9 } : { top: i * 14 + 9 })
+						}} 
+					/>
+				))}
+			</View>
+		);
+	}
+	return (
+		<View 
+			className={`absolute z-0 ${isActual ? 'bg-[#005045]' : 'bg-[#e5e7eb]'} ${className}`} 
+			style={style}
+		/>
+	);
+};
+
+export function TimelineEventRow({ station, nextStation, isFirst, isLast, isTruncatedTop = false, isTruncatedBottom = false }: TimelineEventRowProps) {
 	const arrivalEvents = station.events.filter(e => e.label.includes("Arrivo"));
 	const departureEvents = station.events.filter(e => e.label.includes("Partenza"));
 
@@ -20,6 +54,10 @@ export function TimelineEventRow({ station, isFirst, isLast }: TimelineEventRowP
 
 	const hasArrival = arrivalEvents.length > 0;
 	const hasDeparture = departureEvents.length > 0;
+
+	const isNextArrivalActual = nextStation 
+		? (nextStation.events.filter(e => e.label.includes("Arrivo")).some(e => e.isActual))
+		: false;
 
 	return (
 		<View 
@@ -30,7 +68,7 @@ export function TimelineEventRow({ station, isFirst, isLast }: TimelineEventRowP
 				{/* Arrival Events (Above Station Name) */}
 				{hasArrival && (
 					<View className="relative">
-						<View className={`absolute left-[29px] w-[10px] top-0 bottom-[-2px] z-0 ${isArrivalActual ? 'bg-[#005045]' : 'bg-[#e5e7eb]'}`} />
+						{!isTruncatedTop && <TrackLine isDashed={false} isActual={isArrivalActual} className="left-[29px] top-0 bottom-[-2px]" style={{ width: 10 }} />}
 						<View className="ml-[64px] pl-3 relative z-10">
 							{/* L-Bracket for Arrivals */}
 							<View 
@@ -76,17 +114,22 @@ export function TimelineEventRow({ station, isFirst, isLast }: TimelineEventRowP
 				<View className="relative">
 					{/* Top half line */}
 					{hasArrival && (
-						<View 
-							className={`absolute top-0 z-0 ${isArrivalActual ? 'bg-[#005045]' : 'bg-[#e5e7eb]'}`} 
-							style={{ left: 29, width: 10, bottom: '50%', marginBottom: -1 }}
+						<TrackLine 
+							isDashed={isTruncatedTop} 
+							isActual={isArrivalActual} 
+							isReverse={true}
+							className="top-0" 
+							style={isTruncatedTop ? { left: 29, width: 10, bottom: '50%' } : { left: 29, width: 10, bottom: '50%', marginBottom: -1 }} 
 						/>
 					)}
 
 					{/* Bottom half line */}
 					{hasDeparture && (
-						<View 
-							className={`absolute z-0 ${isDepartureActual ? 'bg-[#005045]' : 'bg-[#e5e7eb]'}`} 
-							style={{ left: 29, width: 10, top: '50%', bottom: -2 }}
+						<TrackLine 
+							isDashed={isTruncatedBottom} 
+							isActual={isDepartureActual} 
+							className="" 
+							style={isTruncatedBottom ? { left: 29, width: 10, top: '50%' } : { left: 29, width: 10, top: '50%', bottom: -2 }} 
 						/>
 					)}
 
@@ -99,6 +142,12 @@ export function TimelineEventRow({ station, isFirst, isLast }: TimelineEventRowP
 					{!hasDeparture && (
 						<View className={`absolute z-20 rounded-full ${isArrivalActual ? 'bg-[#005045]' : 'bg-[#e5e7eb]'}`} style={{ left: 29, width: 10, height: 10, top: '50%', marginTop: -5 }} />
 					)}
+
+					{/* Solid background behind dot to ensure white dot has a border */}
+					<View 
+						className={`absolute z-20 rounded-full ${isArrivalActual || isDepartureActual ? 'bg-[#005045]' : 'bg-[#e5e7eb]'}`} 
+						style={{ left: 29, width: 10, height: 10, top: '50%', marginTop: -5 }} 
+					/>
 
 					{/* Dot on the line */}
 					<View className="absolute z-30 rounded-full bg-white" style={{ left: 30, width: 8, height: 8, top: '50%', marginTop: -4 }} />
@@ -127,10 +176,12 @@ export function TimelineEventRow({ station, isFirst, isLast }: TimelineEventRowP
 
 				{/* Departures Block (Badge + Events) */}
 				<View className="relative">
-					{hasDeparture && (
-						<View 
-							className={`absolute top-0 bottom-[-2px] z-0 ${isDepartureActual ? 'bg-[#005045]' : 'bg-[#e5e7eb]'}`} 
-							style={{ left: 29, width: 10 }}
+					{!isTruncatedBottom && hasDeparture && (
+						<TrackLine 
+							isDashed={false} 
+							isActual={isDepartureActual} 
+							className="top-0 bottom-[-2px]" 
+							style={{ left: 29, width: 10 }} 
 						/>
 					)}
 					<View className="ml-[64px] pl-3 relative z-10">
@@ -180,17 +231,24 @@ export function TimelineEventRow({ station, isFirst, isLast }: TimelineEventRowP
 							</View>
 						))}
 					</View>
+
+					{/* Terminal rounded cap for the green line */}
+					{!isTruncatedBottom && isDepartureActual && !isNextArrivalActual && hasDeparture && (
+						<View className="absolute z-20 bg-[#005045] rounded-full" style={{ left: 29, width: 10, height: 10, bottom: -5 }} />
+					)}
 				</View>
 
 				{/* Spacer block replaces the pb-8 padding */}
-				<View className="relative h-8">
-					{hasDeparture && (
-						<View 
-							className={`absolute top-0 bottom-[-2px] z-0 ${isDepartureActual ? 'bg-[#005045]' : 'bg-[#e5e7eb]'}`} 
-							style={{ left: 29, width: 10 }}
-						/>
-					)}
-				</View>
+				{!isTruncatedBottom && (
+					<View className="relative h-12">
+						{hasDeparture && (
+							<View 
+								className={`absolute top-0 bottom-[-2px] z-0 ${(isDepartureActual && isNextArrivalActual) ? 'bg-[#005045]' : 'bg-[#e5e7eb]'}`} 
+								style={{ left: 29, width: 10 }}
+							/>
+						)}
+					</View>
+				)}
 			</View>
 		</View>
 	);

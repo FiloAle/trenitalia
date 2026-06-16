@@ -1,6 +1,5 @@
 import { QuickSearches } from "@/components/home/quick-searches";
 import { TicketPurchaseCard } from "@/components/home/ticket-purchase-card";
-import { LoyaltyMenu } from "@/components/modals/loyalty-menu";
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { ThemedView } from "@/components/themed-view";
 import { Image } from "expo-image";
@@ -14,8 +13,6 @@ import { ThemedText } from "@/components/themed-text";
 import { router } from "expo-router";
 
 export default function HomeScreen() {
-	const [loyaltyVisible, setLoyaltyVisible] = useState(false);
-
 	const handleOpenSearch = () => {
 		router.push("/search");
 	};
@@ -30,7 +27,7 @@ export default function HomeScreen() {
 	return (
 		<>
 			<ParallaxScrollView
-				onProfilePress={() => setLoyaltyVisible(true)}
+				onProfilePress={() => router.push("/profile")}
 				headerBackgroundColor={{ light: "#A1CEDC", dark: "#A1CEDC" }}
 				headerImage={
 					<View className="flex-1">
@@ -81,11 +78,6 @@ export default function HomeScreen() {
 			</ParallaxScrollView>
 
 
-
-			<LoyaltyMenu
-				isVisible={loyaltyVisible}
-				onClose={() => setLoyaltyVisible(false)}
-			/>
 		</>
 	);
 }

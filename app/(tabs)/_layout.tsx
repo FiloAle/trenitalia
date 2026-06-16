@@ -1,17 +1,11 @@
-import { Icon } from "@/components/ui/icon";
-import { Tabs } from "expo-router";
-import React, { useState } from "react";
-import { Text, View, Pressable } from "react-native";
-
 import { HapticTab } from "@/components/haptic-tab";
+import { Icon } from "@/components/ui/icon";
 import { Colors } from "@/constants/theme";
-import { PurchaseModal } from "@/components/modals/purchase-modal";
-import { LoyaltyMenu } from "@/components/modals/loyalty-menu";
+import { Tabs } from "expo-router";
+import React from "react";
+import { Text, View } from "react-native";
 
 export default function TabLayout() {
-	const [isPurchaseModalVisible, setIsPurchaseModalVisible] = useState(false);
-	const [isLoyaltyMenuVisible, setIsLoyaltyMenuVisible] = useState(false);
-
 	return (
 		<>
 			<Tabs
@@ -23,9 +17,9 @@ export default function TabLayout() {
 					tabBarShowLabel: true,
 					tabBarHideOnKeyboard: true,
 					tabBarLabelPosition: "below-icon",
-					tabBarLabel: ({ children, color }) => (
+					tabBarLabel: ({ focused, children, color }) => (
 						<Text
-							className="mt-1 font-plus-jakarta-medium text-[10px]"
+							className={`mt-1.5 text-[12px] ${focused ? "font-plus-jakarta-bold -tracking-[0.13px]" : "font-plus-jakarta-medium"}`}
 							style={{ color }}
 						>
 							{children}
@@ -35,9 +29,11 @@ export default function TabLayout() {
 						<View className="absolute bottom-0 left-0 right-0 h-full border-t border-gray-200 bg-white" />
 					),
 					tabBarStyle: {
-						height: 85,
+						height: 84,
 						borderTopWidth: 0,
 						elevation: 0,
+						paddingTop: 8,
+						paddingHorizontal: 8,
 					},
 				}}
 			>
@@ -48,7 +44,7 @@ export default function TabLayout() {
 						tabBarIcon: ({ color, focused }) => (
 							<Icon
 								name="home"
-								size={32}
+								size={36}
 								weight={300}
 								color={`${color}`}
 								fill={focused}
@@ -61,11 +57,11 @@ export default function TabLayout() {
 				<Tabs.Screen
 					name="trips"
 					options={{
-						title: "I miei viaggi",
+						title: "Biglietti",
 						tabBarIcon: ({ color, focused }) => (
 							<Icon
 								name="confirmation_number"
-								size={32}
+								size={36}
 								weight={300}
 								color={`${color}`}
 								fill={focused}
@@ -75,42 +71,15 @@ export default function TabLayout() {
 						),
 					}}
 				/>
-				<Tabs.Screen
-					name="purchase"
-					options={{
-						title: "Acquista",
-						tabBarButton: ({ ref, ...props }: any) => (
-							<Pressable
-								ref={ref}
-								{...props}
-								onPress={(e) => {
-									// Prevent default navigation
-									e?.preventDefault?.();
-									setIsPurchaseModalVisible(true);
-								}}
-							/>
-						),
-						tabBarIcon: ({ color, focused }) => (
-							<Icon
-								name="search"
-								size={32}
-								weight={300}
-								color={`${color}`}
-								fill={focused}
-								type="sharp"
-								useFont={false}
-							/>
-						),
-					}}
-				/>
+
 				<Tabs.Screen
 					name="info"
 					options={{
-						title: "Infomobilità",
+						title: "Infotreno",
 						tabBarIcon: ({ color, focused }) => (
 							<Icon
 								name="train"
-								size={32}
+								size={36}
 								weight={300}
 								color={`${color}`}
 								fill={focused}
@@ -121,24 +90,13 @@ export default function TabLayout() {
 					}}
 				/>
 				<Tabs.Screen
-					name="loyalty"
+					name="profile"
 					options={{
-						title: "Carte fedeltà",
-						tabBarButton: ({ ref, ...props }: any) => (
-							<Pressable
-								ref={ref}
-								{...props}
-								onPress={(e) => {
-									// Prevent default navigation
-									e?.preventDefault?.();
-									setIsLoyaltyMenuVisible(true);
-								}}
-							/>
-						),
+						title: "Profilo",
 						tabBarIcon: ({ color, focused }) => (
 							<Icon
-								name="credit_card_heart"
-								size={32}
+								name="account"
+								size={36}
 								weight={300}
 								color={`${color}`}
 								fill={focused}
@@ -149,16 +107,6 @@ export default function TabLayout() {
 					}}
 				/>
 			</Tabs>
-
-			<PurchaseModal
-				isVisible={isPurchaseModalVisible}
-				onClose={() => setIsPurchaseModalVisible(false)}
-			/>
-
-			<LoyaltyMenu
-				isVisible={isLoyaltyMenuVisible}
-				onClose={() => setIsLoyaltyMenuVisible(false)}
-			/>
 		</>
 	);
 }

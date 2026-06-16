@@ -1,15 +1,15 @@
 function activateMarquee(  classe) {
-    var ie =  isIE();
+    let ie =  isIE();
     $(classe).each(function (b, e) {
 
 
         // Lunghezza
          
-        var eouter = $(e).outerWidth(true);
-        var ewidth = $(e).width();
-        var d = $(e).find("div");
-        var douter = $(d).outerWidth(true);
-        var dwidth = $(d).width();
+        let eouter = $(e).outerWidth(true);
+        let ewidth = $(e).width();
+        let d = $(e).find("div");
+        let douter = $(d).outerWidth(true);
+        let dwidth = $(d).width();
        
         if (douter > ewidth) {
          
@@ -18,7 +18,7 @@ function activateMarquee(  classe) {
                
                  
                 $(d).each(function (b, e) {
-                    var content = $(e).html();
+                    let content = $(e).html();
                     console.log("content " +content.trim());
                    
                     $(e).html("<marquee>" + content.trim() + "</marquee>");
@@ -27,7 +27,7 @@ function activateMarquee(  classe) {
                 $(this).css("--widthTransform", "-100%");
                 /* Ora devo calcorare il tempo...*/
 
-                var nsec = Math.round(douter * 0.05);
+                let nsec = Math.round(douter * 0.05);
 
                 $(this).css("--marqueeTime", nsec + "s");
 
@@ -54,7 +54,7 @@ function setFinalSize(infosupplementare) {
    // var hlastUpdate = $("#lastUpdateId").height();
    // var hnomeStazione = $("#nomeStazioneId").height();
     // var hbarraBottoni = $("#barrabottoniId").height();
-    var hbarraInfostazioneConBiancoIn;
+    let hbarraInfostazioneConBiancoIn;
     if ((infosupplementare == null) || (infosupplementare == ""))
     {
         hbarraInfostazioneConBiancoIn = 0;
@@ -65,7 +65,7 @@ function setFinalSize(infosupplementare) {
     }
     
 
-    var hWindowOut = $(window).outerHeight(); // window sembra più accurato; sembra sia in pt (o unità) e non pixel...sembra.
+    let hWindowOut = $(window).outerHeight(); // window sembra più accurato; sembra sia in pt (o unità) e non pixel...sembra.
     // Cerca tutte le altezze dei vari pezzi della pagina
     //var hlastUpdateOut = $("#lastUpdateId").outerHeight();
     //var hnomeStazioneOut = $("#nomeStazioneId").outerHeight();
@@ -79,8 +79,8 @@ function setFinalSize(infosupplementare) {
     //var hbarraBottoniIn = $("#barrabottoniId").innerHeight();
     //var hbarraInfostazioneConBiancoIn = $("#barraInformazioneId").innerHeight();
 
-    var hmonitor = $("#monitor").height();
-    var hheadertab = $("#headerTabId").height();
+    let hmonitor = $("#monitor").height();
+    let hheadertab = $("#headerTabId").height();
    // var hbodyTabId = $("#bodyTabId").height();
   //  var hrow = $("#bodyTabId").find("tr:first").height();
 
@@ -94,7 +94,7 @@ function setFinalSize(infosupplementare) {
     //var hbodyTabIdIn = $("#bodyTabId").innerHeight();
   //  var hrowInn = $("#bodyTabId").find("tr:first").innerHeight();
     
-    var posTab = $("#monitor").position().top;
+    let posTab = $("#monitor").position().top;
     //alert("La finestra è alta " + hWindow + "\n Posizione " +
     //     posTab + "\n Last update " + hlastUpdate + "\n hnomeStazione " + hnomeStazione + " \n hbarraBottoni " + hbarraBottoni + " \n hbarraInfostazioneConBianco " + hbarraInfostazioneConBianco );
     //alert("Outer La finestra è alta " + hWindowOut + "\n Last hlastUpdateOut " + hlastUpdateOut + "\n hnomeStazioneOut " + hnomeStazioneOut + " \n hbarraBottoniOut " + hbarraBottoniOut + " \n hbarraInfostazioneConBiancoOut " + hbarraInfostazioneConBiancoOut);
@@ -105,7 +105,7 @@ function setFinalSize(infosupplementare) {
     ////a.height("1000px");
 
     // Prima prova...
-    var altezzaRigha;
+    let altezzaRigha;
     if (navigator.userAgent.indexOf("Chrome") != -1)
     {
         altezzaRigha = $("#bodyTabId").find("tr:first").outerHeight();
@@ -115,9 +115,9 @@ function setFinalSize(infosupplementare) {
     }
       
       
-   var spazioPerRighe = hWindowOut - posTab - hheadertab;
+   let spazioPerRighe = hWindowOut - posTab - hheadertab;
    spazioPerRighe = spazioPerRighe - hbarraInfostazioneConBiancoIn;
-   var percRigaIncompleta = spazioPerRighe % altezzaRigha;
+   let percRigaIncompleta = spazioPerRighe % altezzaRigha;
     //   alert("hbarraInfostazioneConBiancoIn:" + hbarraInfostazioneConBiancoIn + "\n percRigaIncompleta " + percRigaIncompleta)
    
     

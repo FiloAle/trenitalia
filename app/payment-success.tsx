@@ -1,12 +1,12 @@
+import { selectedSolutionCache } from "@/api/search";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
+import { addPurchasedTrip } from "@/utils/trips-store";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { Pressable, Switch, View } from "react-native";
+import { Pressable, Switch, View, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { selectedSolutionCache } from "@/api/search";
-import { addPurchasedTrip } from "@/utils/trips-store";
 
 export default function PaymentSuccessScreen() {
 	const params = useLocalSearchParams();
@@ -23,24 +23,32 @@ export default function PaymentSuccessScreen() {
 			const generateCode = (len: number) => {
 				const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 				let res = "";
-				for (let i = 0; i < len; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+				for (let i = 0; i < len; i++)
+					res += chars.charAt(Math.floor(Math.random() * chars.length));
 				return res;
 			};
 			const generateNumCode = (len: number) => {
 				const chars = "0123456789";
 				let res = "";
-				for (let i = 0; i < len; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+				for (let i = 0; i < len; i++)
+					res += chars.charAt(Math.floor(Math.random() * chars.length));
 				return res;
 			};
 
 			const enrichedTrains = sol.trains.map((train: any) => {
-				const isRegionale = train.type === "Regionale" || train.type?.toLowerCase().includes("reg");
+				const isRegionale =
+					train.type === "Regionale" ||
+					train.type?.toLowerCase().includes("reg");
 				return {
 					...train,
 					pnr: generateCode(6),
 					cp: isRegionale ? undefined : generateNumCode(6),
-					coach: isRegionale ? undefined : (Math.floor(Math.random() * 11) + 1).toString(),
-					seat: isRegionale ? undefined : `${Math.floor(Math.random() * 18) + 1}${["A", "B", "C", "D"][Math.floor(Math.random() * 4)]}`
+					coach: isRegionale
+						? undefined
+						: (Math.floor(Math.random() * 11) + 1).toString(),
+					seat: isRegionale
+						? undefined
+						: `${Math.floor(Math.random() * 18) + 1}${["A", "B", "C", "D"][Math.floor(Math.random() * 4)]}`,
 				};
 			});
 
@@ -75,22 +83,21 @@ export default function PaymentSuccessScreen() {
 			<View className="flex-1 items-center justify-center px-5 pb-16">
 				{/* Checkmark Badge */}
 				<View className="mb-6 items-center justify-center">
-					<Icon name="verified" type="rounded" size={80} color="white" weight={300} />
+					<Icon
+						name="verified"
+						type="rounded"
+						size={80}
+						color="white"
+						weight={300}
+					/>
 				</View>
 
 				<ThemedText className="text-[24px] font-plus-jakarta-bold !text-white text-center mb-3">
 					Acquisto effettuato!
 				</ThemedText>
-				<ThemedText className="text-[14px] font-plus-jakarta-medium !text-white text-center mb-6">
-					A breve riceverai una mail con il tuo biglietto
+				<ThemedText className="text-[16px] font-plus-jakarta !text-white text-center mb-6">
+					A breve riceverai una mail di conferma {"\n"} con il tuo biglietto.
 				</ThemedText>
-
-				<Pressable className="bg-[#003830] px-5 py-2.5 rounded-full flex-row items-center">
-					<ThemedText className="text-[14px] font-plus-jakarta-bold !text-white mr-2">
-						Invia una copia
-					</ThemedText>
-					<Icon name="mail" size={18} color="white" />
-				</Pressable>
 			</View>
 
 			{/* Bottom White Banner */}
@@ -103,12 +110,15 @@ export default function PaymentSuccessScreen() {
 					<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
 						Ricevi notifiche sui tuoi viaggi
 					</ThemedText>
-					<Switch
-						value={notificationsEnabled}
-						onValueChange={setNotificationsEnabled}
-						trackColor={{ false: "#e5e7eb", true: "#005045" }}
-						thumbColor={"#ffffff"}
-					/>
+					<View className={Platform.OS === 'ios' ? "bg-gray-200 rounded-full" : ""}>
+						<Switch
+							value={notificationsEnabled}
+							onValueChange={setNotificationsEnabled}
+							trackColor={{ false: "#e5e7eb", true: "#005045" }}
+							thumbColor={"#ffffff"}
+							className={Platform.OS === 'ios' ? "-mr-0.5" : ""}
+						/>
+					</View>
 				</View>
 
 				{/* Action Buttons */}

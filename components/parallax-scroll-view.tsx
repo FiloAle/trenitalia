@@ -151,7 +151,10 @@ export default function ParallaxScrollView({
 					<Pressable onPress={() => setIsMenuVisible(true)}>
 						<AnimatedIcon name="menu" size={24} style={iconColorStyle} />
 					</Pressable>
-					<View className="items-center justify-center">
+					<View 
+						className="absolute left-0 right-0 items-center justify-center pointer-events-none" 
+						style={{ top: 0, bottom: 0 }}
+					>
 						<View style={{ width: 100, height: 25 }}>
 							<Animated.View style={[StyleSheet.absoluteFill, logoWhiteStyle]}>
 								<TrenitaliaLogo width={100} height={25} />

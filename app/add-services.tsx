@@ -1,15 +1,12 @@
-import { ThemedText } from "@/components/themed-text";
-import { Icon } from "@/components/ui/icon";
-import { MainButton } from "@/components/ui/main-button";
-import { TimerBar } from "@/components/ui/timer-bar";
-import { ServiceCard } from "@/components/services/service-card";
-import { router, useLocalSearchParams } from "expo-router";
-import { useFocusEffect } from "expo-router";
-import React, { useState, useCallback } from "react";
-import { Pressable, ScrollView, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CheckoutHeader } from "@/components/checkout-header";
 import { StickyFooter } from "@/components/select-offer/sticky-footer";
+import { ServiceCard } from "@/components/services/service-card";
+import { ThemedText } from "@/components/themed-text";
+import { TimerBar } from "@/components/ui/timer-bar";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export let newlyAddedService: string | null = null;
 export function setNewlyAddedService(val: string | null) {
@@ -24,7 +21,9 @@ export default function AddServicesScreen() {
 
 	const addedServiceParam = params.addedService as string;
 
-	const [selectedService, setSelectedService] = useState<string | null>(addedServiceParam || null);
+	const [selectedService, setSelectedService] = useState<string | null>(
+		addedServiceParam || null,
+	);
 
 	React.useEffect(() => {
 		if (addedServiceParam) {
@@ -38,12 +37,12 @@ export default function AddServicesScreen() {
 				setSelectedService(newlyAddedService);
 				newlyAddedService = null;
 			}
-		}, [])
+		}, []),
 	);
 
 	const handleServiceSelect = (id: string | null) => {
 		if (id) {
-			const extraPrice = services.find(s => s.id === id)?.price || 0;
+			const extraPrice = services.find((s) => s.id === id)?.price || 0;
 			router.push({
 				pathname: "/complete-trip" as any,
 				params: { endTime, service: id, price: extraPrice, basePrice },
@@ -57,28 +56,31 @@ export default function AddServicesScreen() {
 		{
 			id: "dog",
 			title: "Viaggia con il tuo cane",
-			description: "Acquista ora il biglietto per viaggiare insieme al tuo cane",
+			description:
+				"Acquista ora il biglietto per viaggiare insieme al tuo cane.",
 			price: 5.0,
-			imageBg: "#e5e7eb", // placeholder for image
+			image: require("@/assets/images/dog.avif"),
 		},
 		{
 			id: "lounge",
 			title: "FRECCIAClub/FRECCIALounge",
-			description: "Ogni momento del tuo viaggio per noi è importante",
+			description: "Ogni momento del tuo viaggio per noi è importante.",
 			price: 30.0,
-			imageBg: "#fee2e2", // placeholder for image
+			image: require("@/assets/images/lounge.avif"),
 		},
 		{
 			id: "parking",
 			title: "Parcheggio FS Park",
-			description: "Prenota il tuo parcheggio nelle principali stazioni italiane.",
+			description:
+				"Prenota il tuo parcheggio nelle principali stazioni italiane.",
 			priceLabel: "Prezzo in base all'offerta",
 			price: 0,
-			imageBg: "#e0e7ff", // placeholder for image
+			image: require("@/assets/images/parking.avif"),
 		},
 	];
 
-	const selectedPrice = services.find((s) => s.id === selectedService)?.price || 0;
+	const selectedPrice =
+		services.find((s) => s.id === selectedService)?.price || 0;
 
 	return (
 		<View className="flex-1 bg-white">
@@ -86,7 +88,10 @@ export default function AddServicesScreen() {
 
 			<TimerBar endTime={endTime} />
 
-			<ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 100 }}>
+			<ScrollView
+				className="flex-1 px-5"
+				contentContainerStyle={{ paddingBottom: 100 }}
+			>
 				<ThemedText className="mt-6 mb-4 text-xl font-plus-jakarta-bold !text-gray-950">
 					Aggiungi servizi al tuo viaggio
 				</ThemedText>
@@ -112,7 +117,11 @@ export default function AddServicesScreen() {
 				onPress={() => {
 					router.push({
 						pathname: "/payment" as any,
-						params: { endTime, price: basePrice + selectedPrice, isAddService: params.isAddService },
+						params: {
+							endTime,
+							price: basePrice + selectedPrice,
+							isAddService: params.isAddService,
+						},
 					});
 				}}
 			/>

@@ -7,10 +7,14 @@
     "icon": "./assets/logos/frecciarossa.png",
     "scheme": "trenitalia",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.filippoaleee.Trenitalia"
+      "bundleIdentifier": "com.filippoaleee.Trenitalia",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +23,6 @@
         "backgroundImage": "./assets/logos/frecciarossa.png",
         "monochromeImage": "./assets/logos/frecciarossa.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -40,7 +43,11 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

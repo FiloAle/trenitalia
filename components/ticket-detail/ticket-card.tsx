@@ -24,21 +24,6 @@ interface TicketCardProps {
 	onOpenDettagli: () => void;
 }
 
-const LOGOS: Record<string, any> = {
-	Frecciarossa: require("../../assets/logos/frecciarossa.png"),
-	FRRossa: require("../../assets/logos/frecciarossa.png"),
-	Intercity: require("../../assets/logos/intercity.png"),
-	InterCity: require("../../assets/logos/intercity.png"),
-	IntercityNotte: require("../../assets/logos/intercity.png"),
-	ICNotte: require("../../assets/logos/intercity.png"),
-	Regionale: require("../../assets/logos/regionale.png"),
-	Reg: require("../../assets/logos/regionale.png"),
-	RegV: require("../../assets/logos/regionale.png"),
-	Regv: require("../../assets/logos/regionale.png"),
-	"Reg Tper": require("../../assets/logos/tper.png"),
-	"Regv Tper": require("../../assets/logos/tper.png"),
-};
-
 export function TicketCard({
 	dateString,
 	origin,
@@ -53,7 +38,7 @@ export function TicketCard({
 	posto,
 	passengerClass = "Standard",
 	offer = "Super Economy",
-	price,
+	price = 19.7,
 	onOpenDettagli,
 }: TicketCardProps) {
 	const qrValue =
@@ -66,18 +51,18 @@ export function TicketCard({
 		pnr;
 
 	const getTrainLogo = () => {
-		const normalizedType = trainType.trim().toLowerCase();
-		const logoKey = Object.keys(LOGOS).find(
-			(k) => k.toLowerCase() === normalizedType,
-		);
-		return logoKey ? LOGOS[logoKey] : LOGOS["Frecciarossa"];
-	};
-
-	const getLogoWidth = () => {
-		const normalizedType = trainType.trim().toLowerCase();
-		return normalizedType.includes("frecciarossa") || normalizedType === "frrossa"
-			? 90
-			: 55;
+		const typeLower = trainType.toLowerCase();
+		if (typeLower.includes("tper")) {
+			return require("../../assets/logos/tper.png");
+		}
+		if (typeLower.includes("reg")) {
+			return require("../../assets/logos/regionale.png");
+		}
+		if (typeLower.includes("ic") || typeLower.includes("intercity")) {
+			return require("../../assets/logos/intercity.png");
+		}
+		// Default to Frecciarossa
+		return require("../../assets/logos/frecciarossa.png");
 	};
 
 	const [aztecImageUri, setAztecImageUri] = useState<string | null>(
@@ -91,6 +76,20 @@ export function TicketCard({
 			.catch((err) => console.error("Aztec code generation error:", err));
 	}, [qrValue]);
 
+	const typeLower = trainType.toLowerCase();
+	const isTper = typeLower.includes("tper");
+	const isReg = typeLower.includes("reg") && !isTper;
+	const isIC = typeLower.includes("ic") || typeLower.includes("intercity");
+
+	let logoWidth = 100;
+	if (isTper) {
+		logoWidth = 45;
+	} else if (isIC) {
+		logoWidth = 55;
+	} else if (isReg) {
+		logoWidth = 85;
+	}
+
 	return (
 		<View className="mt-1.5 overflow-hidden rounded-lg bg-white border border-gray-200">
 			{/* Top row: Train and Date */}
@@ -99,7 +98,7 @@ export function TicketCard({
 					<View>
 						<Image
 							source={getTrainLogo()}
-							style={{ width: getLogoWidth(), height: 16 }}
+							style={{ width: logoWidth, height: 16 }}
 							resizeMode="contain"
 						/>
 					</View>
@@ -145,14 +144,8 @@ export function TicketCard({
 				<View className="flex-row justify-between mb-6 gap-2">
 					<View className="flex-1 rounded-lg bg-gray-100 p-2">
 						<View className="flex-row items-center justify-between mb-0.5">
-							<ThemedText
-								className="text-sm font-plus-jakarta-medium !text-gray-500"
-								numberOfLines={1}
-								adjustsFontSizeToFit
-							>
-								{trainType?.toLowerCase().includes("reg")
-									? "CODICE BIGLIETTO"
-									: "PNR"}
+							<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500">
+								PNR
 							</ThemedText>
 							<Icon name="content_copy" size={14} color="#6b7280" />
 						</View>
@@ -173,7 +166,7 @@ export function TicketCard({
 					)}
 
 					{/* Conditionally render Carrozza/Posto (Not for Regionale) */}
-					{!trainType?.toLowerCase().includes("reg") && carrozza && posto && (
+					{trainType !== "Regionale" && carrozza && posto && (
 						<View className="flex-1 rounded-lg bg-gray-100 p-2">
 							<ThemedText
 								className="text-sm font-plus-jakarta-medium !text-gray-500 mb-0.5"
@@ -212,17 +205,15 @@ export function TicketCard({
 
 			{/* Ticket Type and Price */}
 			<View className="flex-row items-center justify-between border-t border-gray-100 px-5 py-3">
-				<View className="flex-row items-center flex-1 pr-2">
+				<View className="flex-row items-center">
 					<Icon name="confirmation_number" size={24} color="#000" />
-					<ThemedText className="ml-2 text-base font-plus-jakarta-medium !text-gray-900 shrink">
+					<ThemedText className="ml-2 text-base font-plus-jakarta-medium !text-gray-900">
 						{passengerClass.toUpperCase()} / {offer}
 					</ThemedText>
 				</View>
-				{price !== undefined && (
-					<ThemedText className="text-lg font-plus-jakarta-bold !text-gray-900">
-						{price.toFixed(2).replace(".", ",")}€
-					</ThemedText>
-				)}
+				<ThemedText className="text-lg font-plus-jakarta-bold !text-gray-900">
+					{price.toFixed(2).replace(".", ",")}€
+				</ThemedText>
 			</View>
 
 			{/* Maggiori Dettagli */}

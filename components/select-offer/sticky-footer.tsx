@@ -14,6 +14,7 @@ export interface StickyFooterProps {
 	hideSeatSelection?: boolean;
 	subtitle?: string;
 	disabled?: boolean;
+	isLoading?: boolean;
 }
 
 export function StickyFooter({ 
@@ -24,6 +25,7 @@ export function StickyFooter({
 	hideSeatSelection = false,
 	subtitle = "Vedi carrello",
 	disabled = false,
+	isLoading = false,
 }: StickyFooterProps) {
 	const insets = useSafeAreaInsets();
 
@@ -58,9 +60,10 @@ export function StickyFooter({
 						{subtitle}
 					</ThemedText>
 				</View>
-				<View className="w-40">
+				<View className="w-auto min-w-[160px]">
 					<MainButton
 						title={buttonTitle}
+						isLoading={isLoading}
 						onPress={() => {
 							if (onPress) {
 								onPress();

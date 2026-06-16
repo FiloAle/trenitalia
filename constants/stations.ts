@@ -1182,7 +1182,7 @@ export const STATIONS: Station[] = [
 	/* 1175 */ { id: "1706", name: "Mezzocorona" },
 	/* 1176 */ { id: "1727", name: "Mignano Monte Lungo" },
 	/* 1177 */ { id: "", name: "Milano Bovisa Politecnico" },
-	/* 1178 */ { id: "", name: "Milano Centrale" },
+	/* 1178 */ { id: "1728", name: "Milano Centrale" },
 	/* 1179 */ { id: "1708", name: "Milano Certosa" },
 	/* 1180 */ { id: "3468", name: "Milano Dateo" },
 	/* 1181 */ { id: "3169", name: "Milano Forlanini" },

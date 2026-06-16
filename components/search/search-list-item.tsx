@@ -1,11 +1,11 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import React from "react";
 import { Pressable } from "react-native";
 
 interface SearchListItemProps {
 	text: string;
 	iconName?: string;
+	secondaryIconName?: string;
 	onPress?: () => void;
 	className?: string;
 	showBorder?: boolean;
@@ -15,6 +15,7 @@ interface SearchListItemProps {
 export function SearchListItem({
 	text,
 	iconName = "history",
+	secondaryIconName = "",
 	onPress,
 	className = "",
 	showBorder = false,
@@ -30,6 +31,14 @@ export function SearchListItem({
 			<ThemedText className="ml-2 text-[13px] font-plus-jakarta-medium !text-gray-950">
 				{text}
 			</ThemedText>
+			{secondaryIconName && (
+				<Icon
+					name={secondaryIconName}
+					size={20}
+					className="!text-gray-950 ml-auto -my-4"
+					weight={300}
+				/>
+			)}
 		</Pressable>
 	);
 }

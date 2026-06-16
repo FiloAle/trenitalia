@@ -4,7 +4,9 @@ import React, { useEffect, useRef } from "react";
 import {
 	Animated,
 	Dimensions,
+	KeyboardAvoidingView,
 	Modal,
+	Platform,
 	Pressable,
 	StyleSheet,
 	TouchableWithoutFeedback,
@@ -20,6 +22,7 @@ interface BottomSheetProps {
 	title?: string;
 	children: React.ReactNode;
 	hideCloseButton?: boolean;
+	contentPaddingBottom?: number;
 }
 
 export function BottomSheet({
@@ -80,7 +83,10 @@ export function BottomSheet({
 			animationType="none"
 			onRequestClose={handleClose}
 		>
-			<View className="flex-1 justify-end">
+			<KeyboardAvoidingView
+				behavior={Platform.OS === "ios" ? "padding" : "height"}
+				className="flex-1 justify-end"
+			>
 				<TouchableWithoutFeedback onPress={handleClose}>
 					<Animated.View
 						style={[
@@ -93,11 +99,12 @@ export function BottomSheet({
 					style={{
 						transform: [{ translateY: sheetSlideAnim }],
 						backgroundColor: "white",
-						borderTopLeftRadius: 18,
-						borderTopRightRadius: 18,
+						borderTopLeftRadius: 32,
+						borderTopRightRadius: 32,
 						paddingHorizontal: 20,
-						paddingTop: 24,
-						paddingBottom: insets.bottom + 20,
+						paddingTop: 20,
+						paddingBottom: insets.bottom,
+						maxHeight: SCREEN_HEIGHT * 0.9,
 					}}
 				>
 					{(title || !hideCloseButton) && (
@@ -118,8 +125,22 @@ export function BottomSheet({
 						</View>
 					)}
 					{children}
+
+					{/* iOS keyboard rounded corners fix */}
+					{Platform.OS === "ios" && (
+						<View
+							style={{
+								position: "absolute",
+								bottom: -400,
+								left: 0,
+								right: 0,
+								height: 400,
+								backgroundColor: "white",
+							}}
+						/>
+					)}
 				</Animated.View>
-			</View>
+			</KeyboardAvoidingView>
 		</Modal>
 	);
 }

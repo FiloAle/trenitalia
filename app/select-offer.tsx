@@ -4,29 +4,93 @@ import { Icon } from "@/components/ui/icon";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
+import Animated, {
+	FadeIn,
+	FadeOut,
+	LinearTransition,
+	withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { OtherOffersButton } from "@/components/select-offer/other-offers-button";
-import { SegmentHeader } from "@/components/select-offer/segment-header";
-import { SelectionCard } from "@/components/select-offer/selection-card";
-import { SelectionSection } from "@/components/select-offer/selection-section";
-import { StickyFooter } from "@/components/select-offer/sticky-footer";
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+const customEntering = () => {
+	"worklet";
+	return {
+		initialValues: {
+			opacity: 0,
+			transform: [{ translateY: -10 }, { scale: 0.95 }],
+		},
+		animations: {
+			opacity: withTiming(1, { duration: 200 }),
+			transform: [
+				{ translateY: withTiming(0, { duration: 200 }) },
+				{ scale: withTiming(1, { duration: 200 }) },
+			],
+		},
+	};
+};
+
+const customExiting = () => {
+	"worklet";
+	return {
+		initialValues: {
+			opacity: 1,
+			transform: [{ translateY: 0 }, { scale: 1 }],
+		},
+		animations: {
+			opacity: withTiming(0, { duration: 200 }),
+			transform: [
+				{ translateY: withTiming(-10, { duration: 200 }) },
+				{ scale: withTiming(0.95, { duration: 200 }) },
+			],
+		},
+	};
+};
+
 import { CheckoutHeader } from "@/components/checkout-header";
+import { SegmentHeader } from "@/components/select-offer/segment-header";
+import { StickyFooter } from "@/components/select-offer/sticky-footer";
 
 const LOGOS: Record<string, any> = {
 	Frecciarossa: require("@/assets/logos/frecciarossa.png"),
-	FRRossa: require("@/assets/logos/frecciarossa.png"),
 	Intercity: require("@/assets/logos/intercity.png"),
+	Regionale: require("@/assets/logos/regionale.png"),
+	FRRossa: require("@/assets/logos/frecciarossa.png"),
 	InterCity: require("@/assets/logos/intercity.png"),
 	IntercityNotte: require("@/assets/logos/intercity.png"),
 	ICNotte: require("@/assets/logos/intercity.png"),
-	Regionale: require("@/assets/logos/regionale.png"),
 	Reg: require("@/assets/logos/regionale.png"),
 	RegV: require("@/assets/logos/regionale.png"),
 	Regv: require("@/assets/logos/regionale.png"),
 	"Reg Tper": require("@/assets/logos/tper.png"),
 	"Regv Tper": require("@/assets/logos/tper.png"),
+};
+
+const CLASS_ICONS: Record<string, string[]> = {
+	STANDARD: ["power", "wifi"],
+	PREMIUM: ["airline_seat_recline_extra", "takeout_dining_2", "power", "wifi"],
+	BUSINESS: [
+		"scene",
+		"airline_seat_recline_extra",
+		"takeout_dining_2",
+		"power",
+		"wifi",
+	],
+	"BUSINESS AREA SILENZIO": [
+		"scene",
+		"airline_seat_recline_extra",
+		"takeout_dining_2",
+		"power",
+		"wifi",
+	],
+	EXECUTIVE: [
+		"scene",
+		"airline_seat_recline_extra",
+		"dinner_dining",
+		"power",
+		"wifi",
+	],
 };
 
 export default function SelectOfferScreen() {
@@ -108,39 +172,49 @@ export default function SelectOfferScreen() {
 				if (t.f && Array.isArray(t.f)) {
 					t.f.forEach((fName: string, offerIndex: number) => {
 						const priceStr = t.p[classIndex][offerIndex];
-						if (
-							priceStr &&
-							typeof priceStr === "string" &&
-							priceStr.trim() !== ""
-						) {
-							uniqueOffers.add(fName);
+						if (priceStr && typeof priceStr === "string") {
+							const parsedPrice = parseFloat(priceStr.replace(",", "."));
+							if (!isNaN(parsedPrice) && parsedPrice > 0) {
+								uniqueOffers.add(fName);
+							}
 						}
 					});
 				} else if (t.sf) {
 					const priceStr = t.p[classIndex][0];
-					if (
-						priceStr &&
-						typeof priceStr === "string" &&
-						priceStr.trim() !== ""
-					) {
-						uniqueOffers.add(t.sf);
+					if (priceStr && typeof priceStr === "string") {
+						const parsedPrice = parseFloat(priceStr.replace(",", "."));
+						if (!isNaN(parsedPrice) && parsedPrice > 0) {
+							uniqueOffers.add(t.sf);
+						}
 					}
 				}
 			}
 		});
 
-		const offersList = Array.from(uniqueOffers).map((name) => ({
-			id: name,
-			name: name === "S.ECONOMY" ? "SUPER ECONOMY" : name,
-			badge:
-				name.includes("SUPER") ||
-				name.includes("S.ECONOMY") ||
-				name.includes("SPECIALE")
-					? "Non modificabile"
-					: name.includes("BASE") || name.includes("ECONOMY")
-						? "Modificabile"
-						: "",
-		}));
+		const offersList = Array.from(uniqueOffers).map((rawName) => {
+			let displayName =
+				rawName === "S.ECONOMY"
+					? "Super Economy"
+					: rawName.toUpperCase() === "FR.DAYS"
+						? "Freccia Days"
+						: rawName
+								.toLowerCase()
+								.split(" ")
+								.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+								.join(" ");
+			return {
+				id: rawName,
+				name: displayName,
+				badge:
+					rawName.includes("SUPER") ||
+					rawName.includes("S.ECONOMY") ||
+					rawName.includes("SPECIALE")
+						? "Non modificabile"
+						: rawName.includes("BASE") || rawName.includes("ECONOMY")
+							? "Modificabile"
+							: "",
+			};
+		});
 		return offersList.length > 0
 			? offersList
 			: [{ id: "o1", name: "ORDINARIA", badge: "" }];
@@ -276,7 +350,8 @@ export default function SelectOfferScreen() {
 					bestClass = c.id;
 				}
 			}
-			initialClasses[idx] = minClassPrice === Infinity ? rClasses[0].id : bestClass;
+			initialClasses[idx] =
+				minClassPrice === Infinity ? rClasses[0].id : bestClass;
 		} else {
 			initialClasses[idx] = "Standard";
 		}
@@ -292,7 +367,8 @@ export default function SelectOfferScreen() {
 					bestOffer = o.id;
 				}
 			}
-			initialOffers[idx] = minOfferPrice === Infinity ? rOffers[0].id : bestOffer;
+			initialOffers[idx] =
+				minOfferPrice === Infinity ? rOffers[0].id : bestOffer;
 		} else {
 			initialOffers[idx] = "ORDINARIA";
 		}
@@ -303,7 +379,12 @@ export default function SelectOfferScreen() {
 		useState<Record<number, string>>(initialClasses);
 	const [selectedOffers, setSelectedOffers] =
 		useState<Record<number, string>>(initialOffers);
-	const [expandedSegments, setExpandedSegments] = useState<Record<number, boolean>>({});
+	const [expandedSegments, setExpandedSegments] = useState<
+		Record<number, boolean>
+	>({});
+	const [openAccordions, setOpenAccordions] = useState<Record<number, boolean>>(
+		{},
+	);
 
 	const toggleSegment = (idx: number) => {
 		setExpandedSegments((prev) => ({
@@ -335,8 +416,19 @@ export default function SelectOfferScreen() {
 					const realOffers = getRealOffers(sIdx, currentSelectedClass);
 					const isExpanded = expandedSegments[sIdx] !== false;
 
+					const selectedOfferObj = realOffers.find(
+						(o) => o.id === selectedOffers[sIdx],
+					);
+					const displayOfferName = selectedOfferObj
+						? selectedOfferObj.name
+						: selectedOffers[sIdx];
+
 					return (
-						<Animated.View key={sIdx} className="bg-white mb-2 pt-3" layout={LinearTransition}>
+						<Animated.View
+							key={sIdx}
+							className="bg-white mb-2 pt-3"
+							layout={LinearTransition}
+						>
 							<SegmentHeader
 								logoSource={logoSource}
 								normalizedType={normalizedType}
@@ -353,95 +445,168 @@ export default function SelectOfferScreen() {
 
 							{isExpanded && (
 								<Animated.View entering={FadeIn} exiting={FadeOut}>
-									<SelectionSection
-										title="Seleziona il servizio/classe"
-										containerClassName="mb-4"
-										selectedIndex={Math.max(0, realClasses.findIndex(c => c.id === currentSelectedClass))}
-										data={realClasses}
-										renderItem={(c) => {
-											const isSelected = selectedClasses[sIdx] === c.id;
-											const segmentPrice = getMinPriceForClass(sIdx, c.id);
-											return (
-												<SelectionCard
-													isSelected={isSelected}
-													onPress={() => {
-														setSelectedClasses((prev) => ({
-															...prev,
-															[sIdx]: c.id,
-														}));
-														const availableOffers = getRealOffers(sIdx, c.id);
-														const currentOffer = selectedOffers[sIdx];
-														if (
-															availableOffers.length > 0 &&
-															!availableOffers.find((o) => o.id === currentOffer)
-														) {
-															let minOfferPrice = Infinity;
-															let bestOffer = availableOffers[0].id;
-															for (const o of availableOffers) {
-																const price = getPriceForSegment(sIdx, c.id, o.id);
-																if (price > 0 && price < minOfferPrice) {
-																	minOfferPrice = price;
-																	bestOffer = o.id;
-																}
-															}
-															setSelectedOffers((prev) => ({
-																...prev,
-																[sIdx]: bestOffer,
-															}));
-														}
-													}}
-													title={c.name}
-													price={segmentPrice}
-													showInfo={isFreccia}
-													variant="class"
+									{/* Custom Accordion for Class/Offer */}
+									{/* Custom Accordion for Class/Offer */}
+									<AnimatedPressable
+										layout={LinearTransition}
+										onPress={() =>
+											setOpenAccordions((prev) => ({
+												...prev,
+												[sIdx]: !prev[sIdx],
+											}))
+										}
+										className="mb-6 mx-4 bg-white border border-gray-200 rounded-lg overflow-hidden"
+									>
+										{/* Accordion Header */}
+										<View
+											className={`flex-row items-center justify-between px-4 py-3 ${openAccordions[sIdx] ? "border-b border-gray-100" : ""}`}
+										>
+											<View className="flex-1 mr-4">
+												<ThemedText className="text-[15px] font-plus-jakarta-bold text-gray-800">
+													{currentSelectedClass
+														.toUpperCase()
+														.replace(" PRENOTAZIONE", "")}
+													<ThemedText className="text-[15px] font-plus-jakarta-medium opacity-60">
+														{"  "}
+														{displayOfferName}
+													</ThemedText>
+												</ThemedText>
+											</View>
+											<View className="flex-row items-center">
+												<ThemedText className="text-[16px] font-plus-jakarta-bold text-[#005045] mr-2">
+													€{" "}
+													{getPriceForSegment(
+														sIdx,
+														currentSelectedClass,
+														selectedOffers[sIdx],
+													)
+														.toFixed(2)
+														.replace(".", ",")}
+												</ThemedText>
+												<Icon
+													name={
+														openAccordions[sIdx]
+															? "keyboard_arrow_up"
+															: "keyboard_arrow_down"
+													}
+													size={20}
+													color="#6b7280"
 												/>
-											);
-										}}
-									/>
+											</View>
+										</View>
 
-								{(() => {
-									const sortedOffers = [...realOffers].sort((a, b) => {
-										const priceA = getPriceForSegment(sIdx, currentSelectedClass, a.id);
-										const priceB = getPriceForSegment(sIdx, currentSelectedClass, b.id);
-										return priceA - priceB;
-									});
-									const selectedOfferIndex = sortedOffers.findIndex(o => o.id === selectedOffers[sIdx]);
+										{/* Accordion Body */}
+										{openAccordions[sIdx] && (
+											<Animated.View
+												entering={FadeIn}
+												exiting={FadeOut}
+												className="py-3 bg-white"
+											>
+												{realClasses.map((c, cIdx) => {
+													const classOffers = getRealOffers(sIdx, c.id)
+														.filter((a) => getPriceForSegment(sIdx, c.id, a.id) > 0)
+														.sort((a, b) => {
+															const priceA = getPriceForSegment(
+																sIdx,
+																c.id,
+																a.id,
+															);
+															const priceB = getPriceForSegment(
+																sIdx,
+																c.id,
+																b.id,
+															);
+															return priceA - priceB;
+														});
 
-									return (
-										<SelectionSection
-											title="Seleziona l'offerta"
-											containerClassName="mb-5"
-											selectedIndex={Math.max(0, selectedOfferIndex)}
-											data={sortedOffers}
-											renderItem={(o) => {
-												const isSelected = selectedOffers[sIdx] === o.id;
-												const segmentPrice = getPriceForSegment(
-													sIdx,
-													currentSelectedClass,
-													o.id,
-												);
-												return (
-													<SelectionCard
-														isSelected={isSelected}
-														onPress={() =>
-															setSelectedOffers((prev) => ({
-																...prev,
-																[sIdx]: o.id,
-															}))
-														}
-														title={o.name}
-														price={segmentPrice}
-														badge={o.badge}
-														showInfo={isFreccia}
-														variant="offer"
-													/>
-												);
-											}}
-										/>
-									);
-								})()}
+													if (classOffers.length === 0) return null;
 
-							<OtherOffersButton />
+													const isLastClass = cIdx === realClasses.length - 1;
+
+													return (
+														<View key={`class-${c.id}`}>
+															{/* Class Header */}
+															<View className="flex-row items-center justify-between px-4 pt-1 pb-1">
+																<ThemedText
+																	className={`text-[14px] font-plus-jakarta-bold tracking-wider ${selectedClasses[sIdx] === c.id ? "text-gray-800" : "text-gray-500"}`}
+																>
+																	{c.name
+																		.toUpperCase()
+																		.replace(" PRENOTAZIONE", "")}
+																</ThemedText>
+																{CLASS_ICONS[c.name.toUpperCase()] && (
+																	<View className="flex-row items-center gap-1.5">
+																		{CLASS_ICONS[c.name.toUpperCase()].map(
+																			(iconName, idx) => (
+																				<Icon
+																					key={idx}
+																					name={iconName}
+																					size={16}
+																					className="!text-teal-600"
+																				/>
+																			),
+																		)}
+																	</View>
+																)}
+															</View>
+
+															{/* Offers List */}
+															{classOffers.map((o, oIdx) => {
+																const isLastOffer =
+																	oIdx === classOffers.length - 1;
+																const isSelected =
+																	selectedClasses[sIdx] === c.id &&
+																	selectedOffers[sIdx] === o.id;
+																const offerPrice = getPriceForSegment(
+																	sIdx,
+																	c.id,
+																	o.id,
+																);
+
+																return (
+																	<Pressable
+																		key={`offer-${o.id}`}
+																		onPress={() => {
+																			setSelectedClasses((prev) => ({
+																				...prev,
+																				[sIdx]: c.id,
+																			}));
+																			setSelectedOffers((prev) => ({
+																				...prev,
+																				[sIdx]: o.id,
+																			}));
+																			setOpenAccordions((prev) => ({
+																				...prev,
+																				[sIdx]: false,
+																			}));
+																		}}
+																		className={`flex-row items-center justify-between pr-4 pl-8 py-2 ${isSelected ? "bg-teal-500/10" : "active:bg-gray-50"}`}
+																	>
+																		<View className="flex-row items-center flex-1">
+																			<ThemedText
+																				className={`text-[15px] ${isSelected ? "font-plus-jakarta-bold text-[#005045]" : "font-plus-jakarta-medium text-gray-700 opacity-60"}`}
+																			>
+																				{o.name}
+																			</ThemedText>
+																		</View>
+																		<ThemedText
+																			className={`text-[15px] ${isSelected ? "font-plus-jakarta-bold text-[#005045]" : "font-plus-jakarta-medium text-gray-800 opacity-60"}`}
+																		>
+																			€{" "}
+																			{offerPrice.toFixed(2).replace(".", ",")}
+																		</ThemedText>
+																	</Pressable>
+																);
+															})}
+
+															{/* Optional spacing between classes */}
+															{!isLastClass && <View className="h-4" />}
+														</View>
+													);
+												})}
+											</Animated.View>
+										)}
+									</AnimatedPressable>
 								</Animated.View>
 							)}
 						</Animated.View>
@@ -455,20 +620,24 @@ export default function SelectOfferScreen() {
 				}
 				basePrice={basePrice}
 				onPress={() => {
-					const finalPrice = getPriceForSelection(selectedClasses, selectedOffers) * passengerCount;
-					
+					const finalPrice =
+						getPriceForSelection(selectedClasses, selectedOffers) *
+						passengerCount;
+
 					if (selectedSolutionCache) {
 						selectedSolutionCache.price = finalPrice;
-						selectedSolutionCache.trains = selectedSolutionCache.trains.map((train: any, idx: number) => {
-							const cName = selectedClasses[idx] || "Standard";
-							const oName = selectedOffers[idx] || "Super Economy";
-							return {
-								...train,
-								selectedClass: cName,
-								selectedOffer: oName,
-								price: getPriceForSegment(idx, cName, oName) * passengerCount
-							};
-						});
+						selectedSolutionCache.trains = selectedSolutionCache.trains.map(
+							(train: any, idx: number) => {
+								const cName = selectedClasses[idx] || "Standard";
+								const oName = selectedOffers[idx] || "Super Economy";
+								return {
+									...train,
+									selectedClass: cName,
+									selectedOffer: oName,
+									price: getPriceForSegment(idx, cName, oName) * passengerCount,
+								};
+							},
+						);
 					}
 
 					router.push({
@@ -476,8 +645,8 @@ export default function SelectOfferScreen() {
 						params: {
 							...params,
 							totalPrice: finalPrice,
-							basePrice: basePrice
-						}
+							basePrice: basePrice,
+						},
 					});
 				}}
 			/>

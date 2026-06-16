@@ -1,14 +1,13 @@
+import { selectedSolutionCache } from "@/api/search";
+import { PassengerSelection } from "@/components/complete-trip/passenger-selection";
+import { StickyFooter } from "@/components/select-offer/sticky-footer";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { MainButton } from "@/components/ui/main-button";
-import { PassengerSelection } from "@/components/complete-trip/passenger-selection";
 import { STATIONS } from "@/constants/stations";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Image, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { StickyFooter } from "@/components/select-offer/sticky-footer";
-import { selectedSolutionCache } from "@/api/search";
 import { setNewlyAddedService } from "./add-services";
 
 const LOGOS: Record<string, any> = {
@@ -35,25 +34,68 @@ export default function CompleteTripScreen() {
 	const serviceId = (params.service as string) || "dog";
 	const passengerText = (params.passengerText as string) || "1 Adulto";
 	const dateStr = params.dateStr as string;
-	
+
 	const solution = selectedSolutionCache;
-	const trains = solution?.trains || [{
-		type: "Frecciarossa",
-		number: "8825",
-		origin: STATIONS[0].name,
-		destination: STATIONS[4].name,
-		departureTime: "18:35",
-		arrivalTime: "21:27"
-	}];
+	const trains = solution?.trains || [
+		{
+			type: "Frecciarossa",
+			number: "8825",
+			origin: STATIONS[0].name,
+			destination: STATIONS[4].name,
+			departureTime: "18:35",
+			arrivalTime: "21:27",
+		},
+	];
 
 	const origin = trains[0].origin;
 	const destination = trains[trains.length - 1].destination;
 	const departureTime = solution?.departureTime || trains[0].departureTime;
-	const arrivalTime = solution?.arrivalTime || trains[trains.length - 1].arrivalTime;
+	const arrivalTime =
+		solution?.arrivalTime || trains[trains.length - 1].arrivalTime;
 
 	const displayDate = dateStr ? new Date(dateStr) : new Date();
-	const months = ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"];
+	const months = [
+		"gen",
+		"feb",
+		"mar",
+		"apr",
+		"mag",
+		"giu",
+		"lug",
+		"ago",
+		"set",
+		"ott",
+		"nov",
+		"dic",
+	];
 	const dateFormatted = `${displayDate.getDate()} ${months[displayDate.getMonth()]} - ${displayDate.getFullYear()}`;
+
+	const servicesMap: Record<
+		string,
+		{ title: string; description: string; passengerSelectionText: string }
+	> = {
+		dog: {
+			title: "Viaggia con il tuo cane",
+			description:
+				"Acquista ora il biglietto per viaggiare insieme al tuo cane.",
+			passengerSelectionText:
+				"Seleziona i passeggeri che viaggiano con il cane.",
+		},
+		lounge: {
+			title: "FRECCIAClub/FRECCIALounge",
+			description: "Ogni momento del tuo viaggio per noi è importante.",
+			passengerSelectionText:
+				"Seleziona i passeggeri per l'accesso a FRECCIAClub/FRECCIALounge.",
+		},
+		parking: {
+			title: "Parcheggio FS Park",
+			description:
+				"Prenota il tuo parcheggio nelle principali stazioni italiane.",
+			passengerSelectionText:
+				"Seleziona i passeggeri che usufruiscono del parcheggio.",
+		},
+	};
+	const serviceInfo = servicesMap[serviceId] || servicesMap.dog;
 
 	const [acceptedTerms, setAcceptedTerms] = useState(false);
 	const [isServiceSelected, setIsServiceSelected] = useState(true);
@@ -81,28 +123,33 @@ export default function CompleteTripScreen() {
 				</View>
 			</View>
 
-			<ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }}>
+			<ScrollView
+				className="flex-1"
+				contentContainerStyle={{ paddingBottom: 100 }}
+			>
 				{/* Service Header */}
-				<View className={`px-5 pt-0 ${isDescriptionExpanded ? "pb-5" : "pb-3"}`}>
-					<Pressable 
+				<View
+					className={`px-5 pt-0 ${isDescriptionExpanded ? "pb-5" : "pb-3"}`}
+				>
+					<Pressable
 						className={`flex-row items-center justify-between ${isDescriptionExpanded ? "mb-2" : ""}`}
 						onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
 					>
 						<View className="flex-row items-center">
 							<ThemedText className="text-[15px] font-plus-jakarta-semibold !text-gray-950 mr-2">
-								Viaggia con il tuo cane
+								{serviceInfo.title}
 							</ThemedText>
 							<Icon name="info" size={18} color="#4b5563" />
 						</View>
-						<Icon 
-							name={isDescriptionExpanded ? "expand_less" : "expand_more"} 
-							size={24} 
-							color="#4b5563" 
+						<Icon
+							name={isDescriptionExpanded ? "expand_less" : "expand_more"}
+							size={24}
+							color="#4b5563"
 						/>
 					</Pressable>
 					{isDescriptionExpanded && (
 						<ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-700 leading-tight">
-							Acquista ora il biglietto per viaggiare insieme al tuo cane
+							{serviceInfo.description}
 						</ThemedText>
 					)}
 				</View>
@@ -122,13 +169,21 @@ export default function CompleteTripScreen() {
 							for (let i = 0; i < trains.length; i++) {
 								const t = trains[i];
 								const normalizedType = t.type.trim().toLowerCase();
-								const w = normalizedType.includes("frecciarossa") || normalizedType === "frrossa" ? 75 : 55;
-								
-								if (trains.length > 1 && currentWidth + w + (i < trains.length - 1 ? 30 : 0) > MAX_WIDTH) {
+								const w =
+									normalizedType.includes("frecciarossa") ||
+									normalizedType === "frrossa"
+										? 75
+										: 55;
+
+								if (
+									trains.length > 1 &&
+									currentWidth + w + (i < trains.length - 1 ? 30 : 0) >
+										MAX_WIDTH
+								) {
 									hiddenCount = trains.length - i;
 									break;
 								}
-								
+
 								visibleTrains.push(t);
 								currentWidth += w + 6;
 							}
@@ -147,9 +202,13 @@ export default function CompleteTripScreen() {
 												{logoSource ? (
 													<Image
 														source={logoSource}
-														style={{ 
-															width: normalizedType.includes("frecciarossa") || normalizedType === "frrossa" ? 75 : 55, 
-															height: 12 
+														style={{
+															width:
+																normalizedType.includes("frecciarossa") ||
+																normalizedType === "frrossa"
+																	? 75
+																	: 55,
+															height: 12,
 														}}
 														resizeMode="contain"
 													/>
@@ -181,7 +240,12 @@ export default function CompleteTripScreen() {
 						{origin} - {destination}
 					</ThemedText>
 					<View className="flex-row items-center">
-						<Icon name="calendar_today" size={16} color="#4b5563" className="mr-1" />
+						<Icon
+							name="calendar_today"
+							size={16}
+							color="#4b5563"
+							className="mr-1"
+						/>
 						<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-700 mr-3">
 							{dateFormatted}, {departureTime} - {arrivalTime}
 						</ThemedText>
@@ -199,6 +263,7 @@ export default function CompleteTripScreen() {
 					onToggleTerms={() => setAcceptedTerms(!acceptedTerms)}
 					isServiceSelected={isServiceSelected}
 					onToggleService={() => setIsServiceSelected(!isServiceSelected)}
+					instructionText={serviceInfo.passengerSelectionText}
 				/>
 			</ScrollView>
 

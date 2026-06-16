@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import React from "react";
 import { Pressable, View } from "react-native";
+import { Image } from "expo-image";
 
 export interface ServiceProps {
 	id: string;
@@ -9,7 +10,7 @@ export interface ServiceProps {
 	description: string;
 	price: number;
 	priceLabel?: string;
-	imageBg: string;
+	image: any;
 }
 
 interface ServiceCardProps {
@@ -26,11 +27,14 @@ export function ServiceCard({ service, isSelected, onSelect }: ServiceCardProps)
 				isSelected ? "border-[#005045]" : "border-gray-200"
 			}`}
 		>
-			{/* Placeholder for left image */}
-			<View
-				className="w-28"
-				style={{ backgroundColor: service.imageBg }}
-			/>
+			{/* Left Image */}
+			<View className="w-28">
+				<Image
+					source={service.image}
+					style={{ position: "absolute", top: 0, left: 0, bottom: 0, right: 0 }}
+					contentFit="cover"
+				/>
+			</View>
 
 			<View className="flex-1 p-4">
 				<View className="flex-row items-start justify-between">

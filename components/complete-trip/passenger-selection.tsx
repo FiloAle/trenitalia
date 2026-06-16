@@ -10,6 +10,7 @@ interface PassengerSelectionProps {
 	onToggleTerms: () => void;
 	isServiceSelected: boolean;
 	onToggleService: () => void;
+	instructionText: string;
 }
 
 export function PassengerSelection({
@@ -18,11 +19,12 @@ export function PassengerSelection({
 	onToggleTerms,
 	isServiceSelected,
 	onToggleService,
+	instructionText,
 }: PassengerSelectionProps) {
 	return (
 		<View className="px-5 py-4">
 			<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-600 mb-6">
-				Seleziona i passeggeri che viaggiano con il cane
+				{instructionText}
 			</ThemedText>
 
 			<View className="flex-row items-center justify-between pb-6 border-b border-gray-100 mb-6">

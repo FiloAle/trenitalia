@@ -54,6 +54,7 @@ interface TravelSolutionCardProps {
   route: { from: string; to: string };
   searchDate?: Date;
   onPress?: () => void;
+  onPressInfo?: () => void;
 }
 
 export function TravelSolutionCard({
@@ -61,6 +62,7 @@ export function TravelSolutionCard({
   route,
   searchDate,
   onPress,
+  onPressInfo,
 }: TravelSolutionCardProps) {
   const [liveDelay, setLiveDelay] = useState<string | null>(null);
 
@@ -234,7 +236,14 @@ export function TravelSolutionCard({
           <ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-500">
             {solution.duration} •{" "}
           </ThemedText>
-          <Pressable>
+          <Pressable 
+            onPress={(e) => {
+              if (onPressInfo) {
+                e.stopPropagation();
+                onPressInfo();
+              }
+            }}
+          >
             <ThemedText className="text-[14px] font-plus-jakarta-bold !text-gray-800 underline">
               {solution.trains.length === 1
                 ? "Diretto"

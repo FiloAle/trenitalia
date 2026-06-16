@@ -69,36 +69,20 @@ export async function searchJourneys(from: string, to: string, date: Date = new 
   const i = date.getMinutes().toString().padStart(2, '0');
 
   const uuid = generateUUID();
-  
-  // Internal trenit identifiers: id * client * type * lang
-  // We use *do*f*it meaning (desktop, ?, italian)
-  const userPartial = `${uuid}*do*f*it`;
-  
-  // Extra options, e.g. traveler types (*A1 = 1 Adult)
   const extraPartial = `*A1`;
 
-  // Payload format: from | to | Y | m | d | H | i | userPartial | extraPartial
-  const payload = [from, to, Y, m, d, H, i, userPartial, extraPartial].join('|');
-  
-  // Encode string to UTF-8 bytes to properly handle accents like in "Forlì"
-  const utf8Payload = unescape(encodeURIComponent(payload));
-  
-  // 1. Base64 encode the payload
-  let encoded = encode(utf8Payload);
-  
-  // 2. Remove base64 padding '='
-  encoded = encoded.replace(/=/g, '');
-  
-  // 3. Reverse the string completely
-  encoded = encoded.split('').reverse().join('');
-  
-  // 4. Append 'W' to the end
-  encoded += 'W';
-
-  const url = `https://trenit.app/v1/grx?r=${encoded}`;
-
   try {
-    const response = await fetch(url, {
+    // 1. Attempt Web API
+    const userPartialWeb = `${uuid}*do*f*it`;
+    const payloadWeb = [from, to, Y, m, d, H, i, userPartialWeb, extraPartial].join('|');
+    const utf8PayloadWeb = unescape(encodeURIComponent(payloadWeb));
+    
+    let encodedWeb = encode(utf8PayloadWeb).replace(/=/g, '').split('').reverse().join('');
+    encodedWeb += 'W';
+
+    const urlWeb = `https://trenit.app/v1/grx?r=${encodedWeb}`;
+    
+    const responseWeb = await fetch(urlWeb, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -106,14 +90,62 @@ export async function searchJourneys(from: string, to: string, date: Date = new 
       }
     });
     
-    if (!response.ok) {
-      throw new Error(`HTTP Error: ${response.status}`);
+    if (!responseWeb.ok) {
+      throw new Error(`Web API HTTP Error: ${responseWeb.status}`);
     }
 
-    const data: TrenitResponse = await response.json();
+    const data: TrenitResponse = await responseWeb.json();
+    if (data.err || !data.data || !data.data.routes) {
+      throw new Error(`Web API returned logic error or empty data: ${data.err || 'No routes'}`);
+    }
     return data;
   } catch (error) {
-    console.error("Error fetching trenit API:", error);
-    throw error;
+    console.warn("Web API failed, attempting mobile fallback...", error);
+    
+    // 2. Fallback to Mobile API
+    // Mobile API seems to require a 28-char alphanumeric ID without hyphens (like Firebase UIDs)
+    const mobileUuid = generateUUID().replace(/-/g, '').substring(0, 28).padEnd(28, 'a');
+    const userPartialMobile = `${mobileUuid}*i122*f*it`;
+    // Mobile uses bne*Ab1 instead of just *A1
+    const extraPartialMobile = `bne*Ab1`;
+    const payloadMobile = [from, to, Y, m, d, H, i, userPartialMobile, extraPartialMobile].join('|');
+    const utf8PayloadMobile = unescape(encodeURIComponent(payloadMobile));
+    
+    let encodedMobile = encode(utf8PayloadMobile).replace(/=/g, '').split('').reverse().join('');
+    encodedMobile += 'I';
+
+    const urlMobileGr = `https://ws.trenit.info/v1/gr?r=${encodedMobile}`;
+    const urlMobileGrx = `https://ws.trenit.info/v1/grx?r=${encodedMobile}`;
+    
+    // Step 1: Call /v1/gr to initialize the search
+    const responseMobileGr = await fetch(urlMobileGr, {
+      method: 'GET',
+      headers: {
+        'Accept': '*/*',
+        'Accept-Language': 'it-IT,it;q=0.9',
+        'User-Agent': 'Trenit/122 CFNetwork/3860.600.12 Darwin/25.5.0',
+      }
+    });
+    
+    if (!responseMobileGr.ok) {
+      throw new Error(`Mobile API (gr) HTTP Error: ${responseMobileGr.status}`);
+    }
+
+    // Step 2: Call /v1/grx to get the actual results
+    const responseMobileGrx = await fetch(urlMobileGrx, {
+      method: 'GET',
+      headers: {
+        'Accept': '*/*',
+        'Accept-Language': 'it-IT,it;q=0.9',
+        'User-Agent': 'Trenit/122 CFNetwork/3860.600.12 Darwin/25.5.0',
+      }
+    });
+
+    if (!responseMobileGrx.ok) {
+      throw new Error(`Mobile API (grx) HTTP Error: ${responseMobileGrx.status}`);
+    }
+
+    const dataMobile: TrenitResponse = await responseMobileGrx.json();
+    return dataMobile;
   }
 }

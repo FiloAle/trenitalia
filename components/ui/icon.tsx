@@ -7,14 +7,14 @@ import HomeOutline from '../../assets/icons/outline/home.svg';
 import ConfirmationNumberOutline from '../../assets/icons/outline/confirmation_number.svg';
 import SearchOutline from '../../assets/icons/outline/search.svg';
 import TrainOutline from '../../assets/icons/outline/train.svg';
-import CreditCardHeartOutline from '../../assets/icons/outline/credit_card_heart.svg';
+import AccountOutline from '../../assets/icons/outline/account.svg';
 
 // Custom SVG Icons - Fill
 import HomeFill from '../../assets/icons/fill/home.svg';
 import ConfirmationNumberFill from '../../assets/icons/fill/confirmation_number.svg';
 import SearchFill from '../../assets/icons/fill/search.svg';
 import TrainFill from '../../assets/icons/fill/train.svg';
-import CreditCardHeartFill from '../../assets/icons/fill/credit_card_heart.svg';
+import AccountFill from '../../assets/icons/fill/account.svg';
 
 import glyphMapOutlined from '../../assets/fonts/MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].json';
 import glyphMapRounded from '../../assets/fonts/MaterialSymbolsRounded[FILL,GRAD,opsz,wght].json';
@@ -40,7 +40,7 @@ const customIcons: Record<string, { outline: React.FC<SvgProps>; fill: React.FC<
   confirmation_number: { outline: ConfirmationNumberOutline, fill: ConfirmationNumberFill },
   search: { outline: SearchOutline, fill: SearchFill },
   train: { outline: TrainOutline, fill: TrainFill },
-  credit_card_heart: { outline: CreditCardHeartOutline, fill: CreditCardHeartFill },
+  account: { outline: AccountOutline, fill: AccountFill },
 };
 
 const glyphMaps = {
