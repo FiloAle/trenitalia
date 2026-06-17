@@ -2,9 +2,17 @@ import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { USER_DATA } from "@/constants/user";
 import { generateAztec, getCachedAztec } from "@/utils/aztec";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Image, Pressable, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+	ActivityIndicator,
+	Image,
+	Platform,
+	Pressable,
+	View,
+} from "react-native";
+import QRCode from "react-native-qrcode-svg";
 
 interface TicketCardProps {
 	dateString: string;
@@ -91,7 +99,7 @@ export function TicketCard({
 	}
 
 	return (
-		<View className="mt-1.5 overflow-hidden rounded-lg bg-white border border-gray-200">
+		<View className="mt-1.5 overflow-hidden rounded-2xl bg-white border border-gray-200">
 			{/* Top row: Train and Date */}
 			<View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-3">
 				<View className="flex-row items-center">
@@ -142,7 +150,7 @@ export function TicketCard({
 
 				{/* Codes row */}
 				<View className="flex-row justify-between mb-6 gap-2">
-					<View className="flex-1 rounded-lg bg-gray-100 p-2">
+					<View className="flex-1 rounded-2xl bg-gray-100 p-2">
 						<View className="flex-row items-center justify-between mb-0.5">
 							<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500">
 								PNR
@@ -155,7 +163,7 @@ export function TicketCard({
 					</View>
 					{/* Conditionally render CP */}
 					{cp && (
-						<View className="flex-1 rounded-lg bg-gray-100 p-2">
+						<View className="flex-1 rounded-2xl bg-gray-100 p-2">
 							<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-500 mb-0.5">
 								CP
 							</ThemedText>
@@ -167,7 +175,7 @@ export function TicketCard({
 
 					{/* Conditionally render Carrozza/Posto (Not for Regionale) */}
 					{trainType !== "Regionale" && carrozza && posto && (
-						<View className="flex-1 rounded-lg bg-gray-100 p-2">
+						<View className="flex-1 rounded-2xl bg-gray-100 p-2">
 							<ThemedText
 								className="text-sm font-plus-jakarta-medium !text-gray-500 mb-0.5"
 								numberOfLines={1}
@@ -184,14 +192,22 @@ export function TicketCard({
 					)}
 				</View>
 
-				{/* QR Code Block */}
 				<Pressable
 					className="items-center justify-center py-3"
 					onPress={() =>
 						router.push({ pathname: "/qr-code" as any, params: { pnr } })
 					}
 				>
-					{aztecImageUri ? (
+					{Platform.OS === "web" ||
+					Constants.executionEnvironment ===
+						ExecutionEnvironment.StoreClient ? (
+						<QRCode
+							value={qrValue}
+							size={100}
+							color="black"
+							backgroundColor="white"
+						/>
+					) : aztecImageUri ? (
 						<Image
 							source={{ uri: aztecImageUri }}
 							style={{ width: 100, height: 100 }}

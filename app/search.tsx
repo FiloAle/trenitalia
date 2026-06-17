@@ -12,7 +12,7 @@ import {
 } from "@/constants/stations";
 import { USER_DATA, getInitials } from "@/constants/user";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	Alert,
 	Button,
@@ -41,17 +41,6 @@ LogBox.ignoreLogs([
 	"VirtualizedLists should never be nested inside plain ScrollViews",
 ]);
 
-// Expo UI (for iOS Liquid Glass buttons)
-import { Button as ExpoButton, Host } from "@expo/ui/swift-ui";
-import {
-	buttonBorderShape,
-	buttonStyle,
-	controlSize,
-	disabled,
-	labelStyle,
-	tint,
-} from "@expo/ui/swift-ui/modifiers";
-
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const SearchOptionCard = ({
@@ -72,7 +61,7 @@ const SearchOptionCard = ({
 	<Pressable
 		onPress={onPress}
 		style={{ height: 56 }}
-		className={`w-full rounded-lg border border-gray-200 px-4 py-2 bg-white justify-center ${
+		className={`w-full rounded-2xl border border-gray-200 px-4 py-2 bg-white justify-center ${
 			isAdd ? "flex-row items-center justify-center gap-2" : ""
 		}`}
 	>
@@ -191,7 +180,20 @@ export default function SearchScreen() {
 		setToText(initialTo);
 	}, [initialFrom, initialTo]);
 
-
+	// Lazy-load @expo/ui/swift-ui only on iOS to avoid SSR/web crashes.
+	// We use synchronous require instead of dynamic import() to avoid Metro chunk loading errors on iOS.
+	const ExpoUIComponents = useMemo(() => {
+		if (Platform.OS === "ios") {
+			try {
+				const ui = require("@expo/ui/swift-ui");
+				const mods = require("@expo/ui/swift-ui/modifiers");
+				return { ExpoButton: ui.Button, Host: ui.Host, modifiers: mods };
+			} catch (e) {
+				return null;
+			}
+		}
+		return null;
+	}, []);
 
 	// Mock modal states
 	const [showCalendar, setShowCalendar] = useState(false);
@@ -611,8 +613,10 @@ export default function SearchScreen() {
 										</ThemedText>
 									)}
 								</ThemedText>
-								<View className="flex-col gap-2">
-									<View className="rounded-lg border border-gray-200 bg-white flex-row items-center px-4 h-[56px] overflow-visible">
+								<View
+									className={`${Platform.OS === "web" ? "relative " : ""}flex-col gap-2`}
+								>
+									<View className="rounded-2xl border border-gray-200 bg-white flex-row items-center px-4 h-[56px] overflow-visible">
 										<Pressable
 											className="flex-1 justify-center"
 											onPress={() => {
@@ -766,7 +770,11 @@ export default function SearchScreen() {
 								{/* Dropdown Suggestions */}
 								<DropdownMenu
 									isVisible={!!activeInput}
-									className="top-[100%] mt-2 left-0 right-0"
+									className={
+										Platform.OS === "web"
+											? "top-[92px] left-0 right-0"
+											: "top-[56%] mt-2 left-0 right-0"
+									}
 								>
 									{showSuggestions ? (
 										<FlatList
@@ -907,7 +915,7 @@ export default function SearchScreen() {
 											/>
 										</View>
 										<View className="flex-1">
-											<View className="rounded-lg border border-gray-200 bg-white flex-row items-center px-4 h-[56px] overflow-visible">
+											<View className="rounded-2xl border border-gray-200 bg-white flex-row items-center px-4 h-[56px] overflow-visible">
 												<Pressable
 													className="flex-1 justify-center"
 													onPress={() => {
@@ -984,7 +992,7 @@ export default function SearchScreen() {
 								</ThemedText>
 								{!isSubscriptionOrCarnet && (
 									<View
-										className="rounded-lg border border-gray-200 bg-white"
+										className="rounded-2xl border border-gray-200 bg-white"
 										style={{ zIndex: 100, elevation: 100 }}
 									>
 										<View style={{ zIndex: 100 }}>
@@ -1175,40 +1183,40 @@ export default function SearchScreen() {
 							</ThemedText>
 						</View>
 
-						{Platform.OS === "ios" ? (
-							<Host matchContents={true}>
-								<ExpoButton
+						{Platform.OS === "ios" && ExpoUIComponents ? (
+							<ExpoUIComponents.Host matchContents={true}>
+								<ExpoUIComponents.ExpoButton
 									label="Annulla"
 									systemImage="xmark"
 									modifiers={[
-										buttonStyle("glass"),
-										controlSize("extraLarge"),
-										labelStyle("iconOnly"),
-										buttonBorderShape("circle"),
+										ExpoUIComponents.modifiers.buttonStyle("glass"),
+										ExpoUIComponents.modifiers.controlSize("extraLarge"),
+										ExpoUIComponents.modifiers.labelStyle("iconOnly"),
+										ExpoUIComponents.modifiers.buttonBorderShape("circle"),
 									]}
 									onPress={handleCancelPress}
 								/>
-							</Host>
+							</ExpoUIComponents.Host>
 						) : (
 							<Button title="Annulla" onPress={handleCancelPress} />
 						)}
 
-						{Platform.OS === "ios" ? (
-							<Host matchContents={true}>
-								<ExpoButton
+						{Platform.OS === "ios" && ExpoUIComponents ? (
+							<ExpoUIComponents.Host matchContents={true}>
+								<ExpoUIComponents.ExpoButton
 									label="Salva"
 									//systemImage="checkmark"
 									modifiers={[
-										buttonStyle("glassProminent"),
-										controlSize("extraLarge"),
-										labelStyle("iconOnly"),
-										//buttonBorderShape("circle"),
-										tint("#134E4A"),
-										disabled(!hasCalendarChanges),
+										ExpoUIComponents.modifiers.buttonStyle("glassProminent"),
+										ExpoUIComponents.modifiers.controlSize("extraLarge"),
+										ExpoUIComponents.modifiers.labelStyle("iconOnly"),
+										//ExpoUIComponents.modifiers.buttonBorderShape("circle"),
+										ExpoUIComponents.modifiers.tint("#134E4A"),
+										ExpoUIComponents.modifiers.disabled(!hasCalendarChanges),
 									]}
 									onPress={() => setShowCalendar(false)}
 								/>
-							</Host>
+							</ExpoUIComponents.Host>
 						) : (
 							<Button title="Salva" onPress={() => setShowCalendar(false)} />
 						)}
@@ -1404,7 +1412,7 @@ export default function SearchScreen() {
 								{/* Andata */}
 								<Pressable
 									onPress={() => setActiveCalendarTab("andata")}
-									className={`flex-row items-center justify-center gap-2 rounded-xl px-3 border ${
+									className={`flex-row items-center justify-center gap-2 rounded-2xl px-3 border ${
 										activeCalendarTab === "andata"
 											? "border-teal-800 bg-white"
 											: "border-gray-100 bg-gray-50"
@@ -1433,7 +1441,7 @@ export default function SearchScreen() {
 											][departureDate.getMonth()]
 										}`}
 									</ThemedText>
-									<View className="bg-gray-200 rounded-lg px-2 py-1">
+									<View className="bg-gray-200 rounded-2xl px-2 py-1">
 										<ThemedText className="text-[14px] font-plus-jakarta-semibold !text-gray-800">
 											{`${departureDate.getHours()}:${departureDate.getMinutes().toString().padStart(2, "0")}`}
 										</ThemedText>
@@ -1459,7 +1467,7 @@ export default function SearchScreen() {
 										}
 										setActiveCalendarTab("ritorno");
 									}}
-									className={`rounded-xl border px-3 flex-row items-center gap-3 ${
+									className={`rounded-2xl border px-3 flex-row items-center gap-3 ${
 										hasReturn
 											? activeCalendarTab === "ritorno"
 												? "border-teal-800 bg-white"
@@ -1498,7 +1506,7 @@ export default function SearchScreen() {
 														][returnDate.getMonth()]
 													}`}
 												</ThemedText>
-												<View className="bg-gray-200 rounded-lg px-2 py-1">
+												<View className="bg-gray-200 rounded-2xl px-2 py-1">
 													<ThemedText className="text-[14px] font-plus-jakarta-semibold !text-gray-800">
 														{`${returnDate.getHours()}:${returnDate.getMinutes().toString().padStart(2, "0")}`}
 													</ThemedText>
@@ -1691,7 +1699,7 @@ export default function SearchScreen() {
 										].map((field, idx) => (
 											<View
 												key={idx}
-												className="rounded-lg border border-gray-200 p-3 bg-white flex-row items-center justify-between"
+												className="rounded-2xl border border-gray-200 p-3 bg-white flex-row items-center justify-between"
 											>
 												<View>
 													<ThemedText className="text-[11px] font-plus-jakarta-medium !text-gray-400 mb-0.5">

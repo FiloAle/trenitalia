@@ -1,8 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { Pressable, View, ViewStyle, ActivityIndicator } from "react-native";
+import { ActivityIndicator, Pressable, View, ViewStyle } from "react-native";
 
 interface MainButtonProps {
 	title: string;
@@ -28,12 +27,10 @@ export const MainButton = ({
 		<Pressable
 			onPress={onPress}
 			disabled={isDisabled}
-			className={`h-14 w-full overflow-hidden rounded-lg ${className} ${
+			className={`h-14 w-full overflow-hidden rounded-2xl ${className} ${
 				isDisabled ? "opacity-60" : ""
 			}`}
-			style={[
-				style,
-			]}
+			style={[style]}
 		>
 			<LinearGradient
 				colors={["#8a052b", "#f73d3d"]}

@@ -1,0 +1,18 @@
+const { encode } = require('base-64');
+const from = "Milano Centrale";
+const to = "Cesena";
+const Y = "2026";
+const m = "06";
+const d = "17";
+const H = "10";
+const i = "00";
+const uuid = 'ccc0deec-c751-413a-8af7-cdbb96f44690';
+const userPartialWeb = `${uuid}*do*f*it`;
+const extraPartial = `*A1`;
+const payloadWeb = [from, to, Y, m, d, H, i, userPartialWeb, extraPartial].join('|');
+const utf8PayloadWeb = unescape(encodeURIComponent(payloadWeb));
+let encodedWeb = btoa(utf8PayloadWeb).replace(/=/g, '').split('').reverse().join('');
+encodedWeb += 'W';
+const urlWeb = `https://trenit.app/v1/grx?r=${encodedWeb}`;
+console.log(urlWeb);
+fetch(urlWeb).then(r=>r.json()).then(console.log).catch(console.error);

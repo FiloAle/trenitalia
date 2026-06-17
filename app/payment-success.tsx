@@ -4,8 +4,8 @@ import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import { addPurchasedTrip } from "@/utils/trips-store";
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
-import { Pressable, Switch, View, Platform } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Platform, Pressable, Switch, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PaymentSuccessScreen() {
@@ -110,13 +110,15 @@ export default function PaymentSuccessScreen() {
 					<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
 						Ricevi notifiche sui tuoi viaggi
 					</ThemedText>
-					<View className={Platform.OS === 'ios' ? "bg-gray-200 rounded-full" : ""}>
+					<View
+						className={Platform.OS === "ios" ? "bg-gray-200 rounded-full" : ""}
+					>
 						<Switch
 							value={notificationsEnabled}
 							onValueChange={setNotificationsEnabled}
 							trackColor={{ false: "#e5e7eb", true: "#005045" }}
 							thumbColor={"#ffffff"}
-							className={Platform.OS === 'ios' ? "-mr-0.5" : ""}
+							className={Platform.OS === "ios" ? "-mr-0.5" : ""}
 						/>
 					</View>
 				</View>
@@ -127,7 +129,7 @@ export default function PaymentSuccessScreen() {
 						<Pressable
 							onPress={() => router.dismissAll()}
 							style={{ height: 56 }}
-							className="w-full border border-gray-300 rounded-lg items-center justify-center"
+							className="w-full border border-gray-300 rounded-2xl items-center justify-center"
 						>
 							<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
 								Torna alla Home

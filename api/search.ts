@@ -1,4 +1,5 @@
 import { encode } from 'base-64';
+import { Platform } from 'react-native';
 
 export interface TrenitLeg {
   ts: string;  // Train type, e.g., "FrRossa"
@@ -80,7 +81,13 @@ export async function searchJourneys(from: string, to: string, date: Date = new 
     let encodedWeb = encode(utf8PayloadWeb).replace(/=/g, '').split('').reverse().join('');
     encodedWeb += 'W';
 
-    const urlWeb = `https://trenit.app/v1/grx?r=${encodedWeb}`;
+    let urlWeb = `https://trenit.app/v1/grx?r=${encodedWeb}`;
+    
+    // On web, Trenit's API doesn't return CORS headers, so the browser blocks it.
+    // We use corsproxy.io to bypass this during web development.
+    if (Platform.OS === 'web') {
+      urlWeb = `https://corsproxy.io/?${encodeURIComponent(urlWeb)}`;
+    }
     
     const responseWeb = await fetch(urlWeb, {
       method: 'GET',
@@ -114,8 +121,13 @@ export async function searchJourneys(from: string, to: string, date: Date = new 
     let encodedMobile = encode(utf8PayloadMobile).replace(/=/g, '').split('').reverse().join('');
     encodedMobile += 'I';
 
-    const urlMobileGr = `https://ws.trenit.info/v1/gr?r=${encodedMobile}`;
-    const urlMobileGrx = `https://ws.trenit.info/v1/grx?r=${encodedMobile}`;
+    let urlMobileGr = `https://ws.trenit.info/v1/gr?r=${encodedMobile}`;
+    let urlMobileGrx = `https://ws.trenit.info/v1/grx?r=${encodedMobile}`;
+    
+    if (Platform.OS === 'web') {
+      urlMobileGr = `https://corsproxy.io/?${encodeURIComponent(urlMobileGr)}`;
+      urlMobileGrx = `https://corsproxy.io/?${encodeURIComponent(urlMobileGrx)}`;
+    }
     
     // Step 1: Call /v1/gr to initialize the search
     const responseMobileGr = await fetch(urlMobileGr, {

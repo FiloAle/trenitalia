@@ -4,9 +4,9 @@ import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import { TimerBar } from "@/components/ui/timer-bar";
-import { Stack, router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
-import { Pressable, View, TextInput } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import { Pressable, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ElectronicCreditScreen() {
@@ -20,7 +20,6 @@ export default function ElectronicCreditScreen() {
 
 	return (
 		<View className="flex-1 bg-white">
-
 			{/* Custom Modal Header */}
 			<View
 				className="bg-white px-5"
@@ -50,12 +49,13 @@ export default function ElectronicCreditScreen() {
 					Nessun credito disponibile
 				</ThemedText>
 				<ThemedText className="text-[15px] font-plus-jakarta-medium !text-gray-600 text-center leading-tight mb-8">
-					Non ci sono bonus/crediti elettronici o carte regalo nel tuo borsellino.
+					Non ci sono bonus/crediti elettronici o carte regalo nel tuo
+					borsellino.
 				</ThemedText>
 
 				<Pressable
 					onPress={() => setBottomSheetVisible(true)}
-					className="w-full border border-gray-300 rounded-xl py-4 items-center justify-center bg-white"
+					className="w-full border border-gray-300 rounded-2xl py-4 items-center justify-center bg-white"
 				>
 					<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
 						Usa Crediti, Bonus o Carta Regalo
@@ -83,7 +83,7 @@ export default function ElectronicCreditScreen() {
 				title="Inserisci bonus credito"
 			>
 				<View className="pt-2">
-					<View className="border border-gray-200 rounded-xl mb-4 px-4 py-3 h-[56px] justify-center bg-white">
+					<View className="border border-gray-200 rounded-2xl mb-4 px-4 py-3 h-[56px] justify-center bg-white">
 						<TextInput
 							value={identificativo}
 							onChangeText={setIdentificativo}
@@ -93,7 +93,7 @@ export default function ElectronicCreditScreen() {
 						/>
 					</View>
 
-					<View className="border border-gray-200 rounded-xl mb-6 px-4 py-3 h-[56px] justify-center bg-white">
+					<View className="border border-gray-200 rounded-2xl mb-6 px-4 py-3 h-[56px] justify-center bg-white">
 						<TextInput
 							value={antifrode}
 							onChangeText={setAntifrode}

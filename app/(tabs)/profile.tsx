@@ -2,7 +2,7 @@ import { LoyaltyCard } from "@/components/loyalty/loyalty-card";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { USER_DATA, getInitials } from "@/constants/user";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -235,7 +235,7 @@ export default function LoyaltyScreen() {
 
 						{/* Stats Section: Punti Premio */}
 						<View className="px-5">
-							<View className="flex-row items-center justify-between p-4 bg-white rounded-lg border border-gray-200">
+							<View className="flex-row items-center justify-between p-4 bg-white rounded-2xl border border-gray-200">
 								<View className="flex-row items-center">
 									<View
 										className={`h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${
@@ -281,7 +281,7 @@ export default function LoyaltyScreen() {
 						style={{ paddingBottom: insets.bottom + 20 }}
 					>
 						<View className="px-5 py-4">
-							<View className="flex-row items-center p-4 bg-white rounded-lg border border-gray-200">
+							<View className="flex-row items-center p-4 bg-white rounded-2xl border border-gray-200">
 								<View className="h-10 w-10 items-center justify-center rounded-full bg-cyan-100">
 									<Icon name="savings" size={22} className="!text-cyan-600" />
 								</View>

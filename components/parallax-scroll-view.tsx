@@ -1,5 +1,5 @@
-import React, { type PropsWithChildren, type ReactElement } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { type PropsWithChildren, type ReactElement } from "react";
+import { StyleSheet, View } from "react-native";
 import Animated, {
 	Extrapolation,
 	interpolate,
@@ -12,62 +12,38 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import TrenitaliaLogo from "@/assets/logos/trenitalia.svg";
 import TrenitaliaColorLogo from "@/assets/logos/trenitalia_color.svg";
-import { SideMenu } from "@/components/modals/side-menu";
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
 import { Icon } from "@/components/ui/icon";
-import { USER_DATA, getInitials } from "@/constants/user";
 import { useThemeColor } from "@/hooks/use-theme-color";
 
-const HEADER_HEIGHT = 360;
+const HEADER_HEIGHT = 300;
 
 type Props = PropsWithChildren<{
 	headerImage: ReactElement;
 	headerBackgroundColor: { dark: string; light: string };
-	onProfilePress?: () => void;
+	lightColor?: string;
+	darkColor?: string;
 }>;
 
 export default function ParallaxScrollView({
 	children,
 	headerImage,
 	headerBackgroundColor,
-	onProfilePress,
+	lightColor,
+	darkColor,
 }: Props) {
 	const insets = useSafeAreaInsets();
-	const [isMenuVisible, setIsMenuVisible] = React.useState(false);
-	const backgroundColor = useThemeColor({}, "background");
+	const backgroundColor = useThemeColor(
+		{ light: lightColor, dark: darkColor },
+		"background",
+	);
 	const scrollRef = useAnimatedRef<Animated.ScrollView>();
 	const scrollOffset = useScrollOffset(scrollRef);
 	const topInset = insets.top ?? 0;
 
-	const headerAnimatedStyle = useAnimatedStyle(() => {
-		const isOverscrolling = scrollOffset.value < 0;
-
-		return {
-			transform: [
-				{
-					translateY: isOverscrolling
-						? scrollOffset.value / 2
-						: interpolate(
-								scrollOffset.value,
-								[0, HEADER_HEIGHT],
-								[0, HEADER_HEIGHT * 0.75],
-								Extrapolation.CLAMP,
-							),
-				},
-				{
-					scale: isOverscrolling
-						? (HEADER_HEIGHT - scrollOffset.value) / HEADER_HEIGHT
-						: 1,
-				},
-			],
-		};
-	});
-
 	const stickyHeaderStyle = useAnimatedStyle(() => {
 		const progress = interpolate(
 			scrollOffset.value,
-			[HEADER_HEIGHT - topInset - 60, HEADER_HEIGHT - topInset],
+			[HEADER_HEIGHT - topInset - 240, HEADER_HEIGHT - topInset - 180],
 			[0, 1],
 			Extrapolation.CLAMP,
 		);
@@ -95,7 +71,7 @@ export default function ParallaxScrollView({
 	const iconColorStyle = useAnimatedStyle(() => {
 		const progress = interpolate(
 			scrollOffset.value,
-			[HEADER_HEIGHT - topInset - 60, HEADER_HEIGHT - topInset],
+			[HEADER_HEIGHT - topInset - 240, HEADER_HEIGHT - topInset - 180],
 			[0, 1],
 			Extrapolation.CLAMP,
 		);
@@ -108,7 +84,7 @@ export default function ParallaxScrollView({
 	const logoWhiteStyle = useAnimatedStyle(() => {
 		const progress = interpolate(
 			scrollOffset.value,
-			[HEADER_HEIGHT - topInset - 60, HEADER_HEIGHT - topInset],
+			[HEADER_HEIGHT - topInset - 240, HEADER_HEIGHT - topInset - 180],
 			[0, 1],
 			Extrapolation.CLAMP,
 		);
@@ -120,7 +96,7 @@ export default function ParallaxScrollView({
 	const logoColorStyle = useAnimatedStyle(() => {
 		const progress = interpolate(
 			scrollOffset.value,
-			[HEADER_HEIGHT - topInset - 60, HEADER_HEIGHT - topInset],
+			[HEADER_HEIGHT - topInset - 240, HEADER_HEIGHT - topInset - 180],
 			[0, 1],
 			Extrapolation.CLAMP,
 		);
@@ -132,7 +108,19 @@ export default function ParallaxScrollView({
 	const AnimatedIcon = Animated.createAnimatedComponent(Icon);
 
 	return (
-		<View className="flex-1">
+		<View className="flex-1" style={{ backgroundColor }}>
+			{/* Sfondo per l'overscroll superiore */}
+			<View
+				style={{
+					position: "absolute",
+					top: 0,
+					left: 0,
+					right: 0,
+					height: "50%",
+					backgroundColor: headerBackgroundColor.light,
+				}}
+			/>
+
 			<Animated.View
 				style={[
 					{
@@ -148,11 +136,9 @@ export default function ParallaxScrollView({
 				]}
 			>
 				<View className="flex-1 flex-row items-center justify-between px-6">
-					<Pressable onPress={() => setIsMenuVisible(true)}>
-						<AnimatedIcon name="menu" size={24} style={iconColorStyle} />
-					</Pressable>
-					<View 
-						className="absolute left-0 right-0 items-center justify-center pointer-events-none" 
+					<View style={{ width: 24 }} />
+					<View
+						className="absolute left-0 right-0 items-center justify-center pointer-events-none"
 						style={{ top: 0, bottom: 0 }}
 					>
 						<View style={{ width: 100, height: 25 }}>
@@ -170,13 +156,6 @@ export default function ParallaxScrollView({
 							size={24}
 							style={iconColorStyle}
 						/>
-						<Pressable onPress={onProfilePress}>
-							<View className="h-8 w-8 items-center justify-center rounded-full bg-teal-900">
-								<ThemedText className="text-[11px] font-plus-jakarta-bold !text-white">
-									{getInitials(USER_DATA.firstName, USER_DATA.lastName)}
-								</ThemedText>
-							</View>
-						</Pressable>
 					</View>
 				</View>
 			</Animated.View>
@@ -184,29 +163,20 @@ export default function ParallaxScrollView({
 			<Animated.ScrollView
 				ref={scrollRef}
 				className="flex-1"
-				style={{ backgroundColor }}
+				style={{ backgroundColor: "transparent" }}
 				scrollEventThrottle={16}
 				showsVerticalScrollIndicator={false}
 			>
-				<Animated.View
+				<View
 					style={[
 						{ height: HEADER_HEIGHT, overflow: "hidden" },
 						{ backgroundColor: headerBackgroundColor.light },
-						headerAnimatedStyle,
 					]}
 				>
 					{headerImage}
-				</Animated.View>
-				<ThemedView className="flex-1 gap-4 px-5 py-8 rounded-t-[18px] -mt-4">
-					{children}
-				</ThemedView>
+				</View>
+				<View className="flex-1">{children}</View>
 			</Animated.ScrollView>
-
-			<SideMenu
-				isVisible={isMenuVisible}
-				onClose={() => setIsMenuVisible(false)}
-				onProfilePress={onProfilePress}
-			/>
 		</View>
 	);
 }

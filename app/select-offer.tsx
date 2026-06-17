@@ -2,7 +2,7 @@ import { selectedSolutionCache } from "@/api/search";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import Animated, {
 	FadeIn,
@@ -455,7 +455,7 @@ export default function SelectOfferScreen() {
 												[sIdx]: !prev[sIdx],
 											}))
 										}
-										className="mb-6 mx-4 bg-white border border-gray-200 rounded-lg overflow-hidden"
+										className="mb-6 mx-4 bg-white border border-gray-200 rounded-2xl overflow-hidden"
 									>
 										{/* Accordion Header */}
 										<View
@@ -504,7 +504,9 @@ export default function SelectOfferScreen() {
 											>
 												{realClasses.map((c, cIdx) => {
 													const classOffers = getRealOffers(sIdx, c.id)
-														.filter((a) => getPriceForSegment(sIdx, c.id, a.id) > 0)
+														.filter(
+															(a) => getPriceForSegment(sIdx, c.id, a.id) > 0,
+														)
 														.sort((a, b) => {
 															const priceA = getPriceForSegment(
 																sIdx,

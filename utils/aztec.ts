@@ -1,4 +1,4 @@
-import * as bwipjs from "@bwip-js/react-native";
+import { Platform } from "react-native";
 
 const cache: Record<string, string> = {};
 
@@ -7,12 +7,17 @@ export function getCachedAztec(text: string, scale: number = 16): string | null 
 }
 
 export async function generateAztec(text: string, scale: number = 16): Promise<string> {
+	if (Platform.OS === "web") {
+		return Promise.resolve("");
+	}
+
 	const cacheKey = `${text}-${scale}`;
 	if (cache[cacheKey]) {
 		return cache[cacheKey];
 	}
 
 	try {
+		const bwipjs = require("@bwip-js/react-native");
 		const result: any = await bwipjs.toDataURL({
 			bcid: "azteccode",
 			text,

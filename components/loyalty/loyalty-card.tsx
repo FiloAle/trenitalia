@@ -1,5 +1,4 @@
 import { ThemedText } from "@/components/themed-text";
-import React from "react";
 import { Animated, Dimensions, View } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -27,7 +26,7 @@ export function LoyaltyCard({
 			className={`${isLast ? "" : "mr-5"} py-2`}
 		>
 			<Animated.View
-				className={`w-full h-[200px] rounded-xl p-5 justify-end border-2 ${bgClass} ${borderClass}`}
+				className={`w-full h-[200px] rounded-2xl p-5 justify-end border-2 ${bgClass} ${borderClass}`}
 				style={[animatedStyle]}
 			>
 				<ThemedText className="!text-white text-[12px] font-plus-jakarta-medium opacity-80 mb-1">

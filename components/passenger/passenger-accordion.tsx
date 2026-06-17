@@ -1,6 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import Animated, {
 	FadeIn,
@@ -104,7 +103,7 @@ export function PassengerAccordion({
 								<Pressable
 									key={i}
 									onPress={() => onApplyShortcut(saved)}
-									className="border border-gray-300 rounded-lg px-4 py-3 mr-3"
+									className="border border-gray-300 rounded-2xl px-4 py-3 mr-3"
 								>
 									<ThemedText className="font-plus-jakarta-bold text-[13px] !text-gray-950 uppercase">
 										{saved.nome} {saved.cognome}

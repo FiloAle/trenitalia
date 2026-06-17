@@ -1,9 +1,8 @@
+import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import React from "react";
-import { Pressable, View } from "react-native";
 import { MainButton } from "@/components/ui/main-button";
-import { BottomSheet } from "@/components/modals/bottom-sheet";
+import { Pressable, View } from "react-native";
 
 export interface TopDownModalButton {
 	label: string;
@@ -59,7 +58,7 @@ export function TopDownModal({
 								<Pressable
 									key={index}
 									onPress={btn.onPress}
-									className="w-full items-center justify-center rounded-lg border border-gray-300 py-3.5"
+									className="w-full items-center justify-center rounded-2xl border border-gray-300 py-3.5"
 								>
 									<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
 										{btn.label}
@@ -68,11 +67,7 @@ export function TopDownModal({
 							);
 						}
 						return (
-							<MainButton
-								key={index}
-								title={btn.label}
-								onPress={btn.onPress}
-							/>
+							<MainButton key={index} title={btn.label} onPress={btn.onPress} />
 						);
 					})}
 				</View>

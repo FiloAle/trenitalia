@@ -7,11 +7,11 @@ import {
 import { StickyFooter } from "@/components/select-offer/sticky-footer";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
+import { TimerBar } from "@/components/ui/timer-bar";
 import { USER_DATA } from "@/constants/user";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { TimerBar } from "@/components/ui/timer-bar";
 const EMPTY_PASSENGER: PassengerData = {
 	nome: "",
 	cognome: "",
@@ -139,7 +139,7 @@ export default function PassengerDataScreen() {
 
 					{/* Aggiungi buono sconto */}
 					<View className="px-5 mt-6">
-						<Pressable className="border border-dashed border-gray-300 rounded-xl p-4 flex-row justify-between items-center bg-white">
+						<Pressable className="border border-dashed border-gray-300 rounded-2xl p-4 flex-row justify-between items-center bg-white">
 							<View className="flex-row items-center">
 								<Icon
 									name="local_offer"

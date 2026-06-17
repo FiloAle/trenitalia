@@ -1,83 +1,100 @@
-import { QuickSearches } from "@/components/home/quick-searches";
-import { TicketPurchaseCard } from "@/components/home/ticket-purchase-card";
 import ParallaxScrollView from "@/components/parallax-scroll-view";
-import { ThemedView } from "@/components/themed-view";
-import { Image } from "expo-image";
-import React, { useState } from "react";
-import { View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 
+import { DiscountCard } from "@/components/home/discount-card";
 import { InfoBanner } from "@/components/home/info-banner";
 import { PromoCarousel } from "@/components/home/promo-carousel";
-import { TravelSection } from "@/components/home/travel-section";
+import { SectionHeader } from "@/components/home/section-header";
 import { ThemedText } from "@/components/themed-text";
+import { TicketItem } from "@/components/trips/ticket-item";
+import { Icon } from "@/components/ui/icon";
+import { USER_DATA } from "@/constants/user";
+import { getPurchasedTrips, PurchasedTrip } from "@/utils/trips-store";
 import { router } from "expo-router";
 
 export default function HomeScreen() {
+	const [nextTrip, setNextTrip] = useState<PurchasedTrip | null>(null);
+
 	const handleOpenSearch = () => {
 		router.push("/search");
 	};
 
-	const handleQuickSearch = (from: string, to: string) => {
-		router.push({
-			pathname: "/search",
-			params: { initialFrom: from, initialTo: to, initialStep: "details" },
-		});
-	};
+	useFocusEffect(
+		useCallback(() => {
+			const trips = getPurchasedTrips();
+			const now = new Date();
+			const upcoming = trips.find((t) => t.date && new Date(t.date) > now);
+			setNextTrip(upcoming || trips[0] || null); // Fallback to first if all in past, just in case
+		}, []),
+	);
 
 	return (
 		<>
 			<ParallaxScrollView
-				onProfilePress={() => router.push("/profile")}
-				headerBackgroundColor={{ light: "#A1CEDC", dark: "#A1CEDC" }}
+				headerBackgroundColor={{ light: "#032c2e", dark: "#032c2e" }}
+				lightColor="#f9fafb"
+				darkColor="#f9fafb"
 				headerImage={
 					<View className="flex-1">
-						<Image
-							source={require("../../assets/images/nature.jpg")}
-							className="h-full w-full"
-							style={{ width: "100%", height: "100%" }}
-							contentFit="cover"
+						<LinearGradient
+							colors={["#032c2e", "#064448"]}
+							style={StyleSheet.absoluteFill}
 						/>
-						<View className="absolute inset-0 items-center justify-center bg-black/40">
-							<View className="items-center mt-[128px]">
-								<ThemedText className="text-[18px] font-plus-jakarta-extrabold !text-white tracking-tight">
-									FRECCIADAYS
+						<View className="flex-1 justify-end px-6 pb-8">
+							<ThemedText className="text-[18px] font-plus-jakarta !text-white">
+								Ciao {USER_DATA.firstName},
+							</ThemedText>
+							<ThemedText className="text-[24px] font-plus-jakarta-bold !text-white">
+								Dove vuoi andare?
+							</ThemedText>
+							<Pressable
+								onPress={handleOpenSearch}
+								className="mt-6 flex-row items-center rounded-full bg-white px-5 py-4"
+							>
+								<Icon name="search" size={24} color="#4b5563" />
+								<ThemedText className="ml-3 text-[16px] font-plus-jakarta-medium !text-gray-600">
+									Cerca la tua destinazione
 								</ThemedText>
-								<ThemedText className="text-[18px] font-plus-jakarta-medium !text-white uppercase tracking-tight -mt-1">
-									Ci sono giorni fatti per viaggiare
-								</ThemedText>
-								<ThemedText className="text-[11px] font-plus-jakarta-medium !text-white text-center -mt-1">
-									Il sabato e dal martedì al giovedì viaggi con sconti fino al
-									60%
-								</ThemedText>
-								<ThemedText className="text-[12px] mt-2 font-plus-jakarta-semibold !text-white text-center uppercase">
-									Scopri di più
-								</ThemedText>
-								<ThemedText className="text-[7px] mt-2 font-plus-jakarta-medium !text-white text-center">
-									L&apos;offerta è soggetta a condizioni e limitazioni
-								</ThemedText>
-							</View>
+							</Pressable>
 						</View>
 					</View>
 				}
 			>
-				<ThemedView className="gap-8 pb-10">
-					<ThemedView className="gap-4">
-						<TicketPurchaseCard onPress={handleOpenSearch} />
-						<InfoBanner description="Vai alle notizie" />
-					</ThemedView>
-					<QuickSearches onSelectRoute={handleQuickSearch} />
-					<PromoCarousel />
-					<ThemedView className="gap-4">
-						<TravelSection />
-						<InfoBanner
-							title="Hai bisogno di aiuto?"
-							description="Rispondiamo alle tue domande"
+				<View className="bg-white gap-8 px-5 py-8 pb-10">
+					{nextTrip && (
+						<View className="gap-4">
+							<SectionHeader title="Il tuo prossimo viaggio" />
+							<TicketItem ticket={nextTrip} />
+						</View>
+					)}
+
+					<DiscountCard />
+
+					<View className="gap-4">
+						<SectionHeader
+							title="Notizie di infomobilità"
+							actionText="Vedi tutte"
 						/>
-					</ThemedView>
-				</ThemedView>
+						<InfoBanner
+							title="Piano di ammodernamento della rete"
+							description={
+								"Per l’estate 2026 sono previsti interventi di ammodernamento dell’infrastruttura ferroviaria.\nTempi di viaggio e disponibilità dei biglietti possono subire variazioni."
+							}
+							hideIcon={true}
+						/>
+					</View>
+				</View>
+
+				<View className="bg-gray-50 flex-1 gap-8 px-5 py-8 pb-12">
+					<View className="gap-4">
+						<SectionHeader title="Promo e servizi" actionText="Vedi tutte" />
+						<PromoCarousel />
+					</View>
+				</View>
 			</ParallaxScrollView>
-
-
 		</>
 	);
 }

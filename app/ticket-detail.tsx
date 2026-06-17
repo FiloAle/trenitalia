@@ -4,14 +4,13 @@ import { TicketBottomActions } from "@/components/ticket-detail/ticket-bottom-ac
 import { TicketCard } from "@/components/ticket-detail/ticket-card";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
-import { STATIONS } from "@/constants/stations";
 import { USER_DATA } from "@/constants/user";
+import { getPurchasedTrips } from "@/utils/trips-store";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getPurchasedTrips } from "@/utils/trips-store";
 
 export default function TicketDetailScreen() {
 	const params = useLocalSearchParams();
@@ -21,7 +20,7 @@ export default function TicketDetailScreen() {
 
 	const tripId = params.tripId as string;
 	// Retrieve from global store
-	const trip = getPurchasedTrips().find(t => t.id === tripId);
+	const trip = getPurchasedTrips().find((t) => t.id === tripId);
 
 	if (!trip) {
 		return (
@@ -108,20 +107,23 @@ export default function TicketDetailScreen() {
 				title="Gestisci"
 			>
 				<View className="gap-3">
-					<Pressable className="border border-gray-200 rounded-lg p-4 items-center active:bg-gray-50">
+					<Pressable className="border border-gray-200 rounded-2xl p-4 items-center active:bg-gray-50">
 						<ThemedText className="font-plus-jakarta-bold !text-gray-900">
 							Smart Refund
 						</ThemedText>
 					</Pressable>
 					<Pressable
-						className="border border-gray-200 rounded-lg p-4 items-center active:bg-gray-50"
+						className="border border-gray-200 rounded-2xl p-4 items-center active:bg-gray-50"
 						onPress={() => {
 							setIsGestisciOpen(false);
 							// Give modal time to close before navigating
 							setTimeout(() => {
 								router.push({
 									pathname: "/add-services" as any,
-									params: { endTime: Date.now() + 10 * 60 * 1000, isAddService: "true" },
+									params: {
+										endTime: Date.now() + 10 * 60 * 1000,
+										isAddService: "true",
+									},
 								});
 							}, 300);
 						}}
@@ -130,7 +132,7 @@ export default function TicketDetailScreen() {
 							Aggiungi servizi
 						</ThemedText>
 					</Pressable>
-					<Pressable className="border border-gray-200 rounded-lg p-4 items-center active:bg-gray-50">
+					<Pressable className="border border-gray-200 rounded-2xl p-4 items-center active:bg-gray-50">
 						<ThemedText className="font-plus-jakarta-bold !text-gray-900">
 							Indennizzo
 						</ThemedText>

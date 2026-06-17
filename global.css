@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Remove browser default focus outline/ring from all input elements on web */
+input:focus,
+textarea:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+
 @layer base {
   :root {
     color-scheme: light !important;

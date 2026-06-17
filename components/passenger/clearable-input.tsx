@@ -1,6 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import React from "react";
 import { Pressable, TextInput, View } from "react-native";
 
 export interface ClearableInputProps {
@@ -19,7 +18,7 @@ export function ClearableInput({
 	keyboardType = "default",
 }: ClearableInputProps) {
 	return (
-		<View className="border border-gray-300 rounded-lg bg-white px-4 py-2 mb-3 flex-row items-center">
+		<View className="border border-gray-300 rounded-2xl bg-white px-4 py-2 mb-3 flex-row items-center">
 			<View className="flex-1 justify-center min-h-[44px]">
 				<ThemedText className="text-[12px] font-plus-jakarta-medium !text-gray-500 mb-0.5">
 					{label}
@@ -31,7 +30,9 @@ export function ClearableInput({
 					keyboardType={keyboardType}
 					className="font-plus-jakarta-bold text-[16px] text-gray-900 p-0 m-0 leading-tight h-[22px]"
 					placeholderTextColor="#9ca3af"
-					autoCapitalize={keyboardType === "email-address" ? "none" : "characters"}
+					autoCapitalize={
+						keyboardType === "email-address" ? "none" : "characters"
+					}
 					autoCorrect={false}
 				/>
 			</View>

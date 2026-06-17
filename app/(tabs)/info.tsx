@@ -4,14 +4,13 @@ import { TopDownModal } from "@/components/modals/top-down-modal";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
+import { RECENT_STATIONS, STATIONS } from "@/constants/stations";
 import {
-	RECENT_STATIONS,
-	STATIONS,
-} from "@/constants/stations";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState, useCallback } from "react";
-import { getRecentTrains, RecentTrainSearch } from "@/utils/recent-trains-store";
-import { useFocusEffect } from "expo-router";
+	getRecentTrains,
+	RecentTrainSearch,
+} from "@/utils/recent-trains-store";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
 	FlatList,
 	Image,
@@ -42,7 +41,7 @@ export default function InfoScreen() {
 	useFocusEffect(
 		useCallback(() => {
 			setRecentTrains(getRecentTrains());
-		}, [])
+		}, []),
 	);
 
 	const handleSearch = (from?: string, to?: string) => {
@@ -77,7 +76,7 @@ export default function InfoScreen() {
 					>
 						<View className="px-5 pt-6 gap-6">
 							{/* Search Box */}
-							<View className="rounded-lg border border-gray-200 bg-white px-4 py-1">
+							<View className="rounded-2xl border border-gray-200 bg-white px-4 py-1">
 								<TextInput
 									className="font-plus-jakarta-medium text-gray-900 h-12"
 									placeholder="N. Treno"
@@ -99,10 +98,12 @@ export default function InfoScreen() {
 										<Pressable
 											key={idx}
 											className="flex-row items-center py-2"
-											onPress={() => router.navigate({
-												pathname: "/train-details",
-												params: { trainNumber: search.trainNumber }
-											})}
+											onPress={() =>
+												router.navigate({
+													pathname: "/train-details",
+													params: { trainNumber: search.trainNumber },
+												})
+											}
 										>
 											<Icon
 												name="schedule"
@@ -111,7 +112,8 @@ export default function InfoScreen() {
 												weight={400}
 											/>
 											<ThemedText className="ml-3 font-plus-jakarta-semibold !text-gray-950">
-												{search.trainNumber} {search.origin} - {search.destination}
+												{search.trainNumber} {search.origin} -{" "}
+												{search.destination}
 											</ThemedText>
 										</Pressable>
 									))}
@@ -142,7 +144,7 @@ export default function InfoScreen() {
 						ListHeaderComponent={
 							<View className="gap-6 pb-6">
 								{/* Search Box */}
-								<View className="rounded-lg border border-gray-200 bg-white px-4 py-1">
+								<View className="rounded-2xl border border-gray-200 bg-white px-4 py-1">
 									<TextInput
 										className="font-plus-jakarta-medium text-gray-900 h-12"
 										placeholder="Ricerca stazione"
@@ -236,7 +238,7 @@ export default function InfoScreen() {
 						<View className="px-5 pt-6 gap-4 pb-10">
 							<Pressable
 								onPress={() => router.navigate("/train-details")}
-								className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden"
+								className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden"
 							>
 								{/* Header */}
 								<View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-100">
@@ -358,7 +360,7 @@ export default function InfoScreen() {
 				>
 					<View className="h-14 flex-row items-center justify-between px-6 mb-2">
 						<ThemedText className="text-3xl font-plus-jakarta-bold !text-white">
-							Infotreno
+							Infomobilità
 						</ThemedText>
 						<View className="flex-row items-center gap-4">
 							<Icon name="notifications" size={24} color="white" />
@@ -396,7 +398,7 @@ export default function InfoScreen() {
 						className="absolute left-0 right-0 px-5 z-10 bottom-6"
 						pointerEvents="box-none"
 					>
-						<View className="bg-white/90 pt-2 rounded-lg">
+						<View className="bg-white/90 pt-2 rounded-2xl">
 							<InfoBanner />
 						</View>
 					</View>
@@ -419,7 +421,7 @@ export default function InfoScreen() {
 							className="flex-1 justify-end px-5 pb-6"
 							pointerEvents="box-none"
 						>
-							<View className="bg-white/90 pt-2 rounded-lg mb-2">
+							<View className="bg-white/90 pt-2 rounded-2xl mb-2">
 								<InfoBanner />
 							</View>
 							<MainButton
@@ -428,7 +430,7 @@ export default function InfoScreen() {
 									if (trainNumber.trim().length > 0) {
 										router.navigate({
 											pathname: "/train-details",
-											params: { trainNumber: trainNumber.trim() }
+											params: { trainNumber: trainNumber.trim() },
 										});
 									}
 								}}

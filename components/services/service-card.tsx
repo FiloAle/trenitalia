@@ -1,8 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import React from "react";
-import { Pressable, View } from "react-native";
 import { Image } from "expo-image";
+import { Pressable, View } from "react-native";
 
 export interface ServiceProps {
 	id: string;
@@ -19,11 +18,15 @@ interface ServiceCardProps {
 	onSelect: (id: string | null) => void;
 }
 
-export function ServiceCard({ service, isSelected, onSelect }: ServiceCardProps) {
+export function ServiceCard({
+	service,
+	isSelected,
+	onSelect,
+}: ServiceCardProps) {
 	return (
 		<Pressable
 			onPress={() => onSelect(isSelected ? null : service.id)}
-			className={`overflow-hidden rounded-xl bg-white border flex-row ${
+			className={`overflow-hidden rounded-2xl bg-white border flex-row ${
 				isSelected ? "border-[#005045]" : "border-gray-200"
 			}`}
 		>

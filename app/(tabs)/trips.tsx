@@ -3,12 +3,15 @@ import { EmptyState } from "@/components/trips/empty-state";
 import { TicketItem } from "@/components/trips/ticket-item";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
-import { STATIONS } from "@/constants/stations";
-import React, { useState, useCallback } from "react";
+import {
+	deletePurchasedTrip,
+	getPurchasedTrips,
+	PurchasedTrip,
+} from "@/utils/trips-store";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getPurchasedTrips, deletePurchasedTrip, PurchasedTrip } from "@/utils/trips-store";
-import { useFocusEffect } from "expo-router";
 
 const CHIPS = ["Biglietti", "Abbonamenti", "Carnet", "TPL", "Archivio"];
 
@@ -20,7 +23,7 @@ export default function TripsScreen() {
 	useFocusEffect(
 		useCallback(() => {
 			setTickets(getPurchasedTrips());
-		}, [])
+		}, []),
 	);
 
 	const handleLongPress = (id: string) => {
@@ -37,7 +40,7 @@ export default function TripsScreen() {
 						setTickets(getPurchasedTrips());
 					},
 				},
-			]
+			],
 		);
 	};
 
@@ -85,7 +88,7 @@ export default function TripsScreen() {
 				{activeChip === "Biglietti" ? (
 					<>
 						{/* Saved Tickets Row */}
-						<Pressable className="flex-row items-center justify-between rounded-lg border border-gray-200 bg-white p-4">
+						<Pressable className="flex-row items-center justify-between rounded-2xl border border-gray-200 bg-white p-4">
 							<View className="flex-row items-center">
 								<Icon name="bookmark" size={24} color="teal-900" />
 								<ThemedText className="ml-3 font-plus-jakarta-semibold !text-gray-900">

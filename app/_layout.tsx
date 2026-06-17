@@ -67,7 +67,7 @@ export default function RootLayout() {
 			<ThemeProvider value={DefaultTheme}>
 				<Stack>
 					<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-					<Stack.Screen name="search" options={{ animation: "slide_from_bottom", headerShown: false }} />
+					<Stack.Screen name="search" options={{ presentation: "fullScreenModal", headerShown: false }} />
 					<Stack.Screen name="search-results" options={{ animation: "slide_from_right", headerShown: false }} />
 					<Stack.Screen
 						name="ticket-detail"

@@ -1,12 +1,11 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import React from "react";
 import { Pressable, View } from "react-native";
 
 export function OtherOffersButton() {
 	return (
 		<View className="px-5 pb-5">
-			<Pressable className="flex-row items-center justify-between rounded-lg border border-gray-200 p-4 active:bg-gray-50">
+			<Pressable className="flex-row items-center justify-between rounded-2xl border border-gray-200 p-4 active:bg-gray-50">
 				<View className="flex-row items-center">
 					<Icon
 						name="confirmation_number"

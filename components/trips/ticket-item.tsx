@@ -1,9 +1,8 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { Link } from "expo-router";
-import React from "react";
-import { Pressable, View } from "react-native";
 import { PurchasedTrip } from "@/utils/trips-store";
+import { Link } from "expo-router";
+import { Pressable, View } from "react-native";
 
 interface TicketItemProps {
 	ticket: PurchasedTrip;
@@ -14,14 +13,30 @@ export function TicketItem({ ticket, onLongPress }: TicketItemProps) {
 	const trains = ticket.trains;
 	const firstTrain = trains[0];
 	const lastTrain = trains[trains.length - 1];
-	
+
 	const route = `${firstTrain.origin} - ${lastTrain.destination}`;
 	const time = `${ticket.departureTime} - ${ticket.arrivalTime}`;
-	const details = trains.length === 1 ? "Diretto" : `${trains.length - 1} Camb${trains.length - 1 > 1 ? "i" : "io"}`;
-	
+	const details =
+		trains.length === 1
+			? "Diretto"
+			: `${trains.length - 1} Camb${trains.length - 1 > 1 ? "i" : "io"}`;
+
 	const dateObj = new Date(ticket.date || new Date());
 	const day = dateObj.getDate().toString();
-	const monthNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+	const monthNames = [
+		"Gen",
+		"Feb",
+		"Mar",
+		"Apr",
+		"Mag",
+		"Giu",
+		"Lug",
+		"Ago",
+		"Set",
+		"Ott",
+		"Nov",
+		"Dic",
+	];
 	const month = monthNames[dateObj.getMonth()];
 
 	return (
@@ -36,7 +51,7 @@ export function TicketItem({ ticket, onLongPress }: TicketItemProps) {
 		>
 			<Pressable
 				onLongPress={onLongPress}
-				className="flex-row rounded-lg border border-gray-200 bg-white px-4 py-6"
+				className="flex-row rounded-2xl border border-gray-200 bg-white px-4 py-6"
 			>
 				{/* Date column */}
 				<View className="mr-4 items-center justify-center border-r border-gray-200 pr-4">

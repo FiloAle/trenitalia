@@ -2,7 +2,6 @@ import { HapticTab } from "@/components/haptic-tab";
 import { Icon } from "@/components/ui/icon";
 import { Colors } from "@/constants/theme";
 import { Tabs } from "expo-router";
-import React from "react";
 import { Text, View } from "react-native";
 
 export default function TabLayout() {
@@ -46,7 +45,7 @@ export default function TabLayout() {
 								name="home"
 								size={36}
 								weight={300}
-								color={`${color}`}
+								color={color as string}
 								fill={focused}
 								type="sharp"
 								useFont={false}
@@ -57,13 +56,13 @@ export default function TabLayout() {
 				<Tabs.Screen
 					name="trips"
 					options={{
-						title: "Biglietti",
+						title: "I miei viaggi",
 						tabBarIcon: ({ color, focused }) => (
 							<Icon
 								name="confirmation_number"
 								size={36}
 								weight={300}
-								color={`${color}`}
+								color={color as string}
 								fill={focused}
 								type="sharp"
 								useFont={false}
@@ -75,13 +74,13 @@ export default function TabLayout() {
 				<Tabs.Screen
 					name="info"
 					options={{
-						title: "Infotreno",
+						title: "Infomobilità",
 						tabBarIcon: ({ color, focused }) => (
 							<Icon
 								name="train"
 								size={36}
 								weight={300}
-								color={`${color}`}
+								color={color as string}
 								fill={focused}
 								type="sharp"
 								useFont={false}
@@ -98,7 +97,7 @@ export default function TabLayout() {
 								name="account"
 								size={36}
 								weight={300}
-								color={`${color}`}
+								color={color as string}
 								fill={focused}
 								type="sharp"
 								useFont={false}

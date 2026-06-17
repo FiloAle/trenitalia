@@ -1,7 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
 import { Pressable, View } from "react-native";
 
 interface TicketPurchaseCardProps {
@@ -16,7 +15,7 @@ export function TicketPurchaseCard({ onPress }: TicketPurchaseCardProps) {
 			</ThemedText>
 
 			<Pressable className="relative" onPress={onPress}>
-				<View className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+				<View className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
 					{/* Da Section */}
 					<View className="flex-row items-center border-b border-gray-200 px-4 py-4">
 						<ThemedText className="mr-4 w-6 font-plus-jakarta-medium !text-gray-500">

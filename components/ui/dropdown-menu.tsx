@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { StyleProp, View, ViewStyle } from "react-native";
+import { Platform, StyleProp, View, ViewStyle } from "react-native";
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
@@ -17,7 +17,7 @@ interface DropdownMenuProps {
 export function DropdownMenu({
 	isVisible,
 	children,
-	maxHeight = 230,
+	maxHeight = 270,
 	className = "",
 	style,
 }: DropdownMenuProps) {
@@ -43,6 +43,39 @@ export function DropdownMenu({
 		};
 	});
 
+	const innerContent = (
+		<View
+			className="bg-white rounded-2xl border border-gray-200 elevation-3 overflow-hidden"
+			style={{ maxHeight }}
+		>
+			{children}
+		</View>
+	);
+
+	// On web, Reanimated's Animated.View doesn't fully remove itself from the CSS
+	// layout flow even with position: absolute + opacity: 0. Use simple conditional
+	// rendering instead (no animation) to avoid pushing content around.
+	if (Platform.OS === "web") {
+		if (!isVisible) return null;
+		return (
+			<View
+				className={`absolute z-50 rounded-2xl ${className}`}
+				style={[
+					{
+						shadowColor: "#000",
+						shadowOffset: { width: 0, height: 8 },
+						shadowOpacity: 0.12,
+						shadowRadius: 12,
+					},
+					style,
+				]}
+			>
+				{innerContent}
+			</View>
+		);
+	}
+
+	// On native: keep the smooth animation
 	return (
 		<Animated.View
 			style={[
@@ -56,14 +89,9 @@ export function DropdownMenu({
 				style,
 			]}
 			pointerEvents={isVisible ? "auto" : "none"}
-			className={`absolute z-50 rounded-lg ${className}`}
+			className={`absolute z-50 rounded-2xl ${className}`}
 		>
-			<View
-				className="bg-white rounded-lg border border-gray-200 elevation-3 overflow-hidden"
-				style={{ maxHeight }}
-			>
-				{children}
-			</View>
+			{innerContent}
 		</Animated.View>
 	);
 }

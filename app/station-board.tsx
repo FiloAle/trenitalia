@@ -6,7 +6,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -110,7 +110,7 @@ export default function StationBoardScreen() {
 			{/* Banner */}
 			{lastUpdate ? (
 				<View className="px-5 mb-4 mt-2">
-					<View className="bg-[#eef2ff] rounded-lg p-3">
+					<View className="bg-[#eef2ff] rounded-2xl p-3">
 						<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-900">
 							{lastUpdate}
 						</ThemedText>

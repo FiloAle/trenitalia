@@ -10,8 +10,11 @@ import {
 	Image,
 	Pressable,
 	View,
+	Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import QRCode from "react-native-qrcode-svg";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 
 const { width } = Dimensions.get("window");
 
@@ -44,9 +47,16 @@ export default function QRCodeScreen() {
 				</Pressable>
 			</View>
 
-			{/* Aztec Code Container */}
+			{/* Aztec / QR Code Container */}
 			<View className="flex-1 items-center justify-center px-10">
-				{aztecImageUri ? (
+				{Platform.OS === "web" || Constants.executionEnvironment === ExecutionEnvironment.StoreClient ? (
+					<QRCode
+						value={qrValue}
+						size={width * 0.8}
+						color="black"
+						backgroundColor="white"
+					/>
+				) : aztecImageUri ? (
 					<Image
 						source={{ uri: aztecImageUri }}
 						style={{ width: width * 0.8, height: width * 0.8 }}

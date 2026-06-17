@@ -1,37 +1,36 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import React from "react";
 import { Pressable, View } from "react-native";
 
 interface InfoBannerProps {
 	title?: string;
 	description?: string;
+	hideIcon?: boolean;
 }
 
 export function InfoBanner({
 	title = "Informazioni sulla circolazione",
 	description,
+	hideIcon = false,
 }: InfoBannerProps) {
 	return (
-		<Pressable className="flex-row items-center rounded-lg bg-[#eef4ff] px-4 py-3">
-			<View className="mr-4 items-center justify-center">
-				<Icon name="info" size={24} color="#003594" />
-			</View>
-			<View className="flex-1">
-				<ThemedText className={`font-plus-jakarta-semibold text-[13px] !text-gray-800 ${!description ? "leading-snug font-plus-jakarta-medium" : ""}`}>
+		<Pressable className="flex-row items-start rounded-2xl bg-gray-100 px-4 py-3">
+			<Icon
+				name="info"
+				size={20}
+				className="-ml-0.5 mr-3 -mt-[2.5px] !text-gray-800"
+			/>
+			<View className="flex-1 gap-2">
+				<ThemedText
+					className={`font-plus-jakarta-semibold text-[14px] !text-gray-800 ${!description ? "leading-snug font-plus-jakarta-medium" : ""}`}
+				>
 					{title}
 				</ThemedText>
 				{description && (
-					<View className="flex-row items-center">
-						<ThemedText className="mr-1 font-plus-jakarta-medium text-[13px] !text-gray-500">
+					<View className="flex-row items-start mt-0.5">
+						<ThemedText className="flex-1 mr-1 font-plus-jakarta text-[13px] !text-gray-600 leading-tight">
 							{description}
 						</ThemedText>
-						<Icon
-							name="open_in_new"
-							size={12}
-							color="#6b7280"
-							className="!mt-0.5"
-						/>
 					</View>
 				)}
 			</View>

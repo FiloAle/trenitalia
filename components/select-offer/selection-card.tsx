@@ -1,6 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import React from "react";
 import { Pressable, View } from "react-native";
 
 export interface SelectionCardProps {
@@ -28,7 +27,7 @@ export function SelectionCard({
 	return (
 		<Pressable
 			onPress={onPress}
-			className={`rounded-lg border p-4 flex-col justify-between ${
+			className={`rounded-2xl border p-4 flex-col justify-between ${
 				isClass ? "w-60 h-20" : "w-56 h-32"
 			} ${
 				isSelected

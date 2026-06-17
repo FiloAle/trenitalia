@@ -9,8 +9,8 @@ import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { TimerBar } from "@/components/ui/timer-bar";
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
-import { Pressable, ScrollView, Switch, View, Platform } from "react-native";
+import { useState } from "react";
+import { Platform, Pressable, ScrollView, Switch, View } from "react-native";
 import Animated, {
 	FadeIn,
 	FadeOut,
@@ -145,7 +145,7 @@ export default function PaymentScreen() {
 							</ThemedText>
 							{/* Card 1: Carte di credito */}
 							<Pressable
-								className={`min-h-[60px] rounded-lg border p-4 flex-row items-center justify-between ${selectedMethod === "card" ? "border-teal-900 bg-teal-900/5" : "border-gray-200 bg-white/5"}`}
+								className={`min-h-[60px] rounded-2xl border p-4 flex-row items-center justify-between ${selectedMethod === "card" ? "border-teal-900 bg-teal-900/5" : "border-gray-200 bg-white/5"}`}
 								onPress={() => setSelectedMethod("card")}
 							>
 								<View className="flex-row items-center">
@@ -171,7 +171,7 @@ export default function PaymentScreen() {
 
 							<AnimatedPressable
 								layout={LinearTransition}
-								className={`rounded-lg border p-4 overflow-hidden ${selectedMethod !== "card" ? "border-teal-900" : "border-gray-200"} ${selectedMethod !== "card" && !isOtherMethodsOpen ? "bg-teal-900/5" : "bg-white/5"} transition-colors duration-300`}
+								className={`rounded-2xl border p-4 overflow-hidden ${selectedMethod !== "card" ? "border-teal-900" : "border-gray-200"} ${selectedMethod !== "card" && !isOtherMethodsOpen ? "bg-teal-900/5" : "bg-white/5"} transition-colors duration-300`}
 								onPress={() => setIsOtherMethodsOpen(!isOtherMethodsOpen)}
 							>
 								<View
@@ -325,13 +325,17 @@ export default function PaymentScreen() {
 								</ThemedText>
 								<Icon name="info" size={16} color="#9ca3af" />
 							</View>
-							<View className={Platform.OS === 'ios' ? "bg-gray-200 rounded-full" : ""}>
+							<View
+								className={
+									Platform.OS === "ios" ? "bg-gray-200 rounded-full" : ""
+								}
+							>
 								<Switch
 									value={invoiceRequested}
 									onValueChange={setInvoiceRequested}
 									trackColor={{ false: "#e5e7eb", true: "#005045" }}
 									thumbColor={"#ffffff"}
-									className={Platform.OS === 'ios' ? "-mr-0.5" : ""}
+									className={Platform.OS === "ios" ? "-mr-0.5" : ""}
 								/>
 							</View>
 						</View>
