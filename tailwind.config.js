@@ -5,11 +5,22 @@ module.exports = {
 	theme: {
 		extend: {
 			fontFamily: {
-				"plus-jakarta": ["PlusJakartaSans_400Regular"],
-				"plus-jakarta-medium": ["PlusJakartaSans_500Medium"],
-				"plus-jakarta-semibold": ["PlusJakartaSans_600SemiBold"],
-				"plus-jakarta-bold": ["PlusJakartaSans_700Bold"],
-				"plus-jakarta-extrabold": ["PlusJakartaSans_800ExtraBold"],
+				"google-sans-regular": ["GoogleSans_400Regular"],
+				"google-sans-medium": ["GoogleSans_500Medium"],
+				"google-sans-semibold": ["GoogleSans_600SemiBold"],
+				"google-sans-bold": ["GoogleSans_700Bold"],
+				"google-sans-extrabold": ["GoogleSans_700Bold"],
+			},
+			colors: {
+				primary: {
+					100: "#ADFFFF",
+					200: "#00E1E1",
+					300: "#00B6B6",
+					400: "#008D8D",
+					500: "#006666",
+					600: "#004141",
+					700: "#002020",
+				},
 			},
 		},
 	},

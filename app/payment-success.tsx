@@ -1,8 +1,10 @@
 import { selectedSolutionCache } from "@/api/search";
+
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
-import { addPurchasedTrip } from "@/utils/trips-store";
+import { USER_DATA } from "@/constants/user";
+import { addPurchasedTrip, pendingPassengers } from "@/utils/trips-store";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Platform, Pressable, Switch, View } from "react-native";
@@ -35,26 +37,46 @@ export default function PaymentSuccessScreen() {
 				return res;
 			};
 
-			const enrichedTrains = sol.trains.map((train: any) => {
-				const isRegionale =
-					train.type === "Regionale" ||
-					train.type?.toLowerCase().includes("reg");
-				return {
-					...train,
-					pnr: generateCode(6),
-					cp: isRegionale ? undefined : generateNumCode(6),
-					coach: isRegionale
-						? undefined
-						: (Math.floor(Math.random() * 11) + 1).toString(),
-					seat: isRegionale
-						? undefined
-						: `${Math.floor(Math.random() * 18) + 1}${["A", "B", "C", "D"][Math.floor(Math.random() * 4)]}`,
-				};
+			const passengersList =
+				pendingPassengers.length > 0
+					? pendingPassengers
+					: [`${USER_DATA.firstName} ${USER_DATA.lastName}`];
+
+			const enrichedTrains: any[] = [];
+			
+			passengersList.forEach((passengerName) => {
+				sol.trains.forEach((train: any) => {
+					const isRegionale =
+						train.type === "Regionale" ||
+						train.type?.toLowerCase().includes("reg");
+					enrichedTrains.push({
+						...train,
+						passengerName,
+						pnr: generateCode(6),
+						cp: isRegionale ? undefined : generateNumCode(6),
+						coach: isRegionale
+							? undefined
+							: (Math.floor(Math.random() * 11) + 1).toString(),
+						seat: isRegionale
+							? undefined
+							: `${Math.floor(Math.random() * 18) + 1}${["A", "B", "C", "D"][Math.floor(Math.random() * 4)]}`,
+					});
+				});
 			});
+
+			let finalDate = sol.date;
+			if (sol.date && sol.departureTime) {
+				const dateObj = new Date(sol.date);
+				const [hh, mm] = sol.departureTime.split(":").map(Number);
+				if (!isNaN(hh) && !isNaN(mm)) {
+					dateObj.setHours(hh, mm, 0, 0);
+					finalDate = dateObj.toISOString();
+				}
+			}
 
 			addPurchasedTrip({
 				id: Math.random().toString(36).substring(7),
-				date: sol.date,
+				date: finalDate,
 				departureTime: sol.departureTime,
 				arrivalTime: sol.arrivalTime,
 				duration: sol.duration,
@@ -66,7 +88,7 @@ export default function PaymentSuccessScreen() {
 	}, []);
 
 	return (
-		<View className="flex-1 bg-[#005045]">
+		<View className="flex-1 bg-primary-600">
 			<Stack.Screen options={{ headerShown: false }} />
 
 			{/* Top Bar with Close Button */}
@@ -92,10 +114,10 @@ export default function PaymentSuccessScreen() {
 					/>
 				</View>
 
-				<ThemedText className="text-[24px] font-plus-jakarta-bold !text-white text-center mb-3">
+				<ThemedText className="text-[24px] font-google-sans-bold !text-white text-center mb-3">
 					Acquisto effettuato!
 				</ThemedText>
-				<ThemedText className="text-[16px] font-plus-jakarta !text-white text-center mb-6">
+				<ThemedText className="text-[16px] font-google-sans-regular !text-white text-center mb-6">
 					A breve riceverai una mail di conferma {"\n"} con il tuo biglietto.
 				</ThemedText>
 			</View>
@@ -107,7 +129,7 @@ export default function PaymentSuccessScreen() {
 			>
 				{/* Notifications Switch */}
 				<View className="flex-row items-center justify-between mb-8 px-2">
-					<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
+					<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
 						Ricevi notifiche sui tuoi viaggi
 					</ThemedText>
 					<View
@@ -116,7 +138,7 @@ export default function PaymentSuccessScreen() {
 						<Switch
 							value={notificationsEnabled}
 							onValueChange={setNotificationsEnabled}
-							trackColor={{ false: "#e5e7eb", true: "#005045" }}
+							trackColor={{ false: "#e5e7eb", true: "#006666" }}
 							thumbColor={"#ffffff"}
 							className={Platform.OS === "ios" ? "-mr-0.5" : ""}
 						/>
@@ -131,7 +153,7 @@ export default function PaymentSuccessScreen() {
 							style={{ height: 56 }}
 							className="w-full border border-gray-300 rounded-2xl items-center justify-center"
 						>
-							<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
+							<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
 								Torna alla Home
 							</ThemedText>
 						</Pressable>

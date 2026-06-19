@@ -28,7 +28,7 @@ export function CheckoutHeader({
 
 	return (
 		<View
-			className="bg-[#004a4d] px-5"
+			className="bg-primary-600 px-5"
 			style={{ paddingTop: insets.top + 4, paddingBottom: 12 }}
 		>
 			{/* Navigation Row */}
@@ -38,7 +38,7 @@ export function CheckoutHeader({
 				</Pressable>
 
 				<View className="absolute left-0 right-0 top-0 bottom-0 items-center justify-center pointer-events-none">
-					<ThemedText className="text-[17px] font-plus-jakarta-bold !text-white">
+					<ThemedText className="text-[17px] font-google-sans-bold !text-white">
 						{title}
 					</ThemedText>
 				</View>
@@ -46,12 +46,6 @@ export function CheckoutHeader({
 				<View className="flex-row items-center gap-5 mr-1 z-10">
 					<Pressable onPress={() => router.navigate("/")}>
 						<Icon name="home" size={26} className="!text-white" />
-					</Pressable>
-					<Pressable className="relative">
-						<Icon name="shopping_cart" size={26} className="!text-white" />
-						{showCartBadge && (
-							<View className="absolute top-0.5 -right-0.5 bg-red-600 rounded-full w-2 h-2 items-center justify-center" />
-						)}
 					</Pressable>
 				</View>
 			</View>

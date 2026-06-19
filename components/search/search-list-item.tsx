@@ -28,7 +28,7 @@ export function SearchListItem({
 			} ${className}`}
 		>
 			<Icon name={iconName} size={16} className="!text-gray-950" weight={400} />
-			<ThemedText className="ml-2 text-[13px] font-plus-jakarta-medium !text-gray-950">
+			<ThemedText className="ml-2 text-[13px] font-google-sans-medium !text-gray-950">
 				{text}
 			</ThemedText>
 			{secondaryIconName && (

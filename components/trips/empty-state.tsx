@@ -1,6 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import React from "react";
 import { View } from "react-native";
 
 interface EmptyStateProps {
@@ -21,21 +20,27 @@ export function EmptyState({ activeChip }: EmptyStateProps) {
 		}
 	};
 
-	const lowercaseChip = activeChip.toLowerCase();
+	const getSingular = (chip: string) => {
+		switch (chip) {
+			case "Biglietti":
+				return "biglietto";
+			case "Abbonamenti":
+				return "abbonamento";
+			default:
+				return chip.toLowerCase();
+		}
+	};
+
+	const itemName = getSingular(activeChip);
 
 	return (
 		<View className="mt-20 items-center justify-center px-10">
-			<Icon
-				name={getIconName()}
-				size={64}
-				color="#d1d5db"
-			/>
-			<ThemedText className="mt-6 text-center text-xl font-plus-jakarta-bold !text-gray-950">
-				Nessun {lowercaseChip} trovato
+			<Icon name={getIconName()} size={64} color="#d1d5db" />
+			<ThemedText className="mt-6 text-center text-xl font-google-sans-bold !text-gray-950">
+				Nessun {itemName} trovato
 			</ThemedText>
-			<ThemedText className="mt-2 text-center font-plus-jakarta-medium !text-gray-500">
-				Una volta acquistato un {lowercaseChip} lo potrai
-				vedere qui
+			<ThemedText className="mt-2 text-center font-google-sans-medium !text-gray-500">
+				Una volta acquistato un {itemName} lo potrai vedere qui
 			</ThemedText>
 		</View>
 	);

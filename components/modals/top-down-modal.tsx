@@ -27,7 +27,7 @@ export function TopDownModal({
 	title,
 	description,
 	iconName,
-	iconColor = "#005045",
+	iconColor = "#004141",
 	iconBgColor = "#e6f2f0",
 	buttons,
 }: TopDownModalProps) {
@@ -42,11 +42,11 @@ export function TopDownModal({
 						<Icon name={iconName} size={32} color={iconColor} />
 					</View>
 				)}
-				<ThemedText className="mb-2 text-center text-xl font-plus-jakarta-bold !text-gray-950">
+				<ThemedText className="mb-2 text-center text-xl font-google-sans-bold !text-gray-950">
 					{title}
 				</ThemedText>
 				{description && (
-					<ThemedText className="mb-6 text-center text-[15px] font-plus-jakarta-medium !text-gray-600">
+					<ThemedText className="mb-6 text-center text-[15px] font-google-sans-medium !text-gray-600">
 						{description}
 					</ThemedText>
 				)}
@@ -60,7 +60,7 @@ export function TopDownModal({
 									onPress={btn.onPress}
 									className="w-full items-center justify-center rounded-2xl border border-gray-300 py-3.5"
 								>
-									<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
+									<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
 										{btn.label}
 									</ThemedText>
 								</Pressable>

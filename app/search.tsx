@@ -6,158 +6,252 @@ import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import {
-	RECENT_SEARCHES,
-	SAVED_SEARCHES,
-	STATIONS,
+  RECENT_SEARCHES,
+  SAVED_SEARCHES,
+  STATIONS,
 } from "@/constants/stations";
 import { USER_DATA, getInitials } from "@/constants/user";
+import { SelectionItem, setGlobalSelectionList } from "@/utils/selection-store";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-	Alert,
-	Button,
-	Dimensions,
-	FlatList,
-	Keyboard,
-	LogBox,
-	Platform,
-	Pressable,
-	ScrollView,
-	Switch,
-	TextInput,
-	TouchableWithoutFeedback,
-	View,
+  Alert,
+  Dimensions,
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  LogBox,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Switch,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import Animated, {
-	SlideInDown,
-	SlideOutDown,
-	useAnimatedStyle,
-	useSharedValue,
-	withTiming,
+  SlideInDown,
+  SlideOutDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 LogBox.ignoreLogs([
-	"VirtualizedLists should never be nested inside plain ScrollViews",
+  "VirtualizedLists should never be nested inside plain ScrollViews",
 ]);
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const SearchOptionCard = ({
-	label,
-	value,
-	onPress,
-	isAdd = false,
-	hasCancel = false,
-	onCancel = () => {},
+  label,
+  value,
+  onPress,
+  isAdd = false,
+  hasCancel = false,
+  onCancel = () => {},
 }: {
-	label: string;
-	value: string;
-	onPress: () => void;
-	isAdd?: boolean;
-	hasCancel?: boolean;
-	onCancel?: () => void;
+  label: string;
+  value: string;
+  onPress: () => void;
+  isAdd?: boolean;
+  hasCancel?: boolean;
+  onCancel?: () => void;
 }) => (
-	<Pressable
-		onPress={onPress}
-		style={{ height: 56 }}
-		className={`w-full rounded-2xl border border-gray-200 px-4 py-2 bg-white justify-center ${
-			isAdd ? "flex-row items-center justify-center gap-2" : ""
-		}`}
-	>
-		{isAdd ? (
-			<>
-				<Icon
-					name="add_circle"
-					size={18}
-					className="!text-teal-900"
-					weight={300}
-				/>
-				<ThemedText className="text-[14px] font-plus-jakarta-semibold !text-teal-900">
-					{label}
-				</ThemedText>
-			</>
-		) : (
-			<View
-				className="flex-row items-center justify-between"
-				style={{ height: "100%" }}
-			>
-				<View className="flex-1 justify-center">
-					<ThemedText
-						className="text-[13px] font-plus-jakarta-medium !text-gray-500"
-						numberOfLines={1}
-					>
-						{label}
-					</ThemedText>
-					<ThemedText
-						className="text-[14px] font-plus-jakarta-semibold !text-gray-950 mt-1"
-						numberOfLines={1}
-					>
-						{value}
-					</ThemedText>
-				</View>
-				{hasCancel && (
-					<Pressable
-						onPress={(e) => {
-							e.stopPropagation();
-							onCancel();
-						}}
-						className="pl-2"
-					>
-						<Icon
-							name="delete"
-							size={20}
-							className="!text-rose-600 -mt-6 -mr-2"
-						/>
-					</Pressable>
-				)}
-			</View>
-		)}
-	</Pressable>
+  <Pressable
+    onPress={onPress}
+    style={{ height: 56 }}
+    className={`w-full rounded-2xl border px-4 py-2 justify-center ${
+      isAdd
+        ? "flex-row items-center justify-center gap-2 bg-[#F0F7F7] border-[#DCEBEB]"
+        : "bg-white border-gray-200"
+    }`}
+  >
+    {isAdd ? (
+      <>
+        <Icon name="add" size={20} className="!text-primary-500" />
+        <ThemedText className="text-[14px] font-google-sans-semibold !text-primary-500">
+          {label}
+        </ThemedText>
+      </>
+    ) : (
+      <View
+        className="flex-row items-center justify-between"
+        style={{ height: "100%" }}
+      >
+        <View className="flex-1 justify-center">
+          <ThemedText
+            className="text-[13px] font-google-sans-medium !text-gray-500"
+            numberOfLines={1}
+          >
+            {label}
+          </ThemedText>
+          <ThemedText
+            className="text-[14px] font-google-sans-semibold !text-gray-950 mt-1"
+            numberOfLines={1}
+          >
+            {value}
+          </ThemedText>
+        </View>
+        {hasCancel && (
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              onCancel();
+            }}
+            className="pl-2"
+          >
+            <Icon
+              name="delete"
+              size={20}
+              className="!text-rose-600 -mt-6 -mr-2"
+            />
+          </Pressable>
+        )}
+      </View>
+    )}
+  </Pressable>
 );
 
 const ModalHeader = ({
-	title,
-	onClose,
-	isCentered = true,
+  title,
+  onClose,
+  isCentered = true,
 }: {
-	title: string;
-	onClose: () => void;
-	isCentered?: boolean;
+  title: string;
+  onClose: () => void;
+  isCentered?: boolean;
 }) => (
-	<View className="flex-row items-center justify-between px-5 pt-1 pb-2">
-		{isCentered ? (
-			<>
-				<View className="w-10" />
-				<ThemedText className="flex-1 text-center text-[15px] font-plus-jakarta-bold !text-gray-950">
-					{title}
-				</ThemedText>
-				<Pressable onPress={onClose} className="p-2">
-					<Icon
-						name="close"
-						size={28}
-						className="!text-gray-800"
-						weight={300}
-					/>
-				</Pressable>
-			</>
-		) : (
-			<>
-				<ThemedText className="text-[22px] font-plus-jakarta-bold !text-gray-950">
-					{title}
-				</ThemedText>
-				<Pressable onPress={onClose} className="p-2">
-					<Icon
-						name="close"
-						size={28}
-						className="!text-gray-800"
-						weight={300}
-					/>
-				</Pressable>
-			</>
-		)}
-	</View>
+  <View className="flex-row items-center justify-between px-5 pt-1 pb-2">
+    {isCentered ? (
+      <>
+        <View className="w-10" />
+        <ThemedText className="flex-1 text-center text-[15px] font-google-sans-bold !text-gray-950">
+          {title}
+        </ThemedText>
+        <Pressable onPress={onClose} className="p-2">
+          <Icon
+            name="close"
+            size={28}
+            className="!text-gray-800"
+            weight={300}
+          />
+        </Pressable>
+      </>
+    ) : (
+      <>
+        <ThemedText className="text-[22px] font-google-sans-bold !text-gray-950">
+          {title}
+        </ThemedText>
+        <Pressable onPress={onClose} className="p-2">
+          <Icon
+            name="close"
+            size={28}
+            className="!text-gray-800"
+            weight={300}
+          />
+        </Pressable>
+      </>
+    )}
+  </View>
 );
+
+const PassengerInput = ({
+  label,
+  value,
+  onChangeText,
+  keyboardType = "default",
+  autoCapitalize = "sentences",
+  focusedInputId,
+  setFocusedInputId,
+  inputId,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
+  focusedInputId: string | null;
+  setFocusedInputId: (id: string | null) => void;
+  inputId: string;
+}) => {
+  const isFocused = focusedInputId === inputId;
+  const hasText = value.length > 0;
+  const isActive = isFocused || hasText;
+  const inputRef = useRef<TextInput>(null);
+
+  return (
+    <View className="flex-1 h-[56px] rounded-2xl border border-gray-200 px-4 bg-white justify-center overflow-visible">
+      <Pressable
+        className="w-full flex-1 justify-center"
+        onPress={() => {
+          setFocusedInputId(inputId);
+          inputRef.current?.focus();
+        }}
+      >
+        {isActive && (
+          <ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+            {label}
+          </ThemedText>
+        )}
+        <View className={`relative w-full ${isActive ? "mt-0.5" : ""}`}>
+          <TextInput
+            ref={inputRef}
+            value={value}
+            onChangeText={onChangeText}
+            onFocus={() => setFocusedInputId(inputId)}
+            onBlur={() => setFocusedInputId(null)}
+            className={`w-full text-[14px] text-gray-950 p-0 m-0 ${
+              hasText ? "font-google-sans-semibold" : "font-google-sans-medium"
+            } ${!isFocused && hasText ? "opacity-0" : "opacity-100"}`}
+            placeholder={isActive ? "" : label}
+            placeholderTextColor="#6b7280"
+            keyboardType={keyboardType}
+            autoCapitalize={autoCapitalize}
+          />
+          {!isFocused && hasText && (
+            <View
+              pointerEvents="none"
+              className="absolute inset-0 justify-center"
+            >
+              <ThemedText
+                numberOfLines={1}
+                className="text-[14px] font-google-sans-semibold !text-gray-950"
+              >
+                {value}
+              </ThemedText>
+            </View>
+          )}
+        </View>
+      </Pressable>
+    </View>
+  );
+};
+
+const AnimatedTabLabel = ({
+  label,
+  isActive,
+}: {
+  label: string;
+  isActive: boolean;
+}) => {
+  const animatedStyle = useAnimatedStyle(
+    () => ({
+      color: withTiming(isActive ? "#ffffff" : "#004141", { duration: 250 }),
+    }),
+    [isActive],
+  );
+  return (
+    <Animated.Text
+      className="text-[14px] font-google-sans-semibold"
+      style={animatedStyle}
+    >
+      {label}
+    </Animated.Text>
+  );
+};
 
 export default function SearchScreen() {
 	const params = useLocalSearchParams();
@@ -168,6 +262,9 @@ export default function SearchScreen() {
 	const [toText, setToText] = useState(initialTo);
 	const [activeInput, setActiveInput] = useState<"from" | "to" | null>(null);
 	const [lastActiveInput, setLastActiveInput] = useState<"from" | "to">("from");
+	const [focusedPassengerInputId, setFocusedPassengerInputId] = useState<
+		string | null
+	>(null);
 
 	useEffect(() => {
 		if (activeInput) {
@@ -200,20 +297,65 @@ export default function SearchScreen() {
 	const [showPassengers, setShowPassengers] = useState(false);
 	const [showPassengersSheet, setShowPassengersSheet] = useState(false);
 	const [showTravelType, setShowTravelType] = useState(false);
-	const [travelType, setTravelType] = useState("Tutte le soluzioni");
+	const [travelType, setTravelType] = useState("Tutte");
 	const [isPassengerExpanded, setIsPassengerExpanded] = useState(false);
-	const [adults, setAdults] = useState(1);
-	const [youths, setYouths] = useState(0);
-	const [children, setChildren] = useState(0);
+	const formatName = (str: string) =>
+		str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
+	const [passengersList, setPassengersList] = useState<SelectionItem[]>([
+		{
+			id: "mock_user",
+			itemType: "passenger",
+			type: "Adulto",
+			name: `${formatName(USER_DATA.firstName)} ${formatName(USER_DATA.lastName)}`,
+			isMock: true,
+			firstName: formatName(USER_DATA.firstName),
+			lastName: formatName(USER_DATA.lastName),
+			birthDate: USER_DATA.birthDate,
+			loyaltyCode: USER_DATA.loyaltyCode,
+			phone: USER_DATA.phone,
+			email: USER_DATA.email,
+		},
+	]);
+
+	const [expandedPassengerId, setExpandedPassengerId] = useState<string | null>(
+		null,
+	);
+
+	const [showAddPassengerSheet, setShowAddPassengerSheet] = useState(false);
+	const [newAdults, setNewAdults] = useState(0);
+	const [newYouths, setNewYouths] = useState(0);
+	const [newChildren, setNewChildren] = useState(0);
+
+	const adults = passengersList.filter((p) => p.type === "Adulto").length;
+	const youths = passengersList.filter((p) => p.type === "Ragazzo").length;
+	const children = passengersList.filter((p) => p.type === "Bambino").length;
+	const bikes = passengersList.filter((p) => p.type === "Bicicletta").length;
+	const animals = passengersList.filter((p) => p.type === "Animale").length;
 	const [hasDiscount, setHasDiscount] = useState(false);
 	const [discountCodeText, setDiscountCodeText] = useState("");
 	const [isDiscountFocused, setIsDiscountFocused] = useState(false);
 
-	const purchaseTypes = ["Biglietto", "Abbonamento", "Carnet", "Carta regalo"];
+	const purchaseTypes = ["Biglietto", "Carnet", "Abbonamento"];
 	const [purchaseType, setPurchaseType] = useState("Biglietto");
 	const [showPurchaseTypeSheet, setShowPurchaseTypeSheet] = useState(false);
 	const isSubscriptionOrCarnet =
 		purchaseType === "Abbonamento" || purchaseType === "Carnet";
+	const [tabWidth, setTabWidth] = useState(0);
+	const activeTabIndex = purchaseTypes.indexOf(purchaseType);
+	const tabPillStyle = useAnimatedStyle(
+		() => ({
+			transform: [
+				{
+					translateX: withTiming(
+						activeTabIndex * (tabWidth / purchaseTypes.length),
+						{ duration: 250 },
+					),
+				},
+			],
+		}),
+		[activeTabIndex, tabWidth],
+	);
 
 	const hourScrollRef = useRef<FlatList>(null);
 	const fromInputRef = useRef<TextInput>(null);
@@ -247,7 +389,6 @@ export default function SearchScreen() {
 	});
 
 	const [noChanges, setNoChanges] = useState(false);
-	const [bike, setBike] = useState(false);
 	const [hasReturn, setHasReturn] = useState(false);
 
 	useEffect(() => {
@@ -381,6 +522,37 @@ export default function SearchScreen() {
 
 	// Rest of component...
 
+	const addPassenger = () => {
+		setNewAdults(0);
+		setNewYouths(0);
+		setNewChildren(0);
+		setShowAddPassengerSheet(true);
+	};
+
+	const addBike = () => {
+		setPassengersList((prev) => [
+			...prev,
+			{
+				id: Math.random().toString(),
+				itemType: "service",
+				type: "Bicicletta",
+				name: "Bicicletta",
+			},
+		]);
+	};
+
+	const addAnimal = () => {
+		setPassengersList((prev) => [
+			...prev,
+			{
+				id: Math.random().toString(),
+				itemType: "service",
+				type: "Animale",
+				name: "Animale",
+			},
+		]);
+	};
+
 	const isToday = (date: Date) => {
 		const now = new Date();
 		return (
@@ -505,91 +677,59 @@ export default function SearchScreen() {
 			accessible={false}
 		>
 			<View style={{ flex: 1, backgroundColor: "white" }}>
-				{/* Overlay invisibile per chiudere la dropdown cliccando fuori */}
-				{showPurchaseTypeSheet && (
-					<Pressable
-						style={{
-							position: "absolute",
-							top: 0,
-							left: 0,
-							right: 0,
-							bottom: 0,
-							zIndex: 90,
-							elevation: 90,
-						}}
-						onPress={() => setShowPurchaseTypeSheet(false)}
-					/>
-				)}
+				{/* ===== Header verde identico a I miei viaggi ===== */}
+				<View
+					className="bg-primary-600 pb-2"
+					style={{ paddingTop: insets.top + 4 }}
+				>
+					{/* Row: chevron + titolo */}
+					<View className="h-14 flex-row items-center px-4">
+						<Pressable onPress={handleClose} className="p-1 mr-1">
+							<Icon
+								name="chevron_left"
+								size={32}
+								className="!text-white"
+								weight={300}
+							/>
+						</Pressable>
+						<ThemedText className="text-3xl font-google-sans-bold !text-white">
+							Acquista
+						</ThemedText>
+					</View>
+				</View>
 
-				<View style={{ flex: 1, paddingTop: insets.top }} className="px-5">
-					{/* Header Details */}
+				{/* Selettore — fuori dall'header, nel body bianco, come in I miei viaggi */}
+				<View className="px-5 pt-5 z-50">
 					<View
-						className="relative z-[100] -mx-5"
-						style={{ elevation: 100, zIndex: 100 }}
+						className="bg-primary-500/10 rounded-xl p-1 flex-row relative"
+						onLayout={(e) => setTabWidth(e.nativeEvent.layout.width - 8)}
 					>
-						<View className="flex-row items-center justify-between px-5 pt-1 pb-2">
-							<View className="flex-row items-center">
-								<ThemedText className="text-[22px] font-plus-jakarta-bold !text-gray-950">
-									Acquista{" "}
-								</ThemedText>
-								<Pressable
-									className="flex-row items-center border-b-2 border-teal-800 pt-[2px]"
-									onPress={() =>
-										setShowPurchaseTypeSheet(!showPurchaseTypeSheet)
-									}
-								>
-									<ThemedText className="text-[22px] font-plus-jakarta-bold !text-teal-800 lowercase">
-										{purchaseType}
-									</ThemedText>
-									<Animated.View style={chevronAnimatedStyle}>
-										<Icon
-											name="expand_more"
-											size={24}
-											className="!text-teal-800 ml-1"
-										/>
-									</Animated.View>
-								</Pressable>
-							</View>
-							<Pressable onPress={handleClose} className="p-2 -mr-2">
-								<Icon
-									name="close"
-									size={28}
-									className="!text-gray-800"
-									weight={300}
+						{tabWidth > 0 && (
+							<Animated.View
+								className="absolute top-1 bottom-1 bg-primary-600 rounded-lg"
+								style={[
+									{ left: 4, width: tabWidth / purchaseTypes.length },
+									tabPillStyle,
+								]}
+							/>
+						)}
+						{purchaseTypes.map((type) => (
+							<Pressable
+								key={type}
+								onPress={() => setPurchaseType(type)}
+								className="flex-1 items-center justify-center py-2.5 z-10"
+							>
+								<AnimatedTabLabel
+									label={type}
+									isActive={purchaseType === type}
 								/>
 							</Pressable>
-						</View>
-
-						<DropdownMenu
-							isVisible={showPurchaseTypeSheet}
-							className="top-[100%] left-32 min-w-[200px]"
-						>
-							<View className="py-2">
-								{purchaseTypes.map((type) => (
-									<Pressable
-										key={type}
-										onPress={() => {
-											setPurchaseType(type);
-											setShowPurchaseTypeSheet(false);
-										}}
-										className="flex-row items-center justify-between px-4 py-3"
-									>
-										<ThemedText
-											className={`text-[15px] ${purchaseType === type ? "font-plus-jakarta-bold !text-gray-950" : "font-plus-jakarta-medium !text-gray-950"}`}
-										>
-											{type}
-										</ThemedText>
-										<Icon
-											name="check"
-											size={20}
-											className={`!text-teal-800 ${purchaseType === type ? "opacity-100" : "opacity-0"}`}
-										/>
-									</Pressable>
-								))}
-							</View>
-						</DropdownMenu>
+						))}
 					</View>
+				</View>
+				{/* ===== Fine header ===== */}
 
+				<View style={{ flex: 1 }} className="px-5">
 					<ScrollView
 						className="pt-4 flex-1 -mx-5 px-5"
 						showsVerticalScrollIndicator={false}
@@ -605,10 +745,10 @@ export default function SearchScreen() {
 						>
 							{/* Route Selector Group */}
 							<View className="relative flex-col gap-2" style={{ zIndex: 200 }}>
-								<ThemedText className="text-[16px] font-plus-jakarta-bold !text-teal-800">
+								<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
 									Dove{" "}
 									{!isSubscriptionOrCarnet && (
-										<ThemedText className="text-[16px] font-plus-jakarta-bold !text-teal-800">
+										<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
 											e quando
 										</ThemedText>
 									)}
@@ -625,7 +765,7 @@ export default function SearchScreen() {
 											}}
 										>
 											{(activeInput === "from" || fromText.length > 0) && (
-												<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-500">
+												<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
 													Partenza
 												</ThemedText>
 											)}
@@ -640,8 +780,8 @@ export default function SearchScreen() {
 													ref={fromInputRef}
 													className={`w-full text-[14px] text-gray-950 p-0 m-0 ${
 														fromText
-															? "font-plus-jakarta-semibold"
-															: "font-plus-jakarta-medium"
+															? "font-google-sans-semibold"
+															: "font-google-sans-medium"
 													} ${activeInput !== "from" && fromText ? "opacity-0" : "opacity-100"}`}
 													placeholder={
 														activeInput === "from" || fromText.length > 0
@@ -660,7 +800,7 @@ export default function SearchScreen() {
 													>
 														<ThemedText
 															numberOfLines={1}
-															className="text-[14px] font-plus-jakarta-semibold !text-gray-950"
+															className="text-[14px] font-google-sans-semibold !text-gray-950"
 														>
 															{fromText}
 														</ThemedText>
@@ -675,12 +815,12 @@ export default function SearchScreen() {
 												setFromText(toText);
 												setToText(temp);
 											}}
-											className="h-10 w-10 bg-teal-800/10 border border-teal-800/20 rounded-full items-center justify-center mx-2 z-50"
+											className="h-10 w-10 bg-[#F0F7F7] border border-[#DCEBEB] rounded-full items-center justify-center mx-2 z-50"
 										>
 											<Icon
 												name="swap_horiz"
 												size={24}
-												className="!text-teal-800"
+												className="!text-primary-500"
 											/>
 										</Pressable>
 
@@ -692,7 +832,7 @@ export default function SearchScreen() {
 											}}
 										>
 											{(activeInput === "to" || toText.length > 0) && (
-												<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-500">
+												<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
 													Arrivo
 												</ThemedText>
 											)}
@@ -707,8 +847,8 @@ export default function SearchScreen() {
 													ref={toInputRef}
 													className={`w-full text-[14px] text-left text-gray-950 p-0 m-0 ${
 														toText
-															? "font-plus-jakarta-semibold"
-															: "font-plus-jakarta-medium"
+															? "font-google-sans-semibold"
+															: "font-google-sans-medium"
 													} ${activeInput !== "to" && toText ? "opacity-0" : "opacity-100"}`}
 													placeholder={
 														activeInput === "to" || toText.length > 0
@@ -727,7 +867,7 @@ export default function SearchScreen() {
 													>
 														<ThemedText
 															numberOfLines={1}
-															className="text-[14px] font-plus-jakarta-semibold !text-gray-950"
+															className="text-[14px] font-google-sans-semibold !text-gray-950"
 														>
 															{toText}
 														</ThemedText>
@@ -795,7 +935,7 @@ export default function SearchScreen() {
 											}
 											ListEmptyComponent={
 												<View className="py-6 items-center justify-center">
-													<ThemedText className="text-[14px] font-plus-jakarta !text-gray-400 text-center">
+													<ThemedText className="text-[14px] font-google-sans-regular !text-gray-400 text-center">
 														Nessuna stazione corrispondente
 													</ThemedText>
 												</View>
@@ -894,100 +1034,37 @@ export default function SearchScreen() {
 							{/* Quick Options Grid */}
 							{!isSubscriptionOrCarnet && (
 								<View className="flex-col gap-2">
-									<ThemedText className="text-[16px] font-plus-jakarta-bold !text-teal-800">
-										Passeggeri e sconti
+									<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
+										Passeggeri e servizi
 									</ThemedText>
 
-									<View className="flex-row gap-2">
-										<View className="flex-1">
-											<SearchOptionCard
-												label="Passeggeri"
-												value={`${adults > 0 ? `${adults} adult${adults > 1 ? "i" : "o"}` : ""}${
-													youths > 0
-														? ` ${youths} ragazz${youths > 1 ? "i" : "o"}`
-														: ""
-												}${
-													children > 0
-														? ` ${children} bambin${children > 1 ? "i" : "o"}`
-														: ""
-												}`.trim()}
-												onPress={() => setShowPassengersSheet(true)}
-											/>
-										</View>
-										<View className="flex-1">
-											<View className="rounded-2xl border border-gray-200 bg-white flex-row items-center px-4 h-[56px] overflow-visible">
-												<Pressable
-													className="flex-1 justify-center"
-													onPress={() => {
-														setIsDiscountFocused(true);
-														discountInputRef.current?.focus();
-													}}
-												>
-													<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-500">
-														Buono sconto
-													</ThemedText>
-													<View className="relative w-full mt-1">
-														<TextInput
-															ref={discountInputRef}
-															className={`w-full text-[14px] text-gray-950 p-0 m-0 ${
-																discountCodeText
-																	? "font-plus-jakarta-semibold"
-																	: "font-plus-jakarta-medium"
-															}`}
-															placeholder="Inserisci codice"
-															placeholderTextColor="#6b728090"
-															value={discountCodeText}
-															onChangeText={setDiscountCodeText}
-															onFocus={() => setIsDiscountFocused(true)}
-															onBlur={() => setIsDiscountFocused(false)}
-															onSubmitEditing={() =>
-																setHasDiscount(
-																	discountCodeText.trim().length > 0,
-																)
-															}
-															autoCapitalize="characters"
-															autoCorrect={false}
-														/>
-														{!isDiscountFocused && discountCodeText ? (
-															<View
-																pointerEvents="none"
-																className="absolute inset-0 justify-center"
-															>
-																<ThemedText
-																	numberOfLines={1}
-																	className="text-[14px] font-plus-jakarta-semibold !text-gray-950"
-																>
-																	{discountCodeText}
-																</ThemedText>
-															</View>
-														) : null}
-													</View>
-												</Pressable>
-												{discountCodeText.length > 0 && (
-													<Pressable
-														onPress={() => {
-															setDiscountCodeText("");
-															setHasDiscount(false);
-															setIsDiscountFocused(false);
-														}}
-														className="pl-2"
-													>
-														<Icon
-															name="delete"
-															size={20}
-															className="!text-rose-600 -mt-6 -mr-2"
-														/>
-													</Pressable>
-												)}
-											</View>
-										</View>
-									</View>
+									<SearchOptionCard
+										label="Passeggeri"
+										value={`${adults > 0 ? `${adults} adult${adults > 1 ? "i" : "o"}` : ""}${
+											youths > 0
+												? ` ${youths} ragazz${youths > 1 ? "i" : "o"}`
+												: ""
+										}${
+											children > 0
+												? ` ${children} bambin${children > 1 ? "i" : "o"}`
+												: ""
+										}${
+											bikes > 0
+												? ` ${bikes} biciclett${bikes > 1 ? "e" : "a"}`
+												: ""
+										}${
+											animals > 0
+												? ` ${animals} animal${animals > 1 ? "i" : "e"}`
+												: ""
+										}`.trim()}
+										onPress={() => setShowPassengersSheet(true)}
+									/>
 								</View>
 							)}
 
 							{/* Switches Section */}
 							<View className="flex-col gap-2">
-								<ThemedText className="text-[16px] font-plus-jakarta-bold !text-teal-800">
+								<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
 									Opzioni di viaggio
 								</ThemedText>
 								{!isSubscriptionOrCarnet && (
@@ -1000,11 +1077,11 @@ export default function SearchScreen() {
 												onPress={() => setShowTravelType(!showTravelType)}
 												className="min-h-[50px] flex-row items-center justify-between p-3 pl-4 relative"
 											>
-												<ThemedText className="text-[14px] font-plus-jakarta-semibold !text-gray-950">
-													Mostra
+												<ThemedText className="text-[14px] font-google-sans-semibold !text-gray-950">
+													Soluzioni
 												</ThemedText>
 												<View className="flex-row items-center gap-1">
-													<ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-950">
+													<ThemedText className="text-[14px] font-google-sans-medium !text-gray-950">
 														{travelType}
 													</ThemedText>
 													<Animated.View style={travelTypeChevronAnimatedStyle}>
@@ -1019,35 +1096,32 @@ export default function SearchScreen() {
 											</Pressable>
 											<DropdownMenu
 												isVisible={showTravelType}
-												className="top-[100%] right-2 min-w-[200px]"
+												className="top-[100%] right-2 min-w-[160px]"
 											>
 												<View className="py-2">
-													{[
-														"Tutte le soluzioni",
-														"Frecce",
-														"Intercity",
-														"Regionali",
-													].map((type) => (
-														<Pressable
-															key={type}
-															onPress={() => {
-																setTravelType(type);
-																setShowTravelType(false);
-															}}
-															className="flex-row items-center justify-between px-4 py-3"
-														>
-															<ThemedText
-																className={`text-[15px] ${travelType === type ? "font-plus-jakarta-semibold !text-gray-950" : "font-plus-jakarta-medium !text-gray-500"}`}
+													{["Tutte", "Frecce", "Intercity", "Regionali"].map(
+														(type) => (
+															<Pressable
+																key={type}
+																onPress={() => {
+																	setTravelType(type);
+																	setShowTravelType(false);
+																}}
+																className="flex-row items-center justify-between px-4 py-1"
 															>
-																{type}
-															</ThemedText>
-															<Icon
-																name="check"
-																size={20}
-																className={`!text-teal-800 ${travelType === type ? "opacity-100" : "opacity-0"}`}
-															/>
-														</Pressable>
-													))}
+																<ThemedText
+																	className={`text-[15px] ${travelType === type ? "font-google-sans-semibold !text-gray-950" : "font-google-sans-regular !text-gray-500"}`}
+																>
+																	{type}
+																</ThemedText>
+																<Icon
+																	name="check"
+																	size={20}
+																	className={`!text-primary-500 ${travelType === type ? "opacity-100" : "opacity-0"}`}
+																/>
+															</Pressable>
+														),
+													)}
 												</View>
 											</DropdownMenu>
 										</View>
@@ -1055,7 +1129,7 @@ export default function SearchScreen() {
 										<View className="h-[1px] bg-gray-100 mx-4" />
 
 										<View className="p-3 pl-4 flex-row items-center justify-between">
-											<ThemedText className="text-[14px] font-plus-jakarta-semibold !text-gray-950">
+											<ThemedText className="text-[14px] font-google-sans-semibold !text-gray-950">
 												Solo treni diretti
 											</ThemedText>
 											<View
@@ -1068,55 +1142,11 @@ export default function SearchScreen() {
 												<Switch
 													value={noChanges}
 													onValueChange={setNoChanges}
-													trackColor={{ false: "#e5e7eb", true: "#005045" }}
+													trackColor={{ false: "#e5e7eb", true: "#006666" }}
 													thumbColor={"#ffffff"}
 													//className={Platform.OS === "ios" ? "-mr-0.5" : ""}
 												/>
 											</View>
-										</View>
-
-										<View className="h-[1px] bg-gray-100 mx-4" />
-
-										<View className="p-3 pl-4 justify-center">
-											<View className="flex-row items-center justify-between">
-												<ThemedText className="text-[14px] font-plus-jakarta-semibold !text-gray-950">
-													Viaggia con la tua bici
-												</ThemedText>
-												<View
-													className={
-														Platform.OS === "ios"
-															? "bg-gray-200 rounded-full"
-															: ""
-													}
-												>
-													<Switch
-														value={bike}
-														onValueChange={setBike}
-														trackColor={{ false: "#e5e7eb", true: "#005045" }}
-														thumbColor={"#ffffff"}
-														//className={Platform.OS === "ios" ? "-mr-0.5" : ""}
-													/>
-												</View>
-											</View>
-											{bike && (
-												<View className="flex-row items-start gap-2 mt-4">
-													<Icon
-														name="info"
-														size={18}
-														className="!text-gray-500 -mt-0.5"
-														weight={300}
-													/>
-													<ThemedText className="flex-1 text-[12px] font-plus-jakarta-medium !text-gray-500 !leading-tight">
-														Ti verranno mostrate solo le soluzioni di viaggio
-														con treni Intercity, Regionali ed Eurocity
-														Italia-Svizzera che ammettono il trasporto della
-														bici montata.{" "}
-														<ThemedText className="!text-teal-800 underline">
-															Maggiori info
-														</ThemedText>
-													</ThemedText>
-												</View>
-											)}
 										</View>
 									</View>
 								)}
@@ -1131,9 +1161,9 @@ export default function SearchScreen() {
 								weight={300}
 								className="!text-gray-500 -mt-0.5"
 							/>
-							<ThemedText className="flex-1 text-[12px] font-plus-jakarta-medium !text-gray-500 !leading-tight">
+							<ThemedText className="flex-1 text-[12px] font-google-sans-medium !text-gray-500 !leading-tight">
 								Prima di procedere con l&apos;acquisto consulta le{" "}
-								<ThemedText className="!text-teal-800 underline">
+								<ThemedText className="!text-primary-500 underline">
 									Modifiche della Circolazione Programmata
 								</ThemedText>
 							</ThemedText>
@@ -1146,19 +1176,30 @@ export default function SearchScreen() {
 							onPress={() => {
 								Keyboard.dismiss();
 								setActiveInput(null);
-								router.push({
-									pathname: "/search-results",
-									params: {
-										from: fromText,
-										to: toText,
-										dateStr: departureDate.toISOString(),
-										noChanges: noChanges ? "true" : "false",
-										bike: bike ? "true" : "false",
-										travelType: travelType,
-										passengerText:
-											`${adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : ""}${youths > 0 ? ` ${youths} Ragazz${youths > 1 ? "i" : "o"}` : ""}${children > 0 ? ` ${children} Bambin${children > 1 ? "i" : "i"}` : ""}`.trim(),
-									},
-								});
+								setGlobalSelectionList(passengersList);
+								setTimeout(() => {
+									router.push({
+										pathname: "/search-results",
+										params: {
+											from: fromText,
+											to: toText,
+											dateStr: departureDate.toISOString(),
+											noChanges: noChanges ? "true" : "false",
+											bike: bikes > 0 ? "true" : "false",
+											travelType: travelType,
+											passengerText:
+												`${adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : ""}${youths > 0 ? ` ${youths} Ragazz${youths > 1 ? "i" : "o"}` : ""}${children > 0 ? ` ${children} Bambin${children > 1 ? "i" : "i"}` : ""}`.trim(),
+											passengerNamesText: passengersList
+												.filter((p) => p.itemType === "passenger")
+												.map((p, idx) =>
+													p.firstName || p.lastName
+														? `${p.firstName || ""} ${p.lastName || ""}`.trim()
+														: `Passeggero ${idx + 1}`,
+												)
+												.join(", "),
+										},
+									});
+								}, 50);
 							}}
 							disabled={!fromText || !toText}
 							style={{ marginBottom: insets.bottom }}
@@ -1170,416 +1211,87 @@ export default function SearchScreen() {
 				<BottomSheet
 					isVisible={showCalendar}
 					onClose={() => setShowCalendar(false)}
-					hideCloseButton={true}
+					title="Data e ora"
+					heightPercentage={0.9}
 				>
-					<View className="flex-row justify-between items-center mb-4 -mx-2 -mt-1 z-50">
-						{/* Titolo Centrato */}
-						<View
-							pointerEvents="none"
-							className="absolute left-0 right-0 items-center"
-						>
-							<ThemedText className="font-plus-jakarta-bold text-xl -mt-1">
-								Data e ora
-							</ThemedText>
-						</View>
-
-						{Platform.OS === "ios" && ExpoUIComponents ? (
-							<ExpoUIComponents.Host matchContents={true}>
-								<ExpoUIComponents.ExpoButton
-									label="Annulla"
-									systemImage="xmark"
-									modifiers={[
-										ExpoUIComponents.modifiers.buttonStyle("glass"),
-										ExpoUIComponents.modifiers.controlSize("extraLarge"),
-										ExpoUIComponents.modifiers.labelStyle("iconOnly"),
-										ExpoUIComponents.modifiers.buttonBorderShape("circle"),
-									]}
-									onPress={handleCancelPress}
-								/>
-							</ExpoUIComponents.Host>
-						) : (
-							<Button title="Annulla" onPress={handleCancelPress} />
-						)}
-
-						{Platform.OS === "ios" && ExpoUIComponents ? (
-							<ExpoUIComponents.Host matchContents={true}>
-								<ExpoUIComponents.ExpoButton
-									label="Salva"
-									//systemImage="checkmark"
-									modifiers={[
-										ExpoUIComponents.modifiers.buttonStyle("glassProminent"),
-										ExpoUIComponents.modifiers.controlSize("extraLarge"),
-										ExpoUIComponents.modifiers.labelStyle("iconOnly"),
-										//ExpoUIComponents.modifiers.buttonBorderShape("circle"),
-										ExpoUIComponents.modifiers.tint("#134E4A"),
-										ExpoUIComponents.modifiers.disabled(!hasCalendarChanges),
-									]}
-									onPress={() => setShowCalendar(false)}
-								/>
-							</ExpoUIComponents.Host>
-						) : (
-							<Button title="Salva" onPress={() => setShowCalendar(false)} />
-						)}
-					</View>
-
-					<View className="-mx-6 px-[4px]">
-						{/* Month Selector */}
-						<View className="flex-row justify-between items-center px-2">
-							<Pressable
-								onPress={() => {
-									const prev = new Date(currentMonth);
-									prev.setMonth(prev.getMonth() - 1);
-									setCurrentMonth(prev);
-								}}
-								disabled={
-									currentMonth.getMonth() === new Date().getMonth() &&
-									currentMonth.getFullYear() === new Date().getFullYear()
-								}
-								className={`p-1 ${
-									currentMonth.getMonth() === new Date().getMonth() &&
-									currentMonth.getFullYear() === new Date().getFullYear()
-										? "opacity-0"
-										: "opacity-100"
-								}`}
-							>
-								<Icon
-									name="chevron_left"
-									size={32}
-									className="!text-gray-950"
-									weight={200}
-								/>
-							</Pressable>
-							<ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-950 capitalize">
-								{currentMonth.toLocaleString("it-IT", {
-									month: "long",
-									year: "numeric",
-								})}
-							</ThemedText>
-							<Pressable
-								onPress={() => {
-									const next = new Date(currentMonth);
-									next.setMonth(next.getMonth() + 1);
-									setCurrentMonth(next);
-								}}
-								className="p-1"
-							>
-								<Icon
-									name="chevron_right"
-									size={32}
-									className="!text-gray-950"
-									weight={200}
-								/>
-							</Pressable>
-						</View>
-
-						{/* Days Header */}
-						<View className="flex-row px-0 py-4">
-							{["LUN", "MAR", "MER", "GIO", "VEN", "SAB", "DOM"].map((d) => (
-								<ThemedText
-									key={d}
-									className="text-[13px] font-plus-jakarta-medium !text-gray-400 w-[14.28%] text-center"
-								>
-									{d}
-								</ThemedText>
-							))}
-						</View>
-
-						{/* Days Grid */}
-						<View className="px-0 flex-row flex-wrap">
-							{generateDays().map((d, i) => (
-								<Pressable
-									key={i}
-									disabled={!d.day || d.isPast}
-									onPress={() => {
-										if (d.date) {
-											if (activeCalendarTab === "andata") {
-												const newDate = new Date(d.date);
-												newDate.setHours(departureDate.getHours());
-												newDate.setMinutes(departureDate.getMinutes());
-												setDepartureDate(newDate);
-
-												// Smart adjustment: if new departure is after return, update return
-												if (hasReturn && newDate >= returnDate) {
-													const newReturn = new Date(newDate);
-													newReturn.setHours(newDate.getHours() + 1);
-													newReturn.setMinutes(0);
-													setReturnDate(newReturn);
-												}
-											} else {
-												const newDate = new Date(d.date);
-												newDate.setHours(returnDate.getHours());
-												newDate.setMinutes(returnDate.getMinutes());
-												setReturnDate(newDate);
-
-												if (newDate < departureDate) {
-													const newDeparture = new Date(departureDate);
-													newDeparture.setFullYear(newDate.getFullYear());
-													newDeparture.setMonth(newDate.getMonth());
-													newDeparture.setDate(newDate.getDate());
-													if (newDeparture >= newDate) {
-														newDeparture.setHours(newDate.getHours() - 1);
-														newDeparture.setMinutes(newDate.getMinutes());
-													}
-													setDepartureDate(newDeparture);
-												}
-											}
-										}
-									}}
-									className={`w-[14.28%] h-12 items-center justify-center mb-1 relative`}
-								>
-									{d.day && (
-										<>
-											{/* Range Background (Serpentina) */}
-											{d.isInRange && (
-												<View className="absolute inset-y-1 left-0 right-0 bg-teal-800/10" />
-											)}
-											{d.isStart && !d.isEnd && (
-												<View className="absolute inset-y-1 left-1/2 right-0 bg-teal-800/10" />
-											)}
-											{d.isEnd && !d.isStart && (
-												<View className="absolute inset-y-1 left-0 right-1/2 bg-teal-800/10" />
-											)}
-
-											<View
-												className={`w-10 h-10 items-center justify-center relative z-10 ${
-													d.isSelected
-														? "rounded-full bg-teal-900"
-														: d.isStart || d.isEnd
-															? "rounded-full border-2 border-teal-900 bg-white"
-															: ""
-												} ${d.isPast ? "opacity-50" : ""}`}
-											>
-												<ThemedText
-													className={`text-[13px] font-plus-jakarta-bold ${
-														d.isSelected
-															? "!text-white"
-															: d.isPast
-																? "!text-gray-500"
-																: "!text-gray-950"
-													}`}
-												>
-													{d.day}
-												</ThemedText>
-											</View>
-										</>
-									)}
-								</Pressable>
-							))}
-						</View>
-
-						{/* Selection Tabs */}
-						<View className="border-t border-gray-100 mt-12 pt-6 px-4">
-							{/* Labels */}
-							<View className="flex-row items-center gap-2 mb-2.5 px-1">
-								<View style={{ flex: 1 }}>
-									<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-500">
-										Andata
-									</ThemedText>
-								</View>
-								{/* Spazio vuoto per la freccia */}
-								<View style={{ width: 20 }} />
-								<View
-									style={{ flex: 1 }}
-									className="flex-row flex-start justify-between items-center"
-								>
-									<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-500">
-										Ritorno
-									</ThemedText>
-									{hasReturn && (
-										<Pressable
-											onPress={(e) => {
-												e.stopPropagation();
-												setHasReturn(false);
-												setActiveCalendarTab("andata");
-											}}
-											className="flex-row gap-1 -my-2 items-center bg-rose-600/10 rounded-full py-1 px-2"
-										>
-											<Icon
-												name="delete"
-												size={14}
-												weight={400}
-												className="!text-rose-600"
-											/>
-											<ThemedText className="text-[11px] font-plus-jakarta-semibold !text-rose-600">
-												Rimuovi
-											</ThemedText>
-										</Pressable>
-									)}
-								</View>
-							</View>
-							{/* Cards */}
-							<View className="flex-row items-center gap-2">
-								{/* Andata */}
-								<Pressable
-									onPress={() => setActiveCalendarTab("andata")}
-									className={`flex-row items-center justify-center gap-2 rounded-2xl px-3 border ${
-										activeCalendarTab === "andata"
-											? "border-teal-800 bg-white"
-											: "border-gray-100 bg-gray-50"
-									}`}
-									style={{ flex: 1, height: 48, alignItems: "center" }}
-								>
-									<ThemedText className="text-[15px] font-plus-jakarta-semibold !text-gray-950">
-										{`${
-											["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"][
-												departureDate.getDay()
-											]
-										} ${departureDate.getDate()} ${
-											[
-												"Gen",
-												"Feb",
-												"Mar",
-												"Apr",
-												"Mag",
-												"Giu",
-												"Lug",
-												"Ago",
-												"Set",
-												"Ott",
-												"Nov",
-												"Dic",
-											][departureDate.getMonth()]
-										}`}
-									</ThemedText>
-									<View className="bg-gray-200 rounded-2xl px-2 py-1">
-										<ThemedText className="text-[14px] font-plus-jakarta-semibold !text-gray-800">
-											{`${departureDate.getHours()}:${departureDate.getMinutes().toString().padStart(2, "0")}`}
-										</ThemedText>
-									</View>
-								</Pressable>
-
-								{/* Freccia — sempre presente, invisibile senza ritorno */}
-								<Icon
-									name="arrow_forward"
-									size={20}
-									className="!text-gray-400"
-									style={{ opacity: hasReturn ? 1 : 0 }}
-								/>
-
-								{/* Ritorno */}
+					<View className="flex-1 justify-between flex-col pb-2">
+						<View className="-mx-6 px-[4px]">
+							{/* Month Selector */}
+							<View className="flex-row justify-between items-center px-2">
 								<Pressable
 									onPress={() => {
-										if (!hasReturn) {
-											const next = new Date(departureDate);
-											next.setHours(next.getHours() + 1);
-											setReturnDate(next);
-											setHasReturn(true);
-										}
-										setActiveCalendarTab("ritorno");
+										const prev = new Date(currentMonth);
+										prev.setMonth(prev.getMonth() - 1);
+										setCurrentMonth(prev);
 									}}
-									className={`rounded-2xl border px-3 flex-row items-center gap-3 ${
-										hasReturn
-											? activeCalendarTab === "ritorno"
-												? "border-teal-800 bg-white"
-												: "border-gray-100 bg-gray-50"
-											: "border-teal-800 bg-transparent"
-									}`}
-									style={{
-										flex: 1,
-										height: 48,
-										alignItems: "center",
-										justifyContent: "center",
-									}}
-								>
-									{hasReturn ? (
-										<>
-											<View className="flex-row items-center justify-center gap-2">
-												<ThemedText className="text-[15px] font-plus-jakarta-semibold !text-gray-950">
-													{`${
-														["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"][
-															returnDate.getDay()
-														]
-													} ${returnDate.getDate()} ${
-														[
-															"Gen",
-															"Feb",
-															"Mar",
-															"Apr",
-															"Mag",
-															"Giu",
-															"Lug",
-															"Ago",
-															"Set",
-															"Ott",
-															"Nov",
-															"Dic",
-														][returnDate.getMonth()]
-													}`}
-												</ThemedText>
-												<View className="bg-gray-200 rounded-2xl px-2 py-1">
-													<ThemedText className="text-[14px] font-plus-jakarta-semibold !text-gray-800">
-														{`${returnDate.getHours()}:${returnDate.getMinutes().toString().padStart(2, "0")}`}
-													</ThemedText>
-												</View>
-											</View>
-										</>
-									) : (
-										<View className="flex-row items-center justify-center gap-1">
-											<Icon name="add" size={18} className="!text-teal-800" />
-											<ThemedText className="text-[15px] font-plus-jakarta-semibold !text-teal-800">
-												Aggiungi
-											</ThemedText>
-										</View>
-									)}
-								</Pressable>
-							</View>
-						</View>
-
-						<View
-							className="mt-4 px-0 pt-4 pb-2"
-							style={{ width: SCREEN_WIDTH, alignSelf: "center" }}
-						>
-							<View className="px-5 mb-6">
-								<ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-950">
-									{activeCalendarTab === "andata"
-										? "Scegli l'orario di andata"
-										: "Scegli l'orario di ritorno"}
-								</ThemedText>
-							</View>
-							<FlatList
-								ref={hourScrollRef}
-								horizontal
-								showsHorizontalScrollIndicator={false}
-								contentContainerStyle={{
-									paddingHorizontal: SCREEN_WIDTH / 2 - 40,
-								}}
-								data={Array.from({ length: 24 }, (_, i) => i)}
-								keyExtractor={(item) => item.toString()}
-								ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
-								getItemLayout={(_, index) => ({
-									length: 80,
-									offset: 88 * index,
-									index,
-								})}
-								renderItem={({ item: h }) => {
-									const t = `${h}:00`;
-									const isSelected =
-										activeCalendarTab === "andata"
-											? departureDate.getHours() === h
-											: returnDate.getHours() === h;
-
-									const now = new Date();
-									let isDisabled = false;
-									if (activeCalendarTab === "andata") {
-										if (isToday(departureDate)) {
-											isDisabled = h < now.getHours();
-										}
-									} else {
-										if (isToday(returnDate)) {
-											isDisabled = h < now.getHours();
-										}
+									disabled={
+										currentMonth.getMonth() === new Date().getMonth() &&
+										currentMonth.getFullYear() === new Date().getFullYear()
 									}
+									className={`p-1 ${
+										currentMonth.getMonth() === new Date().getMonth() &&
+										currentMonth.getFullYear() === new Date().getFullYear()
+											? "opacity-0"
+											: "opacity-100"
+									}`}
+								>
+									<Icon
+										name="chevron_left"
+										size={32}
+										className="!text-gray-950"
+										weight={200}
+									/>
+								</Pressable>
+								<ThemedText className="text-[14px] font-google-sans-medium !text-gray-950 capitalize">
+									{currentMonth.toLocaleString("it-IT", {
+										month: "long",
+										year: "numeric",
+									})}
+								</ThemedText>
+								<Pressable
+									onPress={() => {
+										const next = new Date(currentMonth);
+										next.setMonth(next.getMonth() + 1);
+										setCurrentMonth(next);
+									}}
+									className="p-1"
+								>
+									<Icon
+										name="chevron_right"
+										size={32}
+										className="!text-gray-950"
+										weight={200}
+									/>
+								</Pressable>
+							</View>
 
-									return (
-										<Pressable
-											disabled={isDisabled}
-											onPress={() => {
+							{/* Days Header */}
+							<View className="flex-row px-0 py-2">
+								{["LUN", "MAR", "MER", "GIO", "VEN", "SAB", "DOM"].map((d) => (
+									<ThemedText
+										key={d}
+										className="text-[13px] font-google-sans-medium !text-gray-400 w-[14.28%] text-center"
+									>
+										{d}
+									</ThemedText>
+								))}
+							</View>
+
+							{/* Days Grid */}
+							<View className="px-0 flex-row flex-wrap h-[312px]">
+								{generateDays().map((d, i) => (
+									<Pressable
+										key={i}
+										disabled={!d.day || d.isPast}
+										onPress={() => {
+											if (d.date) {
 												if (activeCalendarTab === "andata") {
-													const newDate = new Date(departureDate);
-													newDate.setHours(h);
-													newDate.setMinutes(0);
+													const newDate = new Date(d.date);
+													newDate.setHours(departureDate.getHours());
+													newDate.setMinutes(departureDate.getMinutes());
 													setDepartureDate(newDate);
 
+													// Smart adjustment: if new departure is after return, update return
 													if (hasReturn && newDate >= returnDate) {
 														const newReturn = new Date(newDate);
 														newReturn.setHours(newDate.getHours() + 1);
@@ -1587,43 +1299,335 @@ export default function SearchScreen() {
 														setReturnDate(newReturn);
 													}
 												} else {
-													const newDate = new Date(returnDate);
-													newDate.setHours(h);
-													newDate.setMinutes(0);
+													const newDate = new Date(d.date);
+													newDate.setHours(returnDate.getHours());
+													newDate.setMinutes(returnDate.getMinutes());
 													setReturnDate(newDate);
 
-													if (newDate <= departureDate) {
+													if (newDate < departureDate) {
 														const newDeparture = new Date(departureDate);
 														newDeparture.setFullYear(newDate.getFullYear());
 														newDeparture.setMonth(newDate.getMonth());
 														newDeparture.setDate(newDate.getDate());
-														newDeparture.setHours(newDate.getHours() - 1);
-														newDeparture.setMinutes(newDate.getMinutes());
+														if (newDeparture >= newDate) {
+															newDeparture.setHours(newDate.getHours() - 1);
+															newDeparture.setMinutes(newDate.getMinutes());
+														}
 														setDepartureDate(newDeparture);
 													}
 												}
-											}}
-											className={`py-3 rounded-full border items-center justify-center ${
-												isSelected
-													? "bg-teal-900 border-teal-900"
-													: "bg-white border-gray-200"
-											} ${isDisabled ? "opacity-50" : ""}`}
-											style={{ width: 80 }}
-										>
-											<ThemedText
-												className={`text-[15px] font-plus-jakarta-bold ${
-													isSelected
-														? "!text-white"
-														: isDisabled
-															? "!text-gray-300"
-															: "!text-gray-800"
-												}`}
+											}
+										}}
+										className={`w-[14.28%] h-12 items-center justify-center mb-1 relative`}
+									>
+										{d.day && (
+											<>
+												{/* Range Background (Serpentina) */}
+												{d.isInRange && (
+													<View className="absolute inset-y-1 left-0 right-0 bg-primary-600/10" />
+												)}
+												{d.isStart && !d.isEnd && (
+													<View className="absolute inset-y-1 left-1/2 right-0 bg-primary-600/10" />
+												)}
+												{d.isEnd && !d.isStart && (
+													<View className="absolute inset-y-1 left-0 right-1/2 bg-primary-600/10" />
+												)}
+
+												<View
+													className={`w-10 h-10 items-center justify-center relative z-10 ${
+														d.isSelected
+															? "rounded-full bg-primary-600"
+															: d.isStart || d.isEnd
+																? "rounded-full border-2 border-primary-600 bg-white"
+																: ""
+													} ${d.isPast ? "opacity-50" : ""}`}
+												>
+													<ThemedText
+														className={`text-[13px] font-google-sans-bold ${
+															d.isSelected
+																? "!text-white"
+																: d.isPast
+																	? "!text-gray-500"
+																	: "!text-gray-950"
+														}`}
+													>
+														{d.day}
+													</ThemedText>
+												</View>
+											</>
+										)}
+									</Pressable>
+								))}
+							</View>
+
+							{/* Selection Tabs */}
+							<View className="border-t border-gray-100 mt-4 pt-4 px-4">
+								{/* Labels */}
+								<View className="flex-row items-center gap-2 mb-2.5 px-1">
+									<View style={{ flex: 1 }}>
+										<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+											Andata
+										</ThemedText>
+									</View>
+									{/* Spazio vuoto per la freccia */}
+									<View style={{ width: 20 }} />
+									<View
+										style={{ flex: 1 }}
+										className="flex-row flex-start justify-between items-center"
+									>
+										<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+											Ritorno
+										</ThemedText>
+										{hasReturn && (
+											<Pressable
+												onPress={(e) => {
+													e.stopPropagation();
+													setHasReturn(false);
+													setActiveCalendarTab("andata");
+												}}
+												className="flex-row gap-1 -my-2 items-center bg-rose-600/10 rounded-full py-1 px-2"
 											>
-												{t}
+												<Icon
+													name="delete"
+													size={14}
+													weight={400}
+													className="!text-rose-600"
+												/>
+												<ThemedText className="text-[11px] font-google-sans-semibold !text-rose-600">
+													Rimuovi
+												</ThemedText>
+											</Pressable>
+										)}
+									</View>
+								</View>
+								{/* Cards */}
+								<View className="flex-row items-center gap-2">
+									{/* Andata */}
+									<Pressable
+										onPress={() => setActiveCalendarTab("andata")}
+										className={`flex-row items-center justify-center gap-2 rounded-2xl px-3 border ${
+											activeCalendarTab === "andata"
+												? "border-primary-600 bg-white"
+												: "border-gray-100 bg-gray-50"
+										}`}
+										style={{ flex: 1, height: 48, alignItems: "center" }}
+									>
+										<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-950">
+											{`${
+												["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"][
+													departureDate.getDay()
+												]
+											} ${departureDate.getDate()} ${
+												[
+													"Gen",
+													"Feb",
+													"Mar",
+													"Apr",
+													"Mag",
+													"Giu",
+													"Lug",
+													"Ago",
+													"Set",
+													"Ott",
+													"Nov",
+													"Dic",
+												][departureDate.getMonth()]
+											}`}
+										</ThemedText>
+										<View className="bg-gray-200 rounded-2xl px-2 py-1">
+											<ThemedText className="text-[14px] font-google-sans-semibold !text-gray-800">
+												{`${departureDate.getHours()}:${departureDate.getMinutes().toString().padStart(2, "0")}`}
 											</ThemedText>
-										</Pressable>
-									);
-								}}
+										</View>
+									</Pressable>
+
+									{/* Freccia — sempre presente, invisibile senza ritorno */}
+									<Icon
+										name="arrow_forward"
+										size={20}
+										className="!text-gray-400"
+										style={{ opacity: hasReturn ? 1 : 0 }}
+									/>
+
+									{/* Ritorno */}
+									<Pressable
+										onPress={() => {
+											if (!hasReturn) {
+												const next = new Date(departureDate);
+												next.setHours(next.getHours() + 1);
+												setReturnDate(next);
+												setHasReturn(true);
+											}
+											setActiveCalendarTab("ritorno");
+										}}
+										className={`rounded-2xl border px-3 flex-row items-center gap-3 ${
+											hasReturn
+												? activeCalendarTab === "ritorno"
+													? "border-primary-600 bg-white"
+													: "border-gray-100 bg-gray-50"
+												: "border-[#DCEBEB] bg-[#F0F7F7]"
+										}`}
+										style={{
+											flex: 1,
+											height: 48,
+											alignItems: "center",
+											justifyContent: "center",
+										}}
+									>
+										{hasReturn ? (
+											<>
+												<View className="flex-row items-center justify-center gap-2">
+													<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-950">
+														{`${
+															["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"][
+																returnDate.getDay()
+															]
+														} ${returnDate.getDate()} ${
+															[
+																"Gen",
+																"Feb",
+																"Mar",
+																"Apr",
+																"Mag",
+																"Giu",
+																"Lug",
+																"Ago",
+																"Set",
+																"Ott",
+																"Nov",
+																"Dic",
+															][returnDate.getMonth()]
+														}`}
+													</ThemedText>
+													<View className="bg-gray-200 rounded-2xl px-2 py-1">
+														<ThemedText className="text-[14px] font-google-sans-semibold !text-gray-800">
+															{`${returnDate.getHours()}:${returnDate.getMinutes().toString().padStart(2, "0")}`}
+														</ThemedText>
+													</View>
+												</View>
+											</>
+										) : (
+											<View className="flex-row items-center justify-center gap-1">
+												<Icon
+													name="add"
+													size={20}
+													className="!text-primary-500"
+												/>
+												<ThemedText className="text-[15px] font-google-sans-semibold !text-primary-500">
+													Aggiungi
+												</ThemedText>
+											</View>
+										)}
+									</Pressable>
+								</View>
+							</View>
+
+							<View
+								className="mt-4 px-0 pt-4 pb-2"
+								style={{ width: SCREEN_WIDTH, alignSelf: "center" }}
+							>
+								<View className="px-5 mb-6">
+									<ThemedText className="text-[14px] font-google-sans-medium !text-gray-950">
+										{activeCalendarTab === "andata"
+											? "Scegli l'orario di andata"
+											: "Scegli l'orario di ritorno"}
+									</ThemedText>
+								</View>
+								<FlatList
+									ref={hourScrollRef}
+									horizontal
+									showsHorizontalScrollIndicator={false}
+									contentContainerStyle={{
+										paddingHorizontal: SCREEN_WIDTH / 2 - 40,
+									}}
+									data={Array.from({ length: 24 }, (_, i) => i)}
+									keyExtractor={(item) => item.toString()}
+									ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
+									getItemLayout={(_, index) => ({
+										length: 80,
+										offset: 88 * index,
+										index,
+									})}
+									renderItem={({ item: h }) => {
+										const t = `${h}:00`;
+										const isSelected =
+											activeCalendarTab === "andata"
+												? departureDate.getHours() === h
+												: returnDate.getHours() === h;
+
+										const now = new Date();
+										let isDisabled = false;
+										if (activeCalendarTab === "andata") {
+											if (isToday(departureDate)) {
+												isDisabled = h < now.getHours();
+											}
+										} else {
+											if (isToday(returnDate)) {
+												isDisabled = h < now.getHours();
+											}
+										}
+
+										return (
+											<Pressable
+												disabled={isDisabled}
+												onPress={() => {
+													if (activeCalendarTab === "andata") {
+														const newDate = new Date(departureDate);
+														newDate.setHours(h);
+														newDate.setMinutes(0);
+														setDepartureDate(newDate);
+
+														if (hasReturn && newDate >= returnDate) {
+															const newReturn = new Date(newDate);
+															newReturn.setHours(newDate.getHours() + 1);
+															newReturn.setMinutes(0);
+															setReturnDate(newReturn);
+														}
+													} else {
+														const newDate = new Date(returnDate);
+														newDate.setHours(h);
+														newDate.setMinutes(0);
+														setReturnDate(newDate);
+
+														if (newDate <= departureDate) {
+															const newDeparture = new Date(departureDate);
+															newDeparture.setFullYear(newDate.getFullYear());
+															newDeparture.setMonth(newDate.getMonth());
+															newDeparture.setDate(newDate.getDate());
+															newDeparture.setHours(newDate.getHours() - 1);
+															newDeparture.setMinutes(newDate.getMinutes());
+															setDepartureDate(newDeparture);
+														}
+													}
+												}}
+												className={`py-3 rounded-full border items-center justify-center ${
+													isSelected
+														? "bg-primary-600 border-primary-600"
+														: "bg-white border-gray-200"
+												} ${isDisabled ? "opacity-50" : ""}`}
+												style={{ width: 80 }}
+											>
+												<ThemedText
+													className={`text-[15px] font-google-sans-bold ${
+														isSelected
+															? "!text-white"
+															: isDisabled
+																? "!text-gray-300"
+																: "!text-gray-800"
+													}`}
+												>
+													{t}
+												</ThemedText>
+											</Pressable>
+										);
+									}}
+								/>
+							</View>
+						</View>
+						<View className="mt-auto pt-2">
+							<MainButton
+								title="Conferma"
+								onPress={() => setShowCalendar(false)}
 							/>
 						</View>
 					</View>
@@ -1648,13 +1652,13 @@ export default function SearchScreen() {
 								className="flex-row items-start py-6"
 							>
 								<View className="h-12 w-12 items-center justify-center rounded-full bg-[#e6f3f3]">
-									<ThemedText className="text-[14px] font-plus-jakarta-bold !text-teal-900 uppercase">
+									<ThemedText className="text-[14px] font-google-sans-bold !text-primary-600 uppercase">
 										{getInitials(USER_DATA.firstName, USER_DATA.lastName)}
 									</ThemedText>
 								</View>
 								<View className="ml-4 flex-1">
 									<View className="flex-row items-center justify-between">
-										<ThemedText className="text-[16px] font-plus-jakarta-bold !text-gray-950 uppercase">
+										<ThemedText className="text-[16px] font-google-sans-bold !text-gray-950 uppercase">
 											{USER_DATA.firstName} {USER_DATA.lastName}
 										</ThemedText>
 										<Icon
@@ -1663,11 +1667,11 @@ export default function SearchScreen() {
 											className="!text-gray-950"
 										/>
 									</View>
-									<ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-500 mt-1">
+									<ThemedText className="text-[14px] font-google-sans-medium !text-gray-500 mt-1">
 										Adulto · CF/X-GO: {USER_DATA.loyaltyCode}
 									</ThemedText>
 									{!isPassengerExpanded && (
-										<ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-500 mt-0.5">
+										<ThemedText className="text-[14px] font-google-sans-medium !text-gray-500 mt-0.5">
 											{USER_DATA.email} · {USER_DATA.phone}
 										</ThemedText>
 									)}
@@ -1677,10 +1681,10 @@ export default function SearchScreen() {
 							{isPassengerExpanded && (
 								<View className="mb-6">
 									<View className="flex-row items-center justify-between mb-4">
-										<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
+										<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
 											Dettagli passeggero
 										</ThemedText>
-										<ThemedText className="text-[14px] font-plus-jakarta-bold !text-teal-800">
+										<ThemedText className="text-[14px] font-google-sans-bold !text-primary-600">
 											Svuota campi
 										</ThemedText>
 									</View>
@@ -1702,10 +1706,10 @@ export default function SearchScreen() {
 												className="rounded-2xl border border-gray-200 p-3 bg-white flex-row items-center justify-between"
 											>
 												<View>
-													<ThemedText className="text-[11px] font-plus-jakarta-medium !text-gray-400 mb-0.5">
+													<ThemedText className="text-[11px] font-google-sans-medium !text-gray-400 mb-0.5">
 														{field.label}
 													</ThemedText>
-													<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950 uppercase">
+													<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950 uppercase">
 														{field.value}
 													</ThemedText>
 												</View>
@@ -1717,7 +1721,7 @@ export default function SearchScreen() {
 											</View>
 										))}
 									</View>
-									<ThemedText className="text-[12px] font-plus-jakarta-medium !text-gray-400 mt-4">
+									<ThemedText className="text-[12px] font-google-sans-medium !text-gray-400 mt-4">
 										* Dati obbligatori
 									</ThemedText>
 								</View>
@@ -1733,109 +1737,607 @@ export default function SearchScreen() {
 					</Animated.View>
 				)}
 
-				{/* Passengers Bottom Sheet */}
-				<BottomSheet
-					isVisible={showPassengersSheet}
-					onClose={() => setShowPassengersSheet(false)}
-					title="Passeggeri"
+				{/* Passengers Full Screen Modal */}
+				<Modal
+					visible={showPassengersSheet}
+					animationType="slide"
+					presentationStyle="fullScreen"
+					onRequestClose={() => setShowPassengersSheet(false)}
 				>
-					{/* Passengers Rows */}
-					<View className="mb-8">
-						<View className="flex-row items-center justify-between py-7 border-b border-gray-100">
-							<ThemedText className="text-[16px] font-plus-jakarta-medium !text-gray-950">
-								Adulti
-							</ThemedText>
-							<View className="flex-row items-center gap-4">
+					<View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+						{/* Header */}
+						<View className="bg-white px-4 pb-3 pt-2 flex-row items-center justify-between">
+							<View className="flex-1 items-start justify-center">
 								<Pressable
-									onPress={() => setAdults(Math.max(0, adults - 1))}
-									className={`h-10 w-10 items-center justify-center rounded-full border ${
-										adults <= 0 ? "border-gray-100" : "border-gray-200"
-									}`}
+									onPress={() => setShowPassengersSheet(false)}
+									className="p-1 -ml-1"
 								>
-									<Icon
-										name="remove"
-										size={24}
-										className={
-											adults <= 0 ? "!text-gray-200" : "!text-gray-950"
-										}
-									/>
-								</Pressable>
-								<ThemedText className="text-[16px] font-plus-jakarta-bold w-4 text-center">
-									{adults}
-								</ThemedText>
-								<Pressable
-									onPress={() => setAdults(adults + 1)}
-									className="h-10 w-10 items-center justify-center rounded-full border border-gray-200"
-								>
-									<Icon name="add" size={24} className="!text-gray-950" />
+									<Icon name="close" size={26} className="!text-gray-900" />
 								</Pressable>
 							</View>
+							<View className="flex-[2] items-center justify-center">
+								<ThemedText className="text-[18px] font-google-sans-bold !text-gray-950 text-center">
+									Passeggeri
+								</ThemedText>
+							</View>
+							<View className="flex-1" />
 						</View>
 
-						<View className="flex-row items-center justify-between py-7 border-b border-gray-100">
-							<ThemedText className="text-[16px] font-plus-jakarta-medium !text-gray-950">
-								Ragazzi
-							</ThemedText>
-							<View className="flex-row items-center gap-4">
-								<Pressable
-									onPress={() => setYouths(Math.max(0, youths - 1))}
-									className={`h-10 w-10 items-center justify-center rounded-full border ${
-										youths <= 0 ? "border-gray-100" : "border-gray-200"
-									}`}
-								>
-									<Icon
-										name="remove"
-										size={24}
-										className={
-											youths <= 0 ? "!text-gray-200" : "!text-gray-950"
-										}
-									/>
-								</Pressable>
-								<ThemedText className="text-[16px] font-plus-jakarta-bold w-4 text-center">
-									{youths}
+						<KeyboardAvoidingView
+							className="flex-1 bg-white"
+							behavior={Platform.OS === "ios" ? "padding" : undefined}
+							keyboardVerticalOffset={0} /* force reload */
+						>
+							<ScrollView
+								className="flex-1"
+								contentContainerStyle={{ padding: 20, paddingBottom: 140 }}
+							>
+								{/* Aggiungi */}
+								<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500 mb-2">
+									Aggiungi
 								</ThemedText>
-								<Pressable
-									onPress={() => setYouths(youths + 1)}
-									className="h-10 w-10 items-center justify-center rounded-full border border-gray-200"
-								>
-									<Icon name="add" size={24} className="!text-gray-950" />
-								</Pressable>
-							</View>
-						</View>
 
-						<View className="flex-row items-center justify-between py-7 border-b border-gray-100">
-							<View className="flex-row items-center">
-								<ThemedText className="text-[16px] font-plus-jakarta-medium !text-gray-950">
-									Bambini
-								</ThemedText>
-								<ThemedText className="ml-2 text-[14px] font-plus-jakarta-medium !text-gray-500">
-									(0-4 anni non compiuti)
-								</ThemedText>
-							</View>
-							<ThemedText className="text-[16px] font-plus-jakarta-medium !text-gray-400">
-								Gratuito
-							</ThemedText>
+								<Pressable
+									onPress={addPassenger}
+									className="flex-col bg-[#F0F7F7] border border-[#DCEBEB] rounded-xl p-4 mb-3 active:opacity-70"
+								>
+									<View className="flex-row items-start justify-between">
+										<Icon
+											name="person_outline"
+											size={24}
+											className="!text-primary-500 -ml-0.5"
+										/>
+										<Icon name="add" size={24} className="!text-primary-500" />
+									</View>
+									<ThemedText className="text-[16px] font-google-sans-semibold !text-primary-500">
+										Persona
+									</ThemedText>
+								</Pressable>
+
+								<View className="flex-row gap-3 mb-8">
+									<Pressable
+										onPress={addBike}
+										className="flex-1 flex-col bg-[#F0F7F7] border border-[#DCEBEB] rounded-xl p-4 active:opacity-70"
+									>
+										<View className="flex-row items-start justify-between">
+											<Icon
+												name="pedal_bike"
+												size={24}
+												className="!text-primary-500 ml-0.5"
+											/>
+											<Icon
+												name="add"
+												size={24}
+												className="!text-primary-500"
+											/>
+										</View>
+										<ThemedText className="text-[16px] font-google-sans-semibold !text-primary-500">
+											Bicicletta
+										</ThemedText>
+									</Pressable>
+									<Pressable
+										onPress={addAnimal}
+										className="flex-1 flex-col bg-[#F0F7F7] border border-[#DCEBEB] rounded-xl p-4 active:opacity-70"
+									>
+										<View className="flex-row items-start justify-between">
+											<Icon
+												name="pet_supplies"
+												size={24}
+												className="!text-primary-500"
+											/>
+											<Icon
+												name="add"
+												size={24}
+												className="!text-primary-500"
+											/>
+										</View>
+										<ThemedText className="text-[16px] font-google-sans-semibold !text-primary-500">
+											Animale
+										</ThemedText>
+									</Pressable>
+								</View>
+
+								{/* Riepilogo */}
+								<View className="flex-row items-center justify-between mb-2 mt-4">
+									<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
+										Riepilogo
+									</ThemedText>
+									<View className="flex-row items-center gap-3">
+										{passengersList.filter((p) => p.itemType === "passenger")
+											.length > 0 && (
+											<View className="flex-row items-center gap-1">
+												<Icon
+													name="person_outline"
+													size={18}
+													className="!text-gray-600"
+												/>
+												<ThemedText className="text-[14px] font-google-sans-bold !text-gray-700">
+													{
+														passengersList.filter(
+															(p) => p.itemType === "passenger",
+														).length
+													}
+												</ThemedText>
+											</View>
+										)}
+										{passengersList.filter((p) => p.type === "Bicicletta")
+											.length > 0 && (
+											<View className="flex-row items-center gap-1">
+												<Icon
+													name="pedal_bike"
+													size={18}
+													className="!text-gray-600"
+												/>
+												<ThemedText className="text-[14px] font-google-sans-bold !text-gray-700">
+													{
+														passengersList.filter(
+															(p) => p.type === "Bicicletta",
+														).length
+													}
+												</ThemedText>
+											</View>
+										)}
+										{passengersList.filter((p) => p.type === "Animale").length >
+											0 && (
+											<View className="flex-row items-center gap-1">
+												<Icon
+													name="pet_supplies"
+													size={18}
+													className="!text-gray-600"
+												/>
+												<ThemedText className="text-[14px] font-google-sans-bold !text-gray-700">
+													{
+														passengersList.filter((p) => p.type === "Animale")
+															.length
+													}
+												</ThemedText>
+											</View>
+										)}
+									</View>
+								</View>
+
+								{passengersList.map((item, idx) => {
+									const isExpanded = expandedPassengerId === item.id;
+									const hasName = !!(item.firstName || item.lastName);
+									const passengerIndex =
+										passengersList
+											.filter((p) => p.itemType === "passenger")
+											.findIndex((p) => p.id === item.id) + 1;
+
+									return (
+										<View
+											key={item.id}
+											className="flex-col py-4 border-b border-gray-100"
+										>
+											<Pressable
+												className="flex-row items-center justify-between"
+												onPress={() =>
+													setExpandedPassengerId(isExpanded ? null : item.id)
+												}
+											>
+												<View className="flex-row items-center flex-1">
+													{item.itemType === "passenger" ? (
+														item.isMock && hasName ? (
+															<View className="h-12 w-12 rounded-full bg-[#008888] items-center justify-center mr-4">
+																<ThemedText className="!text-white font-google-sans-bold text-[16px]">
+																	{getInitials(
+																		item.firstName || "",
+																		item.lastName || "",
+																	)}
+																</ThemedText>
+															</View>
+														) : (
+															<View className="h-12 w-12 rounded-full bg-[#008888] items-center justify-center mr-4">
+																<Icon
+																	name="person_outline"
+																	size={24}
+																	className="!text-white"
+																/>
+															</View>
+														)
+													) : (
+														<View className="h-12 w-12 rounded-full border border-[#008888] items-center justify-center mr-4 bg-white">
+															<Icon
+																name={
+																	item.type === "Bicicletta"
+																		? "pedal_bike"
+																		: "pet_supplies"
+																}
+																size={24}
+																className="!text-[#008888]"
+															/>
+														</View>
+													)}
+													<View>
+														<ThemedText className="text-[16px] font-google-sans-bold !text-gray-950">
+															{hasName
+																? `${item.firstName || ""} ${item.lastName || ""}`.trim()
+																: item.itemType === "passenger"
+																	? `Passeggero ${passengerIndex}`
+																	: item.name}
+														</ThemedText>
+														<ThemedText className="text-[13px] font-google-sans-regular !text-gray-500">
+															{item.itemType === "service"
+																? "Servizio aggiuntivo"
+																: item.type}
+														</ThemedText>
+													</View>
+												</View>
+												{item.itemType === "passenger" ? (
+													<Animated.View
+														style={{
+															transform: [
+																{ rotate: isExpanded ? "180deg" : "0deg" },
+															],
+														}}
+													>
+														<Icon
+															name="expand_more"
+															size={24}
+															className="!text-gray-800"
+														/>
+													</Animated.View>
+												) : (
+													<Pressable
+														onPress={(e) => {
+															e.stopPropagation();
+															setPassengersList((prev) =>
+																prev.filter((p) => p.id !== item.id),
+															);
+														}}
+														className="p-2 -mr-2"
+													>
+														<Icon
+															name="delete"
+															size={24}
+															className="!text-[#c1152c]"
+														/>
+													</Pressable>
+												)}
+											</Pressable>
+											{isExpanded && (
+												<View className="mt-4">
+													{item.itemType === "passenger" && (
+														<>
+															<ThemedText className="text-[14px] font-google-sans-bold !text-gray-950 mb-3">
+																Dettagli passeggero
+															</ThemedText>
+															<View className="flex-row gap-2 mb-2">
+																<PassengerInput
+																	label="Nome"
+																	value={item.firstName || ""}
+																	onChangeText={(text) =>
+																		setPassengersList((prev) =>
+																			prev.map((p) =>
+																				p.id === item.id
+																					? { ...p, firstName: text }
+																					: p,
+																			),
+																		)
+																	}
+																	focusedInputId={focusedPassengerInputId}
+																	setFocusedInputId={setFocusedPassengerInputId}
+																	inputId={`${item.id}-firstName`}
+																	autoCapitalize="words"
+																/>
+																<PassengerInput
+																	label="Cognome"
+																	value={item.lastName || ""}
+																	onChangeText={(text) =>
+																		setPassengersList((prev) =>
+																			prev.map((p) =>
+																				p.id === item.id
+																					? { ...p, lastName: text }
+																					: p,
+																			),
+																		)
+																	}
+																	focusedInputId={focusedPassengerInputId}
+																	setFocusedInputId={setFocusedPassengerInputId}
+																	inputId={`${item.id}-lastName`}
+																	autoCapitalize="words"
+																/>
+															</View>
+
+															<View className="flex-row gap-2 mb-2">
+																<PassengerInput
+																	label="Data di nascita"
+																	value={item.birthDate || ""}
+																	onChangeText={(text) =>
+																		setPassengersList((prev) =>
+																			prev.map((p) =>
+																				p.id === item.id
+																					? { ...p, birthDate: text }
+																					: p,
+																			),
+																		)
+																	}
+																	focusedInputId={focusedPassengerInputId}
+																	setFocusedInputId={setFocusedPassengerInputId}
+																	inputId={`${item.id}-birthDate`}
+																/>
+																<PassengerInput
+																	label="CartaFRECCIA"
+																	value={item.loyaltyCode || ""}
+																	onChangeText={(text) =>
+																		setPassengersList((prev) =>
+																			prev.map((p) =>
+																				p.id === item.id
+																					? { ...p, loyaltyCode: text }
+																					: p,
+																			),
+																		)
+																	}
+																	focusedInputId={focusedPassengerInputId}
+																	setFocusedInputId={setFocusedPassengerInputId}
+																	inputId={`${item.id}-loyaltyCode`}
+																	keyboardType="numeric"
+																/>
+															</View>
+
+															<View className="flex-row gap-2 mb-4">
+																<PassengerInput
+																	label="Numero di telefono"
+																	value={item.phone || ""}
+																	onChangeText={(text) =>
+																		setPassengersList((prev) =>
+																			prev.map((p) =>
+																				p.id === item.id
+																					? { ...p, phone: text }
+																					: p,
+																			),
+																		)
+																	}
+																	focusedInputId={focusedPassengerInputId}
+																	setFocusedInputId={setFocusedPassengerInputId}
+																	inputId={`${item.id}-phone`}
+																	keyboardType="phone-pad"
+																/>
+																<PassengerInput
+																	label="Email"
+																	value={item.email || ""}
+																	onChangeText={(text) =>
+																		setPassengersList((prev) =>
+																			prev.map((p) =>
+																				p.id === item.id
+																					? { ...p, email: text }
+																					: p,
+																			),
+																		)
+																	}
+																	focusedInputId={focusedPassengerInputId}
+																	setFocusedInputId={setFocusedPassengerInputId}
+																	inputId={`${item.id}-email`}
+																	keyboardType="email-address"
+																	autoCapitalize="none"
+																/>
+															</View>
+														</>
+													)}
+
+													<View
+														className={`flex-row justify-end items-center gap-2`}
+													>
+														{!item.isMock && (
+															<Pressable
+																className="flex-row items-center bg-red-50 px-3 py-2 rounded-lg"
+																onPress={() => {
+																	setPassengersList((prev) =>
+																		prev.filter((p) => p.id !== item.id),
+																	);
+																	setExpandedPassengerId(null);
+																}}
+															>
+																<Icon
+																	name="delete"
+																	size={18}
+																	className="!text-red-500 mr-1"
+																/>
+																<ThemedText className="text-[14px] font-google-sans-medium !text-red-500">
+																	Rimuovi
+																</ThemedText>
+															</Pressable>
+														)}
+														{item.itemType === "passenger" && (
+															<Pressable
+																className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg"
+																onPress={() => {
+																	setPassengersList((prev) =>
+																		prev.map((p) =>
+																			p.id === item.id
+																				? {
+																						...p,
+																						firstName: "",
+																						lastName: "",
+																						birthDate: "",
+																						loyaltyCode: "",
+																						phone: "",
+																						email: "",
+																					}
+																				: p,
+																		),
+																	);
+																}}
+															>
+																<Icon
+																	name="clear_all"
+																	size={18}
+																	className="!text-gray-700 mr-1"
+																/>
+																<ThemedText className="text-[14px] font-google-sans-medium !text-gray-700">
+																	Svuota
+																</ThemedText>
+															</Pressable>
+														)}
+														{item.itemType === "passenger" && (
+															<Pressable
+																className="flex-row items-center bg-[#E0F2F1] px-4 py-2 rounded-lg"
+																onPress={() => setExpandedPassengerId(null)}
+															>
+																<Icon
+																	name="bookmark_border"
+																	size={18}
+																	className="!text-primary-600 mr-1"
+																/>
+																<ThemedText className="text-[14px] font-google-sans-medium !text-primary-600">
+																	Salva
+																</ThemedText>
+															</Pressable>
+														)}
+													</View>
+												</View>
+											)}
+										</View>
+									);
+								})}
+							</ScrollView>
+						</KeyboardAvoidingView>
+
+						<View className="absolute bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-100 pb-10">
+							<MainButton
+								title="Conferma"
+								onPress={() => setShowPassengersSheet(false)}
+							/>
 						</View>
 					</View>
+					<BottomSheet
+						isVisible={showAddPassengerSheet}
+						onClose={() => setShowAddPassengerSheet(false)}
+						title="Passeggeri"
+					>
+						{/* Passengers Rows */}
+						<View className="mb-8">
+							<View className="flex-row items-center justify-between py-7 border-b border-gray-100">
+								<ThemedText className="text-[16px] font-google-sans-medium !text-gray-950">
+									Adulti
+								</ThemedText>
+								<View className="flex-row items-center gap-4">
+									<Pressable
+										onPress={() => setNewAdults(Math.max(0, newAdults - 1))}
+										className={`h-10 w-10 items-center justify-center rounded-full ${
+											newAdults <= 0 ? "bg-gray-200" : "bg-primary-500"
+										}`}
+									>
+										<Icon name="remove" size={24} className="!text-white" />
+									</Pressable>
+									<ThemedText className="text-[16px] font-google-sans-bold w-4 text-center">
+										{newAdults}
+									</ThemedText>
+									<Pressable
+										onPress={() => setNewAdults(newAdults + 1)}
+										className="h-10 w-10 items-center justify-center rounded-full bg-primary-500"
+									>
+										<Icon name="add" size={24} className="!text-white" />
+									</Pressable>
+								</View>
+							</View>
 
-					<Pressable className="mb-8">
-						<ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-950">
-							Vedi{" "}
-							<ThemedText className="!text-red-700 underline">
-								agevolazione ragazzi
-							</ThemedText>
-						</ThemedText>
-					</Pressable>
+							<View className="flex-row items-center justify-between py-7 border-b border-gray-100">
+								<ThemedText className="text-[16px] font-google-sans-medium !text-gray-950">
+									Ragazzi
+								</ThemedText>
+								<View className="flex-row items-center gap-4">
+									<Pressable
+										onPress={() => setNewYouths(Math.max(0, newYouths - 1))}
+										className={`h-10 w-10 items-center justify-center rounded-full ${
+											newYouths <= 0 ? "bg-gray-200" : "bg-primary-500"
+										}`}
+									>
+										<Icon name="remove" size={24} className="!text-white" />
+									</Pressable>
+									<ThemedText className="text-[16px] font-google-sans-bold w-4 text-center">
+										{newYouths}
+									</ThemedText>
+									<Pressable
+										onPress={() => setNewYouths(newYouths + 1)}
+										className="h-10 w-10 items-center justify-center rounded-full bg-primary-500"
+									>
+										<Icon name="add" size={24} className="!text-white" />
+									</Pressable>
+								</View>
+							</View>
 
-					<MainButton
-						title={`Conferma ${adults + youths} ${
-							adults + youths === 1 ? "passeggero" : "passeggeri"
-						}`}
-						onPress={() => adults + youths > 0 && setShowPassengersSheet(false)}
-						disabled={adults + youths === 0}
-						className="mb-8"
-					/>
-				</BottomSheet>
+							<View className="flex-row items-center justify-between py-7 border-b border-gray-100">
+								<View className="flex-row items-center">
+									<ThemedText className="text-[16px] font-google-sans-medium !text-gray-950">
+										Bambini
+									</ThemedText>
+									<ThemedText className="ml-2 text-[14px] font-google-sans-medium !text-gray-500">
+										(0-4 anni non compiuti)
+									</ThemedText>
+								</View>
+								<View className="flex-row items-center gap-4">
+									<Pressable
+										onPress={() => setNewChildren(Math.max(0, newChildren - 1))}
+										className={`h-10 w-10 items-center justify-center rounded-full ${
+											newChildren <= 0 ? "bg-gray-200" : "bg-primary-500"
+										}`}
+									>
+										<Icon name="remove" size={24} className="!text-white" />
+									</Pressable>
+									<ThemedText className="text-[16px] font-google-sans-bold w-4 text-center">
+										{newChildren}
+									</ThemedText>
+									<Pressable
+										onPress={() => setNewChildren(newChildren + 1)}
+										className="h-10 w-10 items-center justify-center rounded-full bg-primary-500"
+									>
+										<Icon name="add" size={24} className="!text-white" />
+									</Pressable>
+								</View>
+							</View>
+						</View>
+
+						<MainButton
+							title={`Aggiungi ${newAdults + newYouths + newChildren} ${
+								newAdults + newYouths + newChildren === 1
+									? "passeggero"
+									: "passeggeri"
+							}`}
+							onPress={() => {
+								if (newAdults + newYouths + newChildren > 0) {
+									setPassengersList((prev) => {
+										const newItems: SelectionItem[] = [];
+										const currentPassCount = prev.filter(
+											(p) => p.itemType === "passenger",
+										).length;
+										let nextIndex = currentPassCount + 1;
+
+										for (let i = 0; i < newAdults; i++) {
+											newItems.push({
+												id: Math.random().toString(),
+												itemType: "passenger",
+												type: "Adulto",
+												name: `Passeggero ${nextIndex++}`,
+											});
+										}
+										for (let i = 0; i < newYouths; i++) {
+											newItems.push({
+												id: Math.random().toString(),
+												itemType: "passenger",
+												type: "Ragazzo",
+												name: `Passeggero ${nextIndex++}`,
+											});
+										}
+										for (let i = 0; i < newChildren; i++) {
+											newItems.push({
+												id: Math.random().toString(),
+												itemType: "passenger",
+												type: "Bambino",
+												name: `Passeggero ${nextIndex++}`,
+											});
+										}
+
+										return [...prev, ...newItems];
+									});
+									setShowAddPassengerSheet(false);
+								}
+							}}
+							disabled={newAdults + newYouths + newChildren === 0}
+							className="mb-8"
+						/>
+					</BottomSheet>
+				</Modal>
 			</View>
 		</TouchableWithoutFeedback>
 	);

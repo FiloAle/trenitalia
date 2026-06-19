@@ -23,6 +23,7 @@ interface BottomSheetProps {
 	children: React.ReactNode;
 	hideCloseButton?: boolean;
 	contentPaddingBottom?: number;
+	heightPercentage?: number;
 }
 
 export function BottomSheet({
@@ -31,6 +32,8 @@ export function BottomSheet({
 	title,
 	children,
 	hideCloseButton = false,
+	contentPaddingBottom,
+	heightPercentage,
 }: BottomSheetProps) {
 	const insets = useSafeAreaInsets();
 	const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -95,25 +98,23 @@ export function BottomSheet({
 						]}
 					/>
 				</TouchableWithoutFeedback>
-				<Animated.View
-					style={{
-						transform: [{ translateY: sheetSlideAnim }],
-						backgroundColor: "white",
-						borderTopLeftRadius: 32,
-						borderTopRightRadius: 32,
-						paddingHorizontal: 20,
-						paddingTop: 20,
-						paddingBottom: insets.bottom,
-						maxHeight: SCREEN_HEIGHT * 0.9,
-					}}
-				>
+					<Animated.View
+						style={{
+							transform: [{ translateY: sheetSlideAnim }],
+							backgroundColor: "white",
+							borderTopLeftRadius: 32,
+							borderTopRightRadius: 32,
+							paddingHorizontal: 20,
+							paddingTop: 20,
+							paddingBottom: contentPaddingBottom !== undefined ? insets.bottom + contentPaddingBottom : insets.bottom,
+							maxHeight: SCREEN_HEIGHT * 0.9,
+							height: heightPercentage ? SCREEN_HEIGHT * heightPercentage : undefined,
+						}}
+					>
 					{(title || !hideCloseButton) && (
-						<View className="flex-row justify-between items-center mb-4">
-							<ThemedText className="text-[18px] font-plus-jakarta-bold !text-gray-950">
-								{title || ""}
-							</ThemedText>
+						<View className="flex-row items-center justify-center mb-4 relative min-h-[32px]">
 							{!hideCloseButton && (
-								<Pressable onPress={handleClose}>
+								<Pressable onPress={handleClose} className="absolute left-0 z-10 p-1 -ml-1">
 									<Icon
 										name="close"
 										size={28}
@@ -122,6 +123,11 @@ export function BottomSheet({
 									/>
 								</Pressable>
 							)}
+							{title ? (
+								<ThemedText className="text-[18px] font-google-sans-bold !text-gray-950 text-center px-10">
+									{title}
+								</ThemedText>
+							) : null}
 						</View>
 					)}
 					{children}

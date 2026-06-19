@@ -14,6 +14,7 @@ export interface PurchasedTrain {
 	selectedClass?: string;
 	selectedOffer?: string;
 	price?: number;
+	passengerName?: string;
 }
 
 export interface PurchasedTrip {
@@ -129,6 +130,11 @@ purchasedTrips.sort((a, b) => {
 });
 
 export const getPurchasedTrips = () => purchasedTrips;
+
+export let pendingPassengers: string[] = [];
+export const setPendingPassengers = (passengers: string[]) => {
+	pendingPassengers = passengers;
+};
 
 export const addPurchasedTrip = (trip: PurchasedTrip) => {
 	purchasedTrips.push(trip);

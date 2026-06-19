@@ -9,7 +9,7 @@ interface SectionHeaderProps {
 export function SectionHeader({ title, className = "" }: SectionHeaderProps) {
 	return (
 		<ThemedText
-			className={`text-[14px] font-plus-jakarta-medium uppercase tracking-wider !text-gray-500 mb-1 ${className}`}
+			className={`text-[14px] font-google-sans-medium uppercase tracking-wider !text-gray-500 mb-1 ${className}`}
 		>
 			{title}
 		</ThemedText>

@@ -46,7 +46,7 @@ export default function StationBoardScreen() {
 				style={{ paddingTop: insets.top + 16 }}
 			>
 				<View className="w-10" />
-				<ThemedText className="flex-1 text-center text-[15px] font-plus-jakarta-bold !text-gray-950">
+				<ThemedText className="flex-1 text-center text-[15px] font-google-sans-bold !text-gray-950">
 					{stationName}
 				</ThemedText>
 				<Pressable onPress={() => router.back()} className="p-2 -mr-2">
@@ -78,7 +78,7 @@ export default function StationBoardScreen() {
 						onPress={() => setActiveTab("Partenze")}
 					>
 						<ThemedText
-							className={`text-[15px] ${activeTab === "Partenze" ? "font-plus-jakarta-bold !text-gray-950" : "font-plus-jakarta-medium !text-gray-600"}`}
+							className={`text-[15px] ${activeTab === "Partenze" ? "font-google-sans-bold !text-gray-950" : "font-google-sans-medium !text-gray-600"}`}
 						>
 							Partenze
 						</ThemedText>
@@ -99,7 +99,7 @@ export default function StationBoardScreen() {
 						onPress={() => setActiveTab("Arrivi")}
 					>
 						<ThemedText
-							className={`text-[15px] ${activeTab === "Arrivi" ? "font-plus-jakarta-bold !text-gray-950" : "font-plus-jakarta-medium !text-gray-600"}`}
+							className={`text-[15px] ${activeTab === "Arrivi" ? "font-google-sans-bold !text-gray-950" : "font-google-sans-medium !text-gray-600"}`}
 						>
 							Arrivi
 						</ThemedText>
@@ -111,7 +111,7 @@ export default function StationBoardScreen() {
 			{lastUpdate ? (
 				<View className="px-5 mb-4 mt-2">
 					<View className="bg-[#eef2ff] rounded-2xl p-3">
-						<ThemedText className="text-sm font-plus-jakarta-medium !text-gray-900">
+						<ThemedText className="text-sm font-google-sans-medium !text-gray-900">
 							{lastUpdate}
 						</ThemedText>
 					</View>
@@ -121,22 +121,22 @@ export default function StationBoardScreen() {
 			{/* Table Headers */}
 			<View className="flex-row px-5 py-2 bg-gray-50 mb-2">
 				<View className="w-[15%]">
-					<ThemedText className="text-xs font-plus-jakarta-bold !text-gray-950">
+					<ThemedText className="text-xs font-google-sans-bold !text-gray-950">
 						Orario
 					</ThemedText>
 				</View>
 				<View className="w-[35%] pl-2">
-					<ThemedText className="text-xs font-plus-jakarta-bold !text-gray-950">
+					<ThemedText className="text-xs font-google-sans-bold !text-gray-950">
 						Destinazione
 					</ThemedText>
 				</View>
 				<View className="w-[25%] items-center">
-					<ThemedText className="text-xs font-plus-jakarta-bold !text-gray-950">
+					<ThemedText className="text-xs font-google-sans-bold !text-gray-950">
 						Stato
 					</ThemedText>
 				</View>
 				<View className="w-[20%] items-center">
-					<ThemedText className="text-xs font-plus-jakarta-bold !text-gray-950">
+					<ThemedText className="text-xs font-google-sans-bold !text-gray-950">
 						Binario
 					</ThemedText>
 				</View>
@@ -148,7 +148,7 @@ export default function StationBoardScreen() {
 			>
 				{isLoading ? (
 					<View className="py-10 items-center justify-center">
-						<ActivityIndicator size="large" color="#005045" />
+						<ActivityIndicator size="large" color="#004141" />
 					</View>
 				) : (
 					displayTrains.map((train, index) => (

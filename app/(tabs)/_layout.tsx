@@ -18,7 +18,7 @@ export default function TabLayout() {
 					tabBarLabelPosition: "below-icon",
 					tabBarLabel: ({ focused, children, color }) => (
 						<Text
-							className={`mt-1.5 text-[12px] ${focused ? "font-plus-jakarta-bold -tracking-[0.13px]" : "font-plus-jakarta-medium"}`}
+							className={`mt-1.5 text-[12px] ${focused ? "font-google-sans-bold -tracking-[0.13px]" : "font-google-sans-medium"}`}
 							style={{ color }}
 						>
 							{children}

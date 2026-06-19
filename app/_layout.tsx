@@ -11,12 +11,11 @@ import {
 	useFonts,
 } from "@expo-google-fonts/material-symbols";
 import {
-	PlusJakartaSans_400Regular,
-	PlusJakartaSans_500Medium,
-	PlusJakartaSans_600SemiBold,
-	PlusJakartaSans_700Bold,
-	PlusJakartaSans_800ExtraBold,
-} from "@expo-google-fonts/plus-jakarta-sans";
+	GoogleSans_400Regular,
+	GoogleSans_500Medium,
+	GoogleSans_600SemiBold,
+	GoogleSans_700Bold,
+} from "@expo-google-fonts/google-sans";
 import { DefaultTheme, ThemeProvider } from "expo-router/react-navigation";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -43,11 +42,10 @@ export default function RootLayout() {
 		MaterialSymbols_500Medium,
 		MaterialSymbols_600SemiBold,
 		MaterialSymbols_700Bold,
-		PlusJakartaSans_400Regular,
-		PlusJakartaSans_500Medium,
-		PlusJakartaSans_600SemiBold,
-		PlusJakartaSans_700Bold,
-		PlusJakartaSans_800ExtraBold,
+		GoogleSans_400Regular,
+		GoogleSans_500Medium,
+		GoogleSans_600SemiBold,
+		GoogleSans_700Bold,
 	});
 
 	useEffect(() => {
@@ -67,7 +65,7 @@ export default function RootLayout() {
 			<ThemeProvider value={DefaultTheme}>
 				<Stack>
 					<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-					<Stack.Screen name="search" options={{ presentation: "fullScreenModal", headerShown: false }} />
+					<Stack.Screen name="search" options={{ animation: "slide_from_bottom", headerShown: false }} />
 					<Stack.Screen name="search-results" options={{ animation: "slide_from_right", headerShown: false }} />
 					<Stack.Screen
 						name="ticket-detail"
@@ -82,7 +80,7 @@ export default function RootLayout() {
 							headerShown: false,
 						}}
 					/>
-					<Stack.Screen name="add-services" options={{ headerShown: false }} />
+					<Stack.Screen name="add-services" options={{ presentation: "fullScreenModal", headerShown: false }} />
 					<Stack.Screen name="complete-trip" options={{ presentation: "fullScreenModal", headerShown: false }} />
 					<Stack.Screen name="electronic-credit" options={{ presentation: "fullScreenModal", headerShown: false }} />
 					<Stack.Screen name="payment-processing" options={{ headerShown: false }} />

@@ -31,7 +31,7 @@ export function SelectionCard({
 				isClass ? "w-60 h-20" : "w-56 h-32"
 			} ${
 				isSelected
-					? "border-[#004a4d] bg-teal-50/30"
+					? "border-primary-600 bg-primary-100/30"
 					: "border-gray-200 bg-white"
 			}`}
 		>
@@ -39,7 +39,7 @@ export function SelectionCard({
 				<>
 					<View className="flex-row justify-between items-start mb-2">
 						<ThemedText
-							className="text-[14px] font-plus-jakarta-semibold !text-gray-950 flex-1"
+							className="text-[14px] font-google-sans-semibold !text-gray-950 flex-1"
 							numberOfLines={1}
 						>
 							{title}
@@ -48,7 +48,7 @@ export function SelectionCard({
 							<Icon name="info" size={18} className="!text-gray-600 ml-2" />
 						)}
 					</View>
-					<ThemedText className="text-[11px] font-plus-jakarta-semibold !text-gray-600 -mt-1">
+					<ThemedText className="text-[11px] font-google-sans-semibold !text-gray-600 -mt-1">
 						da {priceStr}
 					</ThemedText>
 				</>
@@ -56,19 +56,19 @@ export function SelectionCard({
 				<>
 					<View>
 						<ThemedText
-							className="text-[13px] font-plus-jakarta-semibold uppercase !text-gray-950 mb-1"
+							className="text-[13px] font-google-sans-semibold uppercase !text-gray-950 mb-1"
 							numberOfLines={1}
 						>
 							{title}
 						</ThemedText>
-						<ThemedText className="text-[17px] font-plus-jakarta-bold !text-gray-950">
+						<ThemedText className="text-[17px] font-google-sans-bold !text-gray-950">
 							{priceStr}
 						</ThemedText>
 					</View>
 					<View className="flex-row justify-between items-end">
 						{badge ? (
-							<View className="bg-[#004a4d]/10 px-2 py-1 rounded">
-								<ThemedText className="text-[13px] font-plus-jakarta-semibold !text-[#004a4d]">
+							<View className="bg-primary-600/10 px-2 py-1 rounded">
+								<ThemedText className="text-[13px] font-google-sans-semibold !text-primary-600">
 									{badge}
 								</ThemedText>
 							</View>

@@ -20,7 +20,7 @@ export function ClearableInput({
 	return (
 		<View className="border border-gray-300 rounded-2xl bg-white px-4 py-2 mb-3 flex-row items-center">
 			<View className="flex-1 justify-center min-h-[44px]">
-				<ThemedText className="text-[12px] font-plus-jakarta-medium !text-gray-500 mb-0.5">
+				<ThemedText className="text-[12px] font-google-sans-medium !text-gray-500 mb-0.5">
 					{label}
 				</ThemedText>
 				<TextInput
@@ -28,7 +28,7 @@ export function ClearableInput({
 					onChangeText={onChangeText}
 					placeholder={placeholder}
 					keyboardType={keyboardType}
-					className="font-plus-jakarta-bold text-[16px] text-gray-900 p-0 m-0 leading-tight h-[22px]"
+					className="font-google-sans-bold text-[16px] text-gray-900 p-0 m-0 leading-tight h-[22px]"
 					placeholderTextColor="#9ca3af"
 					autoCapitalize={
 						keyboardType === "email-address" ? "none" : "characters"

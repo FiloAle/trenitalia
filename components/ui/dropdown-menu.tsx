@@ -17,7 +17,7 @@ interface DropdownMenuProps {
 export function DropdownMenu({
 	isVisible,
 	children,
-	maxHeight = 270,
+	maxHeight = 230,
 	className = "",
 	style,
 }: DropdownMenuProps) {

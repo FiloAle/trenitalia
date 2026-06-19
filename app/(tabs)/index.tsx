@@ -2,7 +2,7 @@ import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View, DeviceEventEmitter } from "react-native";
 
 import { DiscountCard } from "@/components/home/discount-card";
 import { InfoBanner } from "@/components/home/info-banner";
@@ -25,29 +25,36 @@ export default function HomeScreen() {
 	useFocusEffect(
 		useCallback(() => {
 			const trips = getPurchasedTrips();
-			const now = new Date();
-			const upcoming = trips.find((t) => t.date && new Date(t.date) > now);
-			setNextTrip(upcoming || trips[0] || null); // Fallback to first if all in past, just in case
+			const today = new Date();
+			today.setHours(0, 0, 0, 0);
+
+			const upcoming = trips.find((t) => {
+				if (!t.date) return false;
+				const tDate = new Date(t.date);
+				tDate.setHours(0, 0, 0, 0);
+				return tDate.getTime() >= today.getTime();
+			});
+			setNextTrip(upcoming || null);
 		}, []),
 	);
 
 	return (
 		<>
 			<ParallaxScrollView
-				headerBackgroundColor={{ light: "#032c2e", dark: "#032c2e" }}
+				headerBackgroundColor={{ light: "#004141", dark: "#004141" }}
 				lightColor="#f9fafb"
 				darkColor="#f9fafb"
 				headerImage={
-					<View className="flex-1">
+					<View className="flex-1 bg-primary-600">
 						<LinearGradient
-							colors={["#032c2e", "#064448"]}
+							colors={["#004141", "#004141"]}
 							style={StyleSheet.absoluteFill}
 						/>
 						<View className="flex-1 justify-end px-6 pb-8">
-							<ThemedText className="text-[18px] font-plus-jakarta !text-white">
+							<ThemedText className="text-[18px] font-google-sans-regular !text-white">
 								Ciao {USER_DATA.firstName},
 							</ThemedText>
-							<ThemedText className="text-[24px] font-plus-jakarta-bold !text-white">
+							<ThemedText className="text-[24px] font-google-sans-bold !text-white">
 								Dove vuoi andare?
 							</ThemedText>
 							<Pressable
@@ -55,7 +62,7 @@ export default function HomeScreen() {
 								className="mt-6 flex-row items-center rounded-full bg-white px-5 py-4"
 							>
 								<Icon name="search" size={24} color="#4b5563" />
-								<ThemedText className="ml-3 text-[16px] font-plus-jakarta-medium !text-gray-600">
+								<ThemedText className="ml-3 text-[16px] font-google-sans-medium !text-gray-600">
 									Cerca la tua destinazione
 								</ThemedText>
 							</Pressable>
@@ -63,7 +70,7 @@ export default function HomeScreen() {
 					</View>
 				}
 			>
-				<View className="bg-white gap-8 px-5 py-8 pb-10">
+				<View className="bg-white gap-8 px-5 py-8">
 					{nextTrip && (
 						<View className="gap-4">
 							<SectionHeader title="Il tuo prossimo viaggio" />
@@ -77,18 +84,24 @@ export default function HomeScreen() {
 						<SectionHeader
 							title="Notizie di infomobilità"
 							actionText="Vedi tutte"
+							onActionPress={() => {
+								router.push('/info');
+								setTimeout(() => {
+									DeviceEventEmitter.emit('openInfoNews');
+								}, 100);
+							}}
 						/>
 						<InfoBanner
 							title="Piano di ammodernamento della rete"
 							description={
-								"Per l’estate 2026 sono previsti interventi di ammodernamento dell’infrastruttura ferroviaria.\nTempi di viaggio e disponibilità dei biglietti possono subire variazioni."
+								"Per l'estate è previsto l'ammodernamento di parte dell'infrastruttura. I tempi di viaggio possono subire variazioni."
 							}
 							hideIcon={true}
 						/>
 					</View>
 				</View>
 
-				<View className="bg-gray-50 flex-1 gap-8 px-5 py-8 pb-12">
+				<View className="bg-gray-50 flex-1 gap-8 px-5 py-8">
 					<View className="gap-4">
 						<SectionHeader title="Promo e servizi" actionText="Vedi tutte" />
 						<PromoCarousel />

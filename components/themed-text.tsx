@@ -18,11 +18,11 @@ export function ThemedText({
     "text",
   );
   const typeClassName = {
-    default: "text-base leading-6 font-plus-jakarta",
-    defaultSemiBold: "text-base leading-6 font-plus-jakarta-semibold",
-    title: "text-3xl leading-9 font-plus-jakarta-bold",
-    subtitle: "text-xl font-plus-jakarta-bold",
-    link: "text-base leading-7 !text-cyan-700 font-plus-jakarta",
+    default: "text-base leading-6 font-google-sans-regular",
+    defaultSemiBold: "text-base leading-6 font-google-sans-semibold",
+    title: "text-3xl leading-9 font-google-sans-bold",
+    subtitle: "text-xl font-google-sans-bold",
+    link: "text-base leading-7 !text-cyan-700 font-google-sans-regular",
   }[type];
 
   return (

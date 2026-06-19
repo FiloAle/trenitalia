@@ -50,7 +50,7 @@ export const MainButton = ({
 								className="!text-white mr-2"
 							/>
 						) : null}
-						<ThemedText className="text-[16px] font-plus-jakarta-bold !text-white text-center">
+						<ThemedText className="text-[16px] font-google-sans-bold !text-white text-center">
 							{title}
 						</ThemedText>
 					</View>

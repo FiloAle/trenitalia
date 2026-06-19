@@ -22,13 +22,13 @@ export function InfoBanner({
 			/>
 			<View className="flex-1 gap-2">
 				<ThemedText
-					className={`font-plus-jakarta-semibold text-[14px] !text-gray-800 ${!description ? "leading-snug font-plus-jakarta-medium" : ""}`}
+					className={`font-google-sans-semibold text-[14px] !text-gray-800 ${!description ? "leading-snug font-google-sans-medium" : ""}`}
 				>
 					{title}
 				</ThemedText>
 				{description && (
 					<View className="flex-row items-start mt-0.5">
-						<ThemedText className="flex-1 mr-1 font-plus-jakarta text-[13px] !text-gray-600 leading-tight">
+						<ThemedText className="flex-1 mr-1 font-google-sans-regular text-[13px] !text-gray-600 leading-tight">
 							{description}
 						</ThemedText>
 					</View>

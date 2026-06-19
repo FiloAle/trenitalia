@@ -35,10 +35,10 @@ export function TimerBar({ endTime, onExpire }: TimerBarProps) {
 
 	return (
 		<View className="bg-gray-100 px-5 py-2.5 flex-row justify-between items-center border-b border-gray-200">
-			<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-900">
+			<ThemedText className="text-[13px] font-google-sans-medium !text-gray-900">
 				Completa l&apos;acquisto entro
 			</ThemedText>
-			<ThemedText className="text-[14px] font-plus-jakarta-bold !text-gray-950">
+			<ThemedText className="text-[14px] font-google-sans-bold !text-gray-950">
 				{formattedTime}
 			</ThemedText>
 		</View>

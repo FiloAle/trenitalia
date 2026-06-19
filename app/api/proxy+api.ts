@@ -7,7 +7,15 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetch(targetUrl);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    let response;
+    try {
+      response = await fetch(targetUrl, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
     
     if (!response.ok) {
       return new Response("Error fetching target", { status: response.status });

@@ -80,13 +80,13 @@ export function FollowTrainModal({
 			>
 				{/* Toggle Switch */}
 				<View className="flex-row items-center justify-between py-4 border-b border-gray-100 mb-4">
-					<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
+					<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
 						Voglio ricevere le notifiche
 					</ThemedText>
 					<Switch
 						value={isNotificationsEnabled}
 						onValueChange={setIsNotificationsEnabled}
-						trackColor={{ false: "#d1d5db", true: "#005045" }}
+						trackColor={{ false: "#d1d5db", true: "#006666" }}
 						thumbColor={Platform.OS === "ios" ? "#ffffff" : "#ffffff"}
 						ios_backgroundColor="#d1d5db"
 					/>
@@ -98,7 +98,7 @@ export function FollowTrainModal({
 				>
 					{/* Days Selector */}
 					<View className="mb-6">
-						<ThemedText className="text-xs font-plus-jakarta-bold !text-gray-950 mb-3 bg-gray-100 py-2 -mx-5 px-5">
+						<ThemedText className="text-xs font-google-sans-bold !text-gray-950 mb-3 bg-gray-100 py-2 -mx-5 px-5">
 							RICEVI NOTIFICHE NEI GIORNI:
 						</ThemedText>
 						<View className="flex-row justify-between">
@@ -110,12 +110,12 @@ export function FollowTrainModal({
 										onPress={() => toggleDay(idx)}
 										className={`h-10 w-10 items-center justify-center rounded-full border ${
 											isSelected
-												? "border-[#005045] bg-[#005045]"
+												? "border-primary-600 bg-primary-600"
 												: "border-gray-200 bg-gray-50"
 										}`}
 									>
 										<ThemedText
-											className={`text-[15px] font-plus-jakarta-bold ${
+											className={`text-[15px] font-google-sans-bold ${
 												isSelected ? "!text-white" : "!text-gray-500"
 											}`}
 										>
@@ -129,7 +129,7 @@ export function FollowTrainModal({
 
 					{/* Time Selector (Mocked Scroll) */}
 					<View className="mb-8">
-						<ThemedText className="text-xs font-plus-jakarta-bold !text-gray-950 mb-4 bg-gray-100 py-2 -mx-5 px-5">
+						<ThemedText className="text-xs font-google-sans-bold !text-gray-950 mb-4 bg-gray-100 py-2 -mx-5 px-5">
 							RICEVI NOTIFICHE A QUEST&apos;ORA:
 						</ThemedText>
 
@@ -140,9 +140,9 @@ export function FollowTrainModal({
 								style={{ top: 44 }}
 								pointerEvents="none"
 							>
-								<View className="w-[60px] h-full rounded-full bg-[#005045]" />
+								<View className="w-[60px] h-full rounded-full bg-primary-600" />
 								<View className="w-[30px]" />
-								<View className="w-[60px] h-full rounded-full bg-[#005045]" />
+								<View className="w-[60px] h-full rounded-full bg-primary-600" />
 							</View>
 
 							<TimePickerColumn
@@ -152,7 +152,7 @@ export function FollowTrainModal({
 							/>
 
 							<View className="w-[30px] items-center justify-center">
-								<ThemedText className="text-lg font-plus-jakarta-bold !text-gray-950">
+								<ThemedText className="text-lg font-google-sans-bold !text-gray-950">
 									:
 								</ThemedText>
 							</View>
@@ -168,7 +168,7 @@ export function FollowTrainModal({
 
 					{/* Stations Selector */}
 					<View className="mb-4">
-						<ThemedText className="text-xs font-plus-jakarta-bold !text-gray-950 mb-3 bg-gray-100 py-2 -mx-5 px-5">
+						<ThemedText className="text-xs font-google-sans-bold !text-gray-950 mb-3 bg-gray-100 py-2 -mx-5 px-5">
 							RICEVI NOTIFICHE FINO A:
 						</ThemedText>
 
@@ -182,14 +182,14 @@ export function FollowTrainModal({
 										idx !== stations.length ? "border-b border-gray-100" : ""
 									}`}
 								>
-									<ThemedText className="text-[15px] font-plus-jakarta-medium !text-gray-950">
+									<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
 										{station}
 									</ThemedText>
 									<View
-										className={`w-5 h-5 rounded-full border-2 items-center justify-center ${isSelected ? "border-[#005045]" : "border-gray-400"}`}
+										className={`w-5 h-5 rounded-full border-2 items-center justify-center ${isSelected ? "border-primary-600" : "border-gray-400"}`}
 									>
 										{isSelected && (
-											<View className="w-2.5 h-2.5 rounded-full bg-[#005045]" />
+											<View className="w-2.5 h-2.5 rounded-full bg-primary-600" />
 										)}
 									</View>
 								</Pressable>
@@ -205,7 +205,7 @@ export function FollowTrainModal({
 					onPress={onClose}
 					className="flex-1 items-center justify-center py-3.5 rounded-2xl border border-gray-300 h-14"
 				>
-					<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
+					<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
 						Annulla
 					</ThemedText>
 				</Pressable>

@@ -51,16 +51,16 @@ export function PassengerAccordion({
 	return (
 		<Animated.View layout={LinearTransition} className="bg-white">
 			<Pressable onPress={onToggle} className="flex-row items-start p-5">
-				<View className="w-10 h-10 rounded-full bg-[#004a4d]/10 items-center justify-center mr-3">
-					<ThemedText className="font-plus-jakarta-bold text-[14px] !text-[#004a4d]">
+				<View className="w-10 h-10 rounded-full bg-primary-600/10 items-center justify-center mr-3">
+					<ThemedText className="font-google-sans-bold text-[14px] !text-primary-600">
 						{initials}
 					</ThemedText>
 				</View>
 				<View className="flex-1 min-h-[40px] pt-0">
-					<ThemedText className="font-plus-jakarta-bold text-[15px] !text-gray-950 uppercase">
+					<ThemedText className="font-google-sans-bold text-[15px] !text-gray-950 uppercase">
 						{fullName}
 					</ThemedText>
-					<ThemedText className="font-plus-jakarta-medium text-[13px] !text-gray-500 mt-0.5">
+					<ThemedText className="font-google-sans-medium text-[13px] !text-gray-500 mt-0.5">
 						Adulto
 						{passenger.cartaFreccia
 							? `  ·  CF/X-GO: ${passenger.cartaFreccia}`
@@ -68,7 +68,7 @@ export function PassengerAccordion({
 					</ThemedText>
 					{!isExpanded && (passenger.email || passenger.telefono) && (
 						<ThemedText
-							className="font-plus-jakarta-medium text-[13px] !text-gray-500 mt-0.5"
+							className="font-google-sans-medium text-[13px] !text-gray-500 mt-0.5"
 							numberOfLines={1}
 						>
 							{passenger.email}
@@ -105,7 +105,7 @@ export function PassengerAccordion({
 									onPress={() => onApplyShortcut(saved)}
 									className="border border-gray-300 rounded-2xl px-4 py-3 mr-3"
 								>
-									<ThemedText className="font-plus-jakarta-bold text-[13px] !text-gray-950 uppercase">
+									<ThemedText className="font-google-sans-bold text-[13px] !text-gray-950 uppercase">
 										{saved.nome} {saved.cognome}
 									</ThemedText>
 								</Pressable>
@@ -114,11 +114,11 @@ export function PassengerAccordion({
 					)}
 
 					<View className="flex-row justify-between items-end mb-4">
-						<ThemedText className="font-plus-jakarta-bold text-[15px] !text-gray-950">
+						<ThemedText className="font-google-sans-bold text-[15px] !text-gray-950">
 							Dettagli passeggero
 						</ThemedText>
 						<Pressable onPress={onClear}>
-							<ThemedText className="font-plus-jakarta-bold text-[14px] !text-[#004a4d]">
+							<ThemedText className="font-google-sans-bold text-[14px] !text-primary-600">
 								Svuota campi
 							</ThemedText>
 						</Pressable>
@@ -159,7 +159,7 @@ export function PassengerAccordion({
 						keyboardType="phone-pad"
 					/>
 
-					<ThemedText className="font-plus-jakarta-medium text-[12px] !text-gray-500 mt-1">
+					<ThemedText className="font-google-sans-medium text-[12px] !text-gray-500 mt-1">
 						*Dati obbligatori
 					</ThemedText>
 				</Animated.View>

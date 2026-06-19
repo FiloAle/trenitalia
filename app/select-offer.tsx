@@ -2,6 +2,7 @@ import { selectedSolutionCache } from "@/api/search";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { router, useLocalSearchParams } from "expo-router";
+import { getGlobalSelectionList } from "@/utils/selection-store";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import Animated, {
@@ -49,22 +50,47 @@ const customExiting = () => {
 };
 
 import { CheckoutHeader } from "@/components/checkout-header";
-import { SegmentHeader } from "@/components/select-offer/segment-header";
+import { TravelSolutionCard } from "@/components/search/travel-solution-card";
 import { StickyFooter } from "@/components/select-offer/sticky-footer";
 
-const LOGOS: Record<string, any> = {
-	Frecciarossa: require("@/assets/logos/frecciarossa.png"),
-	Intercity: require("@/assets/logos/intercity.png"),
-	Regionale: require("@/assets/logos/regionale.png"),
-	FRRossa: require("@/assets/logos/frecciarossa.png"),
-	InterCity: require("@/assets/logos/intercity.png"),
-	IntercityNotte: require("@/assets/logos/intercity.png"),
-	ICNotte: require("@/assets/logos/intercity.png"),
-	Reg: require("@/assets/logos/regionale.png"),
-	RegV: require("@/assets/logos/regionale.png"),
-	Regv: require("@/assets/logos/regionale.png"),
-	"Reg Tper": require("@/assets/logos/tper.png"),
-	"Regv Tper": require("@/assets/logos/tper.png"),
+const LOGOS: Record<string, { source: any; ratio: number }> = {
+	Frecciarossa: { source: require("@/assets/logos/small/f.png"), ratio: 1.4 },
+	Frecciargento: { source: require("@/assets/logos/small/f.png"), ratio: 1.4 },
+	Frecciabianca: { source: require("@/assets/logos/small/f.png"), ratio: 1.4 },
+	FrRossa: { source: require("@/assets/logos/small/f.png"), ratio: 1.4 },
+	FrArgento: { source: require("@/assets/logos/small/f.png"), ratio: 1.4 },
+	FrBianca: { source: require("@/assets/logos/small/f.png"), ratio: 1.4 },
+
+	Intercity: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
+	InterCity: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
+	IntercityNotte: {
+		source: require("@/assets/logos/small/ic.png"),
+		ratio: 0.89,
+	},
+	ICNotte: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
+	ICnotte: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
+	Ni: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
+	Ic: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
+
+	Regionale: { source: require("@/assets/logos/small/r.png"), ratio: 2.03 },
+	Regv: { source: require("@/assets/logos/small/r.png"), ratio: 2.03 },
+	RegV: { source: require("@/assets/logos/small/r.png"), ratio: 2.03 },
+	Rv: { source: require("@/assets/logos/small/r.png"), ratio: 2.03 },
+	Reg: { source: require("@/assets/logos/small/r.png"), ratio: 2.03 },
+	Re: { source: require("@/assets/logos/small/r.png"), ratio: 2.03 },
+
+	"Reg Tper": {
+		source: require("@/assets/logos/small/rtper.png"),
+		ratio: 2.13,
+	},
+	"Regv Tper": {
+		source: require("@/assets/logos/small/rtper.png"),
+		ratio: 2.13,
+	},
+	Ttper: { source: require("@/assets/logos/small/rtper.png"), ratio: 2.13 },
+
+	EuroCity: { source: require("@/assets/logos/small/ec.png"), ratio: 1.1 },
+	Ec: { source: require("@/assets/logos/small/ec.png"), ratio: 1.1 },
 };
 
 const CLASS_ICONS: Record<string, string[]> = {
@@ -97,6 +123,8 @@ export default function SelectOfferScreen() {
 	const insets = useSafeAreaInsets();
 	const params = useLocalSearchParams();
 	const passengerText = (params.passengerText as string) || "1 Adulto";
+	const passengerNamesText =
+		(params.passengerNamesText as string) || passengerText;
 
 	const adultsMatch = passengerText.match(/(\d+)\s+Adult/i);
 	const adults = adultsMatch ? parseInt(adultsMatch[1], 10) : 0;
@@ -109,9 +137,14 @@ export default function SelectOfferScreen() {
 		(params.routeStr as string) || "Roma Termini - Napoli Centrale";
 	const [origin, destination] = routeStr.split(" - ");
 
+	const dateStr = params.dateStr as string;
+	const departureDate = dateStr ? new Date(dateStr) : new Date();
+	const ddMMyyyy = `${String(departureDate.getDate()).padStart(2, '0')}/${String(departureDate.getMonth() + 1).padStart(2, '0')}/${departureDate.getFullYear()}`;
+
 	const trains = solution?.trains || [];
 	const segments = trains.map((t: any) => ({
 		...t,
+		originalPrice: t.price,
 		origin: t.origin || origin,
 		destination: t.destination || destination,
 		timeStr:
@@ -120,11 +153,19 @@ export default function SelectOfferScreen() {
 				: `${solution?.departureTime || "00:00"} - ${solution?.arrivalTime || "00:00"}`,
 	}));
 
+	const calculateDuration = (start: string, end: string) => {
+		const [sh, sm] = start.split(":").map(Number);
+		const [eh, em] = end.split(":").map(Number);
+		let diff = eh * 60 + em - (sh * 60 + sm);
+		if (diff < 0) diff += 24 * 60;
+		const h = Math.floor(diff / 60);
+		const m = diff % 60;
+		return `${h > 0 ? `${h}h ` : ""}${m > 0 ? `${m}min` : ""}`.trim();
+	};
+
 	// Date formatting
-	const dateStr = params.dateStr as string;
-	const dateObj = dateStr ? new Date(dateStr) : new Date();
-	const day = dateObj.getDate().toString().padStart(2, "0");
-	const month = dateObj
+	const day = departureDate.getDate().toString().padStart(2, "0");
+	const month = departureDate
 		.toLocaleString("it-IT", { month: "short" })
 		.replace(".", "");
 	const formattedDate = `${day} ${month.charAt(0).toUpperCase() + month.slice(1)}`;
@@ -146,7 +187,11 @@ export default function SelectOfferScreen() {
 
 		const classesList = Array.from(uniqueClasses).map((name) => ({
 			id: name,
-			name,
+			name:
+					name
+						.replace(/ PRENOTAZIONE/i, "")
+						.replace(/[- ]*post[oi]\s+a\s+sedere/ig, "")
+						.trim() || "Standard",
 		}));
 		return classesList.length > 0
 			? classesList
@@ -192,16 +237,25 @@ export default function SelectOfferScreen() {
 		});
 
 		const offersList = Array.from(uniqueOffers).map((rawName) => {
-			let displayName =
-				rawName === "S.ECONOMY"
-					? "Super Economy"
-					: rawName.toUpperCase() === "FR.DAYS"
-						? "Freccia Days"
-						: rawName
-								.toLowerCase()
-								.split(" ")
-								.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-								.join(" ");
+				let cleanName = rawName.replace(/[- ]*post[oi]\s+a\s+sedere/ig, "").trim();
+			let displayName;
+			if (cleanName === "S.ECONOMY") {
+				displayName = "Super Economy";
+			} else if (
+				cleanName.toUpperCase() === "FR.DAYS" ||
+				cleanName.toUpperCase() === "FRECCIADAYS"
+			) {
+				displayName = "FrecciaDAYS";
+			} else if (cleanName.toUpperCase() === "FRECCIAYOUNG") {
+				displayName = "FrecciaYOUNG";
+			} else {
+				displayName = cleanName
+					.toLowerCase()
+					.split(" ")
+					.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+					.join(" ")
+					.trim();
+			}
 			return {
 				id: rawName,
 				name: displayName,
@@ -226,6 +280,7 @@ export default function SelectOfferScreen() {
 		for (const t of tickets) {
 			if (!t) continue;
 			if (t.i && Array.isArray(t.i) && t.i.includes(sIdx)) {
+					if (t.i[0] !== sIdx) return 0;
 				const classIndex = t.c?.indexOf(className);
 				if (
 					classIndex !== undefined &&
@@ -256,6 +311,31 @@ export default function SelectOfferScreen() {
 		for (const t of tickets) {
 			if (!t) continue;
 			if (t.i && Array.isArray(t.i) && t.i.includes(sIdx)) {
+				// Handle unified tickets (multiple segments)
+				if (t.i.length > 1) {
+					const trainData = selectedSolutionCache?.trains?.[sIdx];
+					if (trainData?.calculatedPrice !== undefined) {
+						return trainData.calculatedPrice;
+					}
+					// Fallback: equal split
+					const classIndex = t.c?.indexOf(className);
+					let totalPrice = 0;
+					if (classIndex !== undefined && classIndex >= 0 && t.p && t.p[classIndex]) {
+						if (t.f && Array.isArray(t.f)) {
+							const offerIndex = t.f.indexOf(offerName);
+							if (offerIndex >= 0) {
+								const priceStr = t.p[classIndex][offerIndex];
+								if (priceStr) totalPrice = parseFloat(priceStr.replace(",", "."));
+							}
+						} else if (t.sf === offerName) {
+							const priceStr = t.p[classIndex][0];
+							if (priceStr) totalPrice = parseFloat(priceStr.replace(",", "."));
+						}
+					}
+					return isNaN(totalPrice) ? 0 : totalPrice / t.i.length;
+				}
+
+				if (t.i[0] !== sIdx) return 0;
 				const classIndex = t.c?.indexOf(className);
 				if (
 					classIndex !== undefined &&
@@ -394,27 +474,26 @@ export default function SelectOfferScreen() {
 	};
 
 	const basePrice = solution?.price || 15.0;
+	const extraServicesCost = getGlobalSelectionList().filter((p) => p.itemType === "service" && (p.type === "Animale" || p.type === "Bicicletta")).length * 5.0;
 
 	return (
 		<View className="flex-1 bg-white">
 			<CheckoutHeader title="Andata" />
 
 			<ScrollView
-				className="flex-1 bg-gray-100"
+				className="flex-1 bg-neutral-50 px-4 pt-4"
 				contentContainerStyle={{ paddingBottom: 180 }}
 			>
 				{segments.map((segment: any, sIdx: number) => {
 					const normalizedType = segment.type.trim().toLowerCase();
-					const isFreccia =
-						normalizedType.includes("freccia") || normalizedType === "frrossa";
 					const logoKey = Object.keys(LOGOS).find(
 						(k) => k.toLowerCase() === normalizedType,
 					);
-					const logoSource = logoKey ? LOGOS[logoKey] : undefined;
+					const logoData = logoKey ? LOGOS[logoKey] : undefined;
 					const realClasses = getRealClasses(sIdx);
 					const currentSelectedClass = selectedClasses[sIdx] || "Standard";
 					const realOffers = getRealOffers(sIdx, currentSelectedClass);
-					const isExpanded = expandedSegments[sIdx] !== false;
+					const isExpanded = expandedSegments[sIdx] === true;
 
 					const selectedOfferObj = realOffers.find(
 						(o) => o.id === selectedOffers[sIdx],
@@ -426,191 +505,180 @@ export default function SelectOfferScreen() {
 					return (
 						<Animated.View
 							key={sIdx}
-							className="bg-white mb-2 pt-3"
+							className="bg-transparent mb-4"
 							layout={LinearTransition}
 						>
-							<SegmentHeader
-								logoSource={logoSource}
-								normalizedType={normalizedType}
-								type={segment.type}
-								number={segment.number}
-								origin={segment.origin}
-								destination={segment.destination}
-								formattedDate={formattedDate}
-								timeStr={segment.timeStr}
-								passengerText={passengerText}
-								isExpanded={isExpanded}
-								onToggle={() => toggleSegment(sIdx)}
-							/>
+							<View style={{ zIndex: 10, elevation: 10 }}>
+								<TravelSolutionCard
+									solution={{
+										id: `seg-${sIdx}`,
+										departureTime:
+											segment.departureTime ||
+											solution?.departureTime ||
+											"00:00",
+										arrivalTime:
+											segment.arrivalTime || solution?.arrivalTime || "00:00",
+										duration: calculateDuration(
+											segment.departureTime ||
+												solution?.departureTime ||
+												"00:00",
+											segment.arrivalTime ||
+												solution?.arrivalTime ||
+												"00:00"
+										),
+										trains: [segment],
+										price:
+											getPriceForSegment(
+												sIdx,
+												currentSelectedClass,
+												selectedOffers[sIdx],
+											) * passengerCount,
+										serviceClass: currentSelectedClass,
+										offerName: displayOfferName,
+									}}
+									route={{ from: segment.origin, to: segment.destination }}
+									isSelectOfferMode={true}
+									selectOfferModeProps={{
+										dateStr: calculateDuration(
+											segment.departureTime ||
+												solution?.departureTime ||
+												"00:00",
+											segment.arrivalTime ||
+												solution?.arrivalTime ||
+												"00:00"
+										),
+										isExpanded,
+										passengerName: ddMMyyyy,
+									}}
+									onPress={() => toggleSegment(sIdx)}
+								/>
+							</View>
 
-							{isExpanded && (
-								<Animated.View entering={FadeIn} exiting={FadeOut}>
-									{/* Custom Accordion for Class/Offer */}
-									{/* Custom Accordion for Class/Offer */}
-									<AnimatedPressable
-										layout={LinearTransition}
-										onPress={() =>
-											setOpenAccordions((prev) => ({
-												...prev,
-												[sIdx]: !prev[sIdx],
-											}))
-										}
-										className="mb-6 mx-4 bg-white border border-gray-200 rounded-2xl overflow-hidden"
+							<Animated.View
+								style={{
+									zIndex: 1,
+									elevation: 1,
+									marginTop: -16,
+									overflow: "hidden",
+								}}
+								className="bg-white rounded-b-2xl border-x border-b border-gray-200"
+								layout={LinearTransition}
+							>
+								<View style={{ height: 16 }} />
+								{isExpanded && (
+									<Animated.View
+										entering={FadeIn.duration(200)}
+										exiting={FadeOut.duration(200)}
 									>
-										{/* Accordion Header */}
-										<View
-											className={`flex-row items-center justify-between px-4 py-3 ${openAccordions[sIdx] ? "border-b border-gray-100" : ""}`}
-										>
-											<View className="flex-1 mr-4">
-												<ThemedText className="text-[15px] font-plus-jakarta-bold text-gray-800">
-													{currentSelectedClass
-														.toUpperCase()
-														.replace(" PRENOTAZIONE", "")}
-													<ThemedText className="text-[15px] font-plus-jakarta-medium opacity-60">
-														{"  "}
-														{displayOfferName}
-													</ThemedText>
-												</ThemedText>
-											</View>
-											<View className="flex-row items-center">
-												<ThemedText className="text-[16px] font-plus-jakarta-bold text-[#005045] mr-2">
-													€{" "}
-													{getPriceForSegment(
-														sIdx,
-														currentSelectedClass,
-														selectedOffers[sIdx],
+										<View className="pb-2 pt-2">
+											{realClasses.map((c, cIdx) => {
+												const classOffers = getRealOffers(sIdx, c.id)
+													.filter(
+														(a) => getPriceForSegment(sIdx, c.id, a.id) > 0,
 													)
-														.toFixed(2)
-														.replace(".", ",")}
-												</ThemedText>
-												<Icon
-													name={
-														openAccordions[sIdx]
-															? "keyboard_arrow_up"
-															: "keyboard_arrow_down"
-													}
-													size={20}
-													color="#6b7280"
-												/>
-											</View>
-										</View>
+													.sort((a, b) => {
+														const priceA = getPriceForSegment(sIdx, c.id, a.id);
+														const priceB = getPriceForSegment(sIdx, c.id, b.id);
+														return priceA - priceB;
+													});
 
-										{/* Accordion Body */}
-										{openAccordions[sIdx] && (
-											<Animated.View
-												entering={FadeIn}
-												exiting={FadeOut}
-												className="py-3 bg-white"
-											>
-												{realClasses.map((c, cIdx) => {
-													const classOffers = getRealOffers(sIdx, c.id)
-														.filter(
-															(a) => getPriceForSegment(sIdx, c.id, a.id) > 0,
-														)
-														.sort((a, b) => {
-															const priceA = getPriceForSegment(
-																sIdx,
-																c.id,
-																a.id,
-															);
-															const priceB = getPriceForSegment(
-																sIdx,
-																c.id,
-																b.id,
-															);
-															return priceA - priceB;
-														});
+												if (classOffers.length === 0) return null;
 
-													if (classOffers.length === 0) return null;
+												const isLastClass = cIdx === realClasses.length - 1;
 
-													const isLastClass = cIdx === realClasses.length - 1;
-
-													return (
-														<View key={`class-${c.id}`}>
-															{/* Class Header */}
-															<View className="flex-row items-center justify-between px-4 pt-1 pb-1">
-																<ThemedText
-																	className={`text-[14px] font-plus-jakarta-bold tracking-wider ${selectedClasses[sIdx] === c.id ? "text-gray-800" : "text-gray-500"}`}
-																>
-																	{c.name
-																		.toUpperCase()
-																		.replace(" PRENOTAZIONE", "")}
-																</ThemedText>
-																{CLASS_ICONS[c.name.toUpperCase()] && (
-																	<View className="flex-row items-center gap-1.5">
-																		{CLASS_ICONS[c.name.toUpperCase()].map(
-																			(iconName, idx) => (
-																				<Icon
-																					key={idx}
-																					name={iconName}
-																					size={16}
-																					className="!text-teal-600"
-																				/>
-																			),
-																		)}
-																	</View>
-																)}
-															</View>
-
-															{/* Offers List */}
-															{classOffers.map((o, oIdx) => {
-																const isLastOffer =
-																	oIdx === classOffers.length - 1;
-																const isSelected =
-																	selectedClasses[sIdx] === c.id &&
-																	selectedOffers[sIdx] === o.id;
-																const offerPrice = getPriceForSegment(
-																	sIdx,
-																	c.id,
-																	o.id,
-																);
-
-																return (
-																	<Pressable
-																		key={`offer-${o.id}`}
-																		onPress={() => {
-																			setSelectedClasses((prev) => ({
-																				...prev,
-																				[sIdx]: c.id,
-																			}));
-																			setSelectedOffers((prev) => ({
-																				...prev,
-																				[sIdx]: o.id,
-																			}));
-																			setOpenAccordions((prev) => ({
-																				...prev,
-																				[sIdx]: false,
-																			}));
-																		}}
-																		className={`flex-row items-center justify-between pr-4 pl-8 py-2 ${isSelected ? "bg-teal-500/10" : "active:bg-gray-50"}`}
-																	>
-																		<View className="flex-row items-center flex-1">
-																			<ThemedText
-																				className={`text-[15px] ${isSelected ? "font-plus-jakarta-bold text-[#005045]" : "font-plus-jakarta-medium text-gray-700 opacity-60"}`}
-																			>
-																				{o.name}
-																			</ThemedText>
-																		</View>
-																		<ThemedText
-																			className={`text-[15px] ${isSelected ? "font-plus-jakarta-bold text-[#005045]" : "font-plus-jakarta-medium text-gray-800 opacity-60"}`}
-																		>
-																			€{" "}
-																			{offerPrice.toFixed(2).replace(".", ",")}
-																		</ThemedText>
-																	</Pressable>
-																);
-															})}
-
-															{/* Optional spacing between classes */}
-															{!isLastClass && <View className="h-4" />}
+												return (
+													<View key={`class-${c.id}`}>
+														{/* Class Header */}
+														<View className="flex-row items-center justify-between px-4 pt-1 pb-1">
+															<ThemedText
+																className={`text-[14px] font-google-sans-bold ${selectedClasses[sIdx] === c.id ? "text-gray-800" : "text-gray-500"}`}
+															>
+																{c.name
+																	.toUpperCase()
+																	.replace(" PRENOTAZIONE", "")}
+															</ThemedText>
+															{CLASS_ICONS[c.name.toUpperCase()] && (
+																<View className="flex-row items-center gap-1.5">
+																	{CLASS_ICONS[c.name.toUpperCase()].map(
+																		(iconName, idx) => (
+																			<Icon
+																				key={idx}
+																				name={iconName}
+																				size={16}
+																				className="!text-primary-500"
+																			/>
+																		),
+																	)}
+																</View>
+															)}
 														</View>
-													);
-												})}
-											</Animated.View>
-										)}
-									</AnimatedPressable>
-								</Animated.View>
-							)}
+
+														{/* Offers List */}
+														{classOffers.map((o, oIdx) => {
+															const isLastOffer =
+																oIdx === classOffers.length - 1;
+															const isSelected =
+																selectedClasses[sIdx] === c.id &&
+																selectedOffers[sIdx] === o.id;
+															const offerPrice = getPriceForSegment(
+																sIdx,
+																c.id,
+																o.id,
+															);
+
+															return (
+																<Pressable
+																	key={`offer-${o.id}`}
+																	onPress={() => {
+																		setSelectedClasses((prev) => ({
+																			...prev,
+																			[sIdx]: c.id,
+																		}));
+																		setSelectedOffers((prev) => ({
+																			...prev,
+																			[sIdx]: o.id,
+																		}));
+																		setExpandedSegments((prev) => ({
+																			...prev,
+																			[sIdx]: false,
+																		}));
+																	}}
+																	className={`flex-row items-center justify-between pr-4 pl-10 py-2 ${isSelected ? "bg-primary-500/10" : "active:bg-gray-50"}`}
+																>
+																	<View className="flex-row items-center flex-1 relative">
+																		{isSelected && (
+																			<View className="absolute -left-6">
+																				<Icon
+																					name="check"
+																					size={18}
+																					className="!text-primary-600"
+																				/>
+																			</View>
+																		)}
+																		<ThemedText
+																			className={`text-[15px] !text-gray-900 ${isSelected ? "font-google-sans-bold" : "font-google-sans-regular"}`}
+																		>
+																			{o.name}
+																		</ThemedText>
+																	</View>
+																	<ThemedText
+																		className={`text-[15px] !text-gray-900 ${isSelected ? "font-google-sans-bold" : "font-google-sans-regular"}`}
+																	>
+																		€ {offerPrice.toFixed(2).replace(".", ",")}
+																	</ThemedText>
+																</Pressable>
+															);
+														})}
+
+														{/* Optional spacing between classes */}
+														{!isLastClass && <View className="h-4" />}
+													</View>
+												);
+											})}
+										</View>
+									</Animated.View>
+								)}
+							</Animated.View>
 						</Animated.View>
 					);
 				})}

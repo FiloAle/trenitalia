@@ -10,7 +10,7 @@ interface TicketPurchaseCardProps {
 export function TicketPurchaseCard({ onPress }: TicketPurchaseCardProps) {
 	return (
 		<View className="gap-5">
-			<ThemedText className="text-md font-plus-jakarta-bold !text-[#262626]">
+			<ThemedText className="text-md font-google-sans-bold !text-[#262626]">
 				Acquista un biglietto
 			</ThemedText>
 
@@ -18,20 +18,20 @@ export function TicketPurchaseCard({ onPress }: TicketPurchaseCardProps) {
 				<View className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
 					{/* Da Section */}
 					<View className="flex-row items-center border-b border-gray-200 px-4 py-4">
-						<ThemedText className="mr-4 w-6 font-plus-jakarta-medium !text-gray-500">
+						<ThemedText className="mr-4 w-6 font-google-sans-medium !text-gray-500">
 							Da
 						</ThemedText>
-						<ThemedText className="flex-1 font-plus-jakarta-medium !text-gray-500">
+						<ThemedText className="flex-1 font-google-sans-medium !text-gray-500">
 							Stazione di partenza
 						</ThemedText>
 					</View>
 
 					{/* A Section */}
 					<View className="flex-row items-center px-4 py-4">
-						<ThemedText className="mr-4 w-6 font-plus-jakarta-medium !text-gray-500">
+						<ThemedText className="mr-4 w-6 font-google-sans-medium !text-gray-500">
 							A
 						</ThemedText>
-						<ThemedText className="flex-1 font-plus-jakarta-medium !text-gray-500">
+						<ThemedText className="flex-1 font-google-sans-medium !text-gray-500">
 							Stazione di arrivo
 						</ThemedText>
 					</View>

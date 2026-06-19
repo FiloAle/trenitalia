@@ -79,7 +79,7 @@ function SubMenuItem({ label, icon, onItemPress }: SubMenuItemProps) {
 			className="flex-row items-center border-b border-gray-100/50 py-3 ps-2 pe-4"
 		>
 			<Icon name={icon} size={28} className="!text-gray-700" weight={300} />
-			<ThemedText className="ml-4 flex-1 text-[14px] font-plus-jakarta-medium !text-gray-700">
+			<ThemedText className="ml-4 flex-1 text-[14px] font-google-sans-medium !text-gray-700">
 				{label}
 			</ThemedText>
 			<Icon
@@ -106,7 +106,7 @@ function MenuItem({ label, isOpen, onToggle, children }: MenuItemProps) {
 				onPress={onToggle}
 				className="flex-row items-center justify-between py-1 bg-gray-100 ps-5 pe-4"
 			>
-				<ThemedText className="text-[13px] font-plus-jakarta-bold uppercase tracking-wider !text-slate-600">
+				<ThemedText className="text-[13px] font-google-sans-bold uppercase tracking-wider !text-slate-600">
 					{label}
 				</ThemedText>
 				<Icon
@@ -237,16 +237,16 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 								onPress={onProfilePress}
 								className="flex-row items-center border-b border-gray-100 ps-5 pe-4 py-4"
 							>
-								<View className="h-10 w-10 items-center justify-center rounded-full bg-teal-900">
-									<ThemedText className="text-sm font-plus-jakarta-bold !text-white">
+								<View className="h-10 w-10 items-center justify-center rounded-full bg-primary-600">
+									<ThemedText className="text-sm font-google-sans-bold !text-white">
 										{getInitials(USER_DATA.firstName, USER_DATA.lastName)}
 									</ThemedText>
 								</View>
 								<View className="ml-4 flex-1">
-									<ThemedText className="text-[13px] font-plus-jakarta-bold uppercase !text-gray-950">
+									<ThemedText className="text-[13px] font-google-sans-bold uppercase !text-gray-950">
 										{USER_DATA.firstName} {USER_DATA.lastName}
 									</ThemedText>
-									<ThemedText className="text-[13px] font-plus-jakarta-medium uppercase !text-gray-500">
+									<ThemedText className="text-[13px] font-google-sans-medium uppercase !text-gray-500">
 										{USER_DATA.email}
 									</ThemedText>
 								</View>
@@ -292,7 +292,7 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 									</MenuItem>
 								))}
 								<Pressable className="border-b border-gray-100 py-3 px-5 bg-gray-100">
-									<ThemedText className="text-[13px] font-plus-jakarta-bold uppercase tracking-wider !text-slate-600">
+									<ThemedText className="text-[13px] font-google-sans-bold uppercase tracking-wider !text-slate-600">
 										Accesso
 									</ThemedText>
 								</Pressable>
@@ -301,16 +301,16 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 							{/* Footer Links */}
 							<View className="gap-8 p-5">
 								<Pressable>
-									<ThemedText className="text-[15px] font-plus-jakarta-medium !text-teal-900">
+									<ThemedText className="text-[15px] font-google-sans-medium !text-primary-600">
 										Account Trenitalia for Business
 									</ThemedText>
 								</Pressable>
 								<Pressable>
-									<ThemedText className="text-[15px] font-plus-jakarta-medium !text-red-500">
+									<ThemedText className="text-[15px] font-google-sans-medium !text-red-500">
 										Logout
 									</ThemedText>
 								</Pressable>
-								<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-500">
+								<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
 									Versione App 13.200.4.647
 								</ThemedText>
 							</View>

@@ -29,10 +29,10 @@ export function LoyaltyCard({
 				className={`w-full h-[200px] rounded-2xl p-5 justify-end border-2 ${bgClass} ${borderClass}`}
 				style={[animatedStyle]}
 			>
-				<ThemedText className="!text-white text-[12px] font-plus-jakarta-medium opacity-80 mb-1">
+				<ThemedText className="!text-white text-[12px] font-google-sans-medium opacity-80 mb-1">
 					{title}
 				</ThemedText>
-				<ThemedText className="!text-white text-[20px] font-plus-jakarta-bold">
+				<ThemedText className="!text-white text-[20px] font-google-sans-bold">
 					{code}
 				</ThemedText>
 			</Animated.View>

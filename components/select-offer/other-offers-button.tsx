@@ -10,10 +10,10 @@ export function OtherOffersButton() {
 					<Icon
 						name="confirmation_number"
 						size={24}
-						className="!text-[#004a4d] mr-3"
+						className="!text-primary-600 mr-3"
 						weight={300}
 					/>
-					<ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-950">
+					<ThemedText className="text-[14px] font-google-sans-medium !text-gray-950">
 						Vedi altre offerte
 					</ThemedText>
 				</View>

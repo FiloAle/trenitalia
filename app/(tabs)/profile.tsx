@@ -72,11 +72,11 @@ export default function LoyaltyScreen() {
 					}`}
 				>
 					<View className="p-1 w-8" />
-					<ThemedText className="text-[16px] font-plus-jakarta-bold uppercase !text-gray-950">
+					<ThemedText className="text-[16px] font-google-sans-bold uppercase !text-gray-950">
 						{USER_DATA.firstName} {USER_DATA.lastName}
 					</ThemedText>
-					<View className="h-8 w-8 items-center justify-center rounded-full bg-teal-900">
-						<ThemedText className="text-[11px] font-plus-jakarta-bold !text-white">
+					<View className="h-8 w-8 items-center justify-center rounded-full bg-primary-600">
+						<ThemedText className="text-[11px] font-google-sans-bold !text-white">
 							{getInitials(USER_DATA.firstName, USER_DATA.lastName)}
 						</ThemedText>
 					</View>
@@ -107,10 +107,10 @@ export default function LoyaltyScreen() {
 							}`}
 						/>
 						<View className="ml-4 flex-1">
-							<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-700">
+							<ThemedText className="text-[13px] font-google-sans-medium !text-gray-700">
 								Numero {activeCardIndex === 1 ? "X-GO" : "CartaFRECCIA"}
 							</ThemedText>
-							<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
+							<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
 								{USER_DATA.loyaltyCode}
 							</ThemedText>
 						</View>
@@ -225,7 +225,7 @@ export default function LoyaltyScreen() {
 												width: indicatorWidth,
 												opacity: indicatorOpacity,
 												borderRadius: 3,
-												backgroundColor: "#134e4a", // teal-900
+												backgroundColor: "#134e4a", // primary-600
 											}}
 										/>
 									);
@@ -253,16 +253,16 @@ export default function LoyaltyScreen() {
 										/>
 									</View>
 									<View className="ml-4">
-										<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-500">
+										<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
 											Punti premio
 										</ThemedText>
-										<ThemedText className="text-[18px] font-plus-jakarta-bold !text-gray-950">
+										<ThemedText className="text-[18px] font-google-sans-bold !text-gray-950">
 											{activeCardIndex === 1 ? POINTS_XGO : POINTS_FRECCIA}
 										</ThemedText>
 									</View>
 								</View>
 								<View className="flex-row items-center">
-									<ThemedText className="text-[14px] font-plus-jakarta-medium !text-gray-700">
+									<ThemedText className="text-[14px] font-google-sans-medium !text-gray-700">
 										Mostra di più
 									</ThemedText>
 									<Icon
@@ -286,10 +286,10 @@ export default function LoyaltyScreen() {
 									<Icon name="savings" size={22} className="!text-cyan-600" />
 								</View>
 								<View className="ml-4 flex-1">
-									<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-500">
+									<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
 										Salvadanaio
 									</ThemedText>
-									<ThemedText className="text-[15px] font-plus-jakarta-bold !text-cyan-800">
+									<ThemedText className="text-[15px] font-google-sans-bold !text-cyan-800">
 										Ricarica
 									</ThemedText>
 								</View>
@@ -325,7 +325,7 @@ export default function LoyaltyScreen() {
 											}
 										/>
 										<ThemedText
-											className={`ml-4 flex-1 text-[15px] font-plus-jakarta-medium ${
+											className={`ml-4 flex-1 text-[15px] font-google-sans-medium ${
 												item.isDestructive ? "!text-red-500" : "!text-gray-800"
 											}`}
 										>

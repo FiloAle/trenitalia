@@ -1,5 +1,6 @@
 import { InfoBanner } from "@/components/home/info-banner";
 import { FollowTrainModal } from "@/components/modals/follow-train-modal";
+import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { TopDownModal } from "@/components/modals/top-down-modal";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
@@ -9,9 +10,12 @@ import {
 	getRecentTrains,
 	RecentTrainSearch,
 } from "@/utils/recent-trains-store";
-import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams, useGlobalSearchParams } from "expo-router";
+import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { useCallback, useEffect, useState } from "react";
 import {
+	ActivityIndicator,
+	Dimensions,
 	FlatList,
 	Image,
 	KeyboardAvoidingView,
@@ -20,15 +24,41 @@ import {
 	ScrollView,
 	TextInput,
 	View,
+	DeviceEventEmitter,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const CHIPS = ["N. Treno", "Tabellone", "Da/a", "Treni seguiti"];
+const CHIPS = ["Stazione", "Da/a", "N. Treno"];
+
+const AnimatedTabLabel = ({
+	chip,
+	isActive,
+}: {
+	chip: string;
+	isActive: boolean;
+}) => {
+	const animatedStyle = useAnimatedStyle(() => {
+		return {
+			color: withTiming(isActive ? "#ffffff" : "#004141", { duration: 250 }),
+		};
+	}, [isActive]);
+
+	return (
+		<Animated.Text
+			className="text-[14px] font-google-sans-semibold"
+			style={animatedStyle}
+		>
+			{chip}
+		</Animated.Text>
+	);
+};
+
 
 export default function InfoScreen() {
 	const insets = useSafeAreaInsets();
-	const params = useLocalSearchParams<{ followed?: string }>();
-	const [activeChip, setActiveChip] = useState("N. Treno");
+	const params = useLocalSearchParams<{ followed?: string; openNews?: string }>();
+	const [activeChip, setActiveChip] = useState("Stazione");
+	const [tabWidth, setTabWidth] = useState(0);
 	const [trainNumber, setTrainNumber] = useState("");
 	const [stationSearch, setStationSearch] = useState("");
 	const [hasFollowedTrain, setHasFollowedTrain] = useState(false);
@@ -36,7 +66,81 @@ export default function InfoScreen() {
 	const [isFollowModalVisible, setIsFollowModalVisible] = useState(false);
 	const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
 
+	const [isNotizieOpen, setIsNotizieOpen] = useState(false);
+	const [notizie, setNotizie] = useState<{title: string; content: string}[]>([]);
+	const [isLoadingNotizie, setIsLoadingNotizie] = useState(false);
+	const [expandedNewsIndex, setExpandedNewsIndex] = useState<number | null>(null);
+
+	useEffect(() => {
+		const subscription = DeviceEventEmitter.addListener('openInfoNews', () => {
+			fetchNotizie();
+		});
+		return () => subscription.remove();
+	}, []);
+
+	const fetchNotizie = async () => {
+		setIsNotizieOpen(true);
+		setExpandedNewsIndex(null);
+		setIsLoadingNotizie(true);
+		try {
+			const response = await fetch("http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/infomobilitaRSS/false");
+			const html = await response.text();
+			const regex = /<li[^>]*>\s*<a[^>]*>([\s\S]*?)<\/a>\s*<div class="boxAcc"[^>]*>[\s\S]*?<div class="info-text[^"]*">([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/g;
+			
+			let match;
+			const results: {title: string; content: string}[] = [];
+			while ((match = regex.exec(html)) !== null) {
+				const title = match[1].trim();
+				let newsContent = match[2].trim();
+				
+				// Strip HTML and fix spacing
+				newsContent = newsContent
+					.replace(/<p[^>]*>/gi, '\n')
+					.replace(/<\/p>/gi, '\n')
+					.replace(/<br\s*\/?>/gi, '\n')
+					.replace(/&nbsp;/gi, ' ')
+					.replace(/<[^>]*>/g, '')
+					.replace(/\r/g, '')
+					.replace(/[ \t]+/g, ' ')
+					.replace(/ \n/g, '\n')
+					.replace(/\n /g, '\n')
+					.replace(/\n{2,}/g, '\n\n')
+					.trim();
+					
+				if (title) results.push({ title, content: newsContent });
+			}
+			
+			results.sort((a, b) => {
+				const isAUpper = a.title === a.title.toUpperCase();
+				const isBUpper = b.title === b.title.toUpperCase();
+				if (isAUpper && !isBUpper) return -1;
+				if (!isAUpper && isBUpper) return 1;
+				return 0;
+			});
+
+			setNotizie(results);
+		} catch (e) {
+			console.warn("Failed to fetch notizie", e);
+		} finally {
+			setIsLoadingNotizie(false);
+		}
+	};
+
 	const [recentTrains, setRecentTrains] = useState<RecentTrainSearch[]>([]);
+
+	const activeChipIndex = CHIPS.indexOf(activeChip) === -1 ? 0 : CHIPS.indexOf(activeChip);
+	const animatedStyle = useAnimatedStyle(() => {
+		return {
+			transform: [
+				{
+					translateX: withTiming(activeChipIndex * (tabWidth / CHIPS.length), {
+						duration: 250,
+					}),
+				},
+			],
+		};
+	}, [activeChipIndex, tabWidth]);
+
 
 	useFocusEffect(
 		useCallback(() => {
@@ -78,7 +182,7 @@ export default function InfoScreen() {
 							{/* Search Box */}
 							<View className="rounded-2xl border border-gray-200 bg-white px-4 py-1">
 								<TextInput
-									className="font-plus-jakarta-medium text-gray-900 h-12"
+									className="font-google-sans-medium text-gray-900 h-12"
 									placeholder="N. Treno"
 									placeholderTextColor="#9ca3af"
 									keyboardType="numeric"
@@ -91,7 +195,7 @@ export default function InfoScreen() {
 							{/* Recent Searches */}
 							{recentTrains.length > 0 && (
 								<View className="gap-2">
-									<ThemedText className="mb-2 text-xs font-plus-jakarta-bold !text-gray-500">
+									<ThemedText className="mb-2 text-xs font-google-sans-bold !text-gray-500">
 										ULTIME RICERCHE
 									</ThemedText>
 									{recentTrains.map((search, idx) => (
@@ -111,7 +215,7 @@ export default function InfoScreen() {
 												color="#1f2937"
 												weight={400}
 											/>
-											<ThemedText className="ml-3 font-plus-jakarta-semibold !text-gray-950">
+											<ThemedText className="ml-3 font-google-sans-semibold !text-gray-950">
 												{search.trainNumber} {search.origin} -{" "}
 												{search.destination}
 											</ThemedText>
@@ -122,7 +226,7 @@ export default function InfoScreen() {
 						</View>
 					</ScrollView>
 				);
-			case "Tabellone": {
+			case "Stazione": {
 				const isSearching = stationSearch.length > 0;
 				const filteredStations = isSearching
 					? STATIONS.filter((s) =>
@@ -146,7 +250,7 @@ export default function InfoScreen() {
 								{/* Search Box */}
 								<View className="rounded-2xl border border-gray-200 bg-white px-4 py-1">
 									<TextInput
-										className="font-plus-jakarta-medium text-gray-900 h-12"
+										className="font-google-sans-medium text-gray-900 h-12"
 										placeholder="Ricerca stazione"
 										placeholderTextColor="#9ca3af"
 										value={stationSearch}
@@ -166,13 +270,13 @@ export default function InfoScreen() {
 										}
 									>
 										<Icon name="near_me" size={20} color="#1f2937" />
-										<ThemedText className="ml-2 font-plus-jakarta-bold !text-gray-950">
+										<ThemedText className="ml-2 font-google-sans-bold !text-gray-950">
 											Milano Bovisa Politecnico
 										</ThemedText>
 									</Pressable>
 								)}
 
-								<ThemedText className="text-xs font-plus-jakarta-bold !text-gray-500">
+								<ThemedText className="text-xs font-google-sans-bold !text-gray-500">
 									{isSearching ? "RISULTATI" : "RECENTI"}
 								</ThemedText>
 							</View>
@@ -193,7 +297,7 @@ export default function InfoScreen() {
 									color="#1f2937"
 									weight={isSearching ? 300 : 400}
 								/>
-								<ThemedText className="ml-3 font-plus-jakarta-semibold !text-gray-950">
+								<ThemedText className="ml-3 font-google-sans-semibold !text-gray-950">
 									{item.name}
 								</ThemedText>
 							</Pressable>
@@ -211,10 +315,10 @@ export default function InfoScreen() {
 					>
 						<View className="mt-20 items-center justify-center px-10">
 							<Icon name="visibility" size={64} color="#d1d5db" />
-							<ThemedText className="mt-6 text-center text-xl font-plus-jakarta-bold !text-gray-950">
+							<ThemedText className="mt-6 text-center text-xl font-google-sans-bold !text-gray-950">
 								Ricerca inserendo origine e destinazione
 							</ThemedText>
-							<ThemedText className="mt-2 text-center font-plus-jakarta-medium !text-gray-500">
+							<ThemedText className="mt-2 text-center font-google-sans-medium !text-gray-500">
 								Avvia la ricerca per visualizzare tutte le informazioni del tuo
 								treno
 							</ThemedText>
@@ -248,7 +352,7 @@ export default function InfoScreen() {
 											style={{ width: 80, height: 12, marginRight: 8 }}
 											resizeMode="contain"
 										/>
-										<ThemedText className="text-sm font-plus-jakarta-bold !text-gray-900">
+										<ThemedText className="text-sm font-google-sans-bold !text-gray-900">
 											8807
 										</ThemedText>
 									</View>
@@ -266,28 +370,28 @@ export default function InfoScreen() {
 								{/* Content */}
 								<View className="p-4">
 									<View className="flex-row justify-between mb-2">
-										<ThemedText className="text-sm font-plus-jakarta-semibold !text-gray-900">
+										<ThemedText className="text-sm font-google-sans-semibold !text-gray-900">
 											Milano Centrale
 										</ThemedText>
-										<ThemedText className="text-sm font-plus-jakarta-semibold !text-gray-900">
+										<ThemedText className="text-sm font-google-sans-semibold !text-gray-900">
 											Taranto
 										</ThemedText>
 									</View>
 
 									<View className="flex-row items-center justify-between mb-4">
-										<ThemedText className="text-2xl font-plus-jakarta-bold !text-gray-950">
+										<ThemedText className="text-2xl font-google-sans-bold !text-gray-950">
 											11:35
 										</ThemedText>
 										<View className="flex-row items-center flex-1 mx-4">
 											<View className="w-1.5 h-1.5 rounded-full bg-gray-400" />
 											<View className="flex-1 h-[1px] bg-gray-300 mx-2" />
-											<ThemedText className="text-xs font-plus-jakarta-medium !text-gray-500">
+											<ThemedText className="text-xs font-google-sans-medium !text-gray-500">
 												8h 13min
 											</ThemedText>
 											<View className="flex-1 h-[1px] bg-gray-300 mx-2" />
 											<View className="w-1.5 h-1.5 rounded-full bg-gray-400" />
 										</View>
-										<ThemedText className="text-2xl font-plus-jakarta-bold !text-gray-950">
+										<ThemedText className="text-2xl font-google-sans-bold !text-gray-950">
 											19:48
 										</ThemedText>
 									</View>
@@ -306,18 +410,18 @@ export default function InfoScreen() {
 												color="#005045"
 												className="mr-2"
 											/>
-											<ThemedText className="text-sm font-plus-jakarta-bold !text-[#005045]">
+											<ThemedText className="text-sm font-google-sans-bold !text-[#005045]">
 												Modifica notifica
 											</ThemedText>
 										</Pressable>
 										<View className="flex-row items-center gap-2">
 											<View className="border border-gray-200 px-2 py-1 rounded">
-												<ThemedText className="text-xs font-plus-jakarta-semibold !text-gray-600">
+												<ThemedText className="text-xs font-google-sans-semibold !text-gray-600">
 													BIN 17
 												</ThemedText>
 											</View>
 											<View className="bg-red-50 px-2 py-1 rounded">
-												<ThemedText className="text-xs font-plus-jakarta-bold !text-red-500">
+												<ThemedText className="text-xs font-google-sans-bold !text-red-500">
 													+35 MIN
 												</ThemedText>
 											</View>
@@ -336,10 +440,10 @@ export default function InfoScreen() {
 					>
 						<View className="mt-20 items-center justify-center px-10">
 							<Icon name="frame_inspect" size={64} color="#d1d5db" />
-							<ThemedText className="mt-6 text-center text-xl font-plus-jakarta-bold !text-gray-950">
+							<ThemedText className="mt-6 text-center text-xl font-google-sans-bold !text-gray-950">
 								Non ci sono treni seguiti
 							</ThemedText>
-							<ThemedText className="mt-4 text-center font-plus-jakarta-medium !text-gray-500">
+							<ThemedText className="mt-4 text-center font-google-sans-medium !text-gray-500">
 								Una volta che avrai seguito uno o più treni li potrai vedere qui
 							</ThemedText>
 						</View>
@@ -355,45 +459,53 @@ export default function InfoScreen() {
 			<View className="flex-1 bg-white">
 				{/* Header Section */}
 				<View
-					className="bg-teal-900 pb-6"
+					className="bg-primary-600 pb-2"
 					style={{ paddingTop: insets.top + 4 }}
 				>
 					<View className="h-14 flex-row items-center justify-between px-6 mb-2">
-						<ThemedText className="text-3xl font-plus-jakarta-bold !text-white">
+						<ThemedText className="text-3xl font-google-sans-bold !text-white">
 							Infomobilità
 						</ThemedText>
 						<View className="flex-row items-center gap-4">
-							<Icon name="notifications" size={24} color="white" />
-							<Icon name="info" size={24} color="white" />
+							<Pressable onPress={fetchNotizie}>
+								<Icon name="release_alert" size={24} color="white" />
+							</Pressable>
 						</View>
 					</View>
+				</View>
 
-					<ScrollView
-						horizontal
-						showsHorizontalScrollIndicator={false}
-						className="px-5"
+				{/* Tab Selector */}
+				<View className="px-5 pt-5 z-50">
+					<View
+						className="bg-primary-500/10 rounded-xl p-1 flex-row relative"
+						onLayout={(e) => setTabWidth(e.nativeEvent.layout.width - 8)}
 					>
+						{tabWidth > 0 && (
+							<Animated.View
+								className="absolute top-1 bottom-1 bg-primary-600 rounded-lg"
+								style={[
+									{ left: 4, width: tabWidth / CHIPS.length },
+									animatedStyle,
+								]}
+							/>
+						)}
 						{CHIPS.map((chip) => (
 							<Pressable
 								key={chip}
 								onPress={() => setActiveChip(chip)}
-								className={`mr-3 rounded-full px-5 py-2.5 ${
-									activeChip === chip ? "bg-[#1f2937]" : "bg-[#ffffff20]"
-								}`}
+								className="flex-1 items-center justify-center py-2.5 z-10"
 							>
-								<ThemedText className="font-plus-jakarta-semibold !text-white">
-									{chip}
-								</ThemedText>
+								<AnimatedTabLabel chip={chip} isActive={activeChip === chip} />
 							</Pressable>
 						))}
-					</ScrollView>
+					</View>
 				</View>
 
 				{/* Main Content Area */}
 				<View className="flex-1">{renderContent()}</View>
 
 				{/* Fixed Banner for Tabellone */}
-				{activeChip === "Tabellone" && (
+				{activeChip === "Stazione" && (
 					<View
 						className="absolute left-0 right-0 px-5 z-10 bottom-6"
 						pointerEvents="box-none"
@@ -483,11 +595,67 @@ export default function InfoScreen() {
 					{
 						label: "OK",
 						onPress: () => {
-							setIsSuccessModalVisible(false);
+												setIsSuccessModalVisible(false);
 						},
 					},
 				]}
 			/>
-		</View>
+		
+			<BottomSheet
+				isVisible={isNotizieOpen}
+				onClose={() => setIsNotizieOpen(false)}
+				title="Notizie di Infomobilità"
+				contentPaddingBottom={-insets.bottom}
+			>
+				<ScrollView 
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+					style={{ height: Dimensions.get('window').height * 0.7 }}
+				>
+					<View className="py-4">
+						{isLoadingNotizie ? (
+							<View className="flex-1 justify-center items-center">
+								<ActivityIndicator size="large" color="#004141" />
+							</View>
+						) : (
+							<View className="gap-4">
+								{notizie.length > 0 ? (
+									notizie.map((news, index) => (
+										<Pressable 
+											key={index} 
+											onPress={() => setExpandedNewsIndex(expandedNewsIndex === index ? null : index)}
+											className="p-4 bg-white rounded-2xl border border-gray-200"
+										>
+											<View className="flex-row justify-between items-center gap-3">
+												<Icon name="info" size={20} color="#eab308" />
+												<ThemedText numberOfLines={2} className="flex-1 text-[15px] font-google-sans-bold !text-gray-900 leading-snug">
+													{news.title}
+												</ThemedText>
+												<Icon 
+													name={expandedNewsIndex === index ? "expand_less" : "expand_more"} 
+													size={24} 
+													color="#9ca3af" 
+												/>
+											</View>
+											{expandedNewsIndex === index && (
+												<View className="pl-8">
+													<ThemedText className="text-[14px] font-google-sans-medium !text-gray-600 leading-snug mt-3">
+														{news.content}
+													</ThemedText>
+												</View>
+											)}
+										</Pressable>
+									))
+								) : (
+									<ThemedText className="text-center font-google-sans-medium !text-gray-500 mt-4">
+										Nessuna notizia disponibile
+									</ThemedText>
+								)}
+							</View>
+						)}
+					</View>
+				</ScrollView>
+			</BottomSheet>
+</View>
 	);
 }

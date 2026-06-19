@@ -3,7 +3,6 @@ import { StickyFooter } from "@/components/select-offer/sticky-footer";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
-import { TimerBar } from "@/components/ui/timer-bar";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
@@ -29,7 +28,7 @@ export default function ElectronicCreditScreen() {
 					<View className="w-10" />
 
 					<View className="absolute left-0 right-0 top-0 bottom-0 items-center justify-center pointer-events-none">
-						<ThemedText className="text-[17px] font-plus-jakarta-bold !text-gray-950">
+						<ThemedText className="text-[17px] font-google-sans-bold !text-gray-950">
 							Crediti elettronici
 						</ThemedText>
 					</View>
@@ -40,15 +39,13 @@ export default function ElectronicCreditScreen() {
 				</View>
 			</View>
 
-			<TimerBar endTime={endTime} />
-
 			{/* Empty State */}
 			<View className="flex-1 items-center justify-center px-8 mb-20">
 				<Icon name="crop_free" size={48} color="#9ca3af" className="mb-4" />
-				<ThemedText className="text-[22px] font-plus-jakarta-bold !text-gray-950 text-center mb-2">
+				<ThemedText className="text-[22px] font-google-sans-bold !text-gray-950 text-center mb-2">
 					Nessun credito disponibile
 				</ThemedText>
-				<ThemedText className="text-[15px] font-plus-jakarta-medium !text-gray-600 text-center leading-tight mb-8">
+				<ThemedText className="text-[15px] font-google-sans-medium !text-gray-600 text-center leading-tight mb-8">
 					Non ci sono bonus/crediti elettronici o carte regalo nel tuo
 					borsellino.
 				</ThemedText>
@@ -57,7 +54,7 @@ export default function ElectronicCreditScreen() {
 					onPress={() => setBottomSheetVisible(true)}
 					className="w-full border border-gray-300 rounded-2xl py-4 items-center justify-center bg-white"
 				>
-					<ThemedText className="text-[15px] font-plus-jakarta-bold !text-gray-950">
+					<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
 						Usa Crediti, Bonus o Carta Regalo
 					</ThemedText>
 				</Pressable>
@@ -89,7 +86,7 @@ export default function ElectronicCreditScreen() {
 							onChangeText={setIdentificativo}
 							placeholder="Codice indetificativo"
 							placeholderTextColor="#6b7280"
-							className="text-base font-plus-jakarta-medium text-gray-950 w-full"
+							className="text-base font-google-sans-medium text-gray-950 w-full"
 						/>
 					</View>
 
@@ -99,7 +96,7 @@ export default function ElectronicCreditScreen() {
 							onChangeText={setAntifrode}
 							placeholder="Codice antifrode"
 							placeholderTextColor="#6b7280"
-							className="text-base font-plus-jakarta-medium text-gray-950 w-full"
+							className="text-base font-google-sans-medium text-gray-950 w-full"
 						/>
 					</View>
 

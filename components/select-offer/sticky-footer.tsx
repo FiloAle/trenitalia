@@ -1,8 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
-import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import { router } from "expo-router";
-import React from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -17,13 +15,12 @@ export interface StickyFooterProps {
 	isLoading?: boolean;
 }
 
-export function StickyFooter({ 
-	totalPrice, 
+export function StickyFooter({
+	totalPrice,
 	basePrice,
 	buttonTitle = "Continua",
 	onPress,
-	hideSeatSelection = false,
-	subtitle = "Vedi carrello",
+	subtitle = "Totale",
 	disabled = false,
 	isLoading = false,
 }: StickyFooterProps) {
@@ -40,24 +37,18 @@ export function StickyFooter({
 				elevation: 6,
 			}}
 		>
-			{!hideSeatSelection && (
-				<View className="px-5 py-3 border-b border-gray-100 flex-row items-center">
-					<Icon name="event_seat" size={20} className="!text-gray-600 mr-3" />
-					<ThemedText className="text-[13px] font-plus-jakarta-medium !text-gray-800 flex-1">
-						La scelta del posto è disponibile nei passaggi successivi
-					</ThemedText>
-				</View>
-			)}
 			<View
 				className="px-5 py-4 flex-row items-center justify-between"
 				style={{ paddingBottom: insets.bottom + 16 }}
 			>
 				<View>
-					<ThemedText className="text-[22px] font-plus-jakarta-bold !text-gray-950">
-						{totalPrice.toFixed(2).replace(".", ",")} €
-					</ThemedText>
-					<ThemedText className={`text-[13px] font-plus-jakarta-medium mt-0.5 ${subtitle === 'Vedi carrello' ? '!text-[#c1152c]' : '!text-gray-900'}`}>
+					<ThemedText
+						className={`text-[13px] font-google-sans-medium mb-0.5 ${subtitle === "Totale" ? "!text-gray-500" : "!text-gray-900"}`}
+					>
 						{subtitle}
+					</ThemedText>
+					<ThemedText className="text-[22px] font-google-sans-bold !text-gray-950">
+						{totalPrice.toFixed(2).replace(".", ",")} €
 					</ThemedText>
 				</View>
 				<View className="w-auto min-w-[160px]">

@@ -28,7 +28,7 @@ const TrackLine = ({ isDashed, isActual, className, style, isReverse = false }: 
 							width: 10, 
 							height: 10, 
 							borderRadius: 5,
-							backgroundColor: isActual ? '#005045' : '#e5e7eb',
+							backgroundColor: isActual ? '#004141' : '#e5e7eb',
 							position: 'absolute',
 							...(isReverse ? { bottom: i * 14 + 9 } : { top: i * 14 + 9 })
 						}} 
@@ -39,7 +39,7 @@ const TrackLine = ({ isDashed, isActual, className, style, isReverse = false }: 
 	}
 	return (
 		<View 
-			className={`absolute z-0 ${isActual ? 'bg-[#005045]' : 'bg-[#e5e7eb]'} ${className}`} 
+			className={`absolute z-0 ${isActual ? 'bg-primary-600' : 'bg-[#e5e7eb]'} ${className}`} 
 			style={style}
 		/>
 	);
@@ -89,8 +89,8 @@ export function TimelineEventRow({ station, nextStation, isFirst, isLast, isTrun
 									<ThemedText 
 										className={`text-[13px] ${
 											ev.isActual 
-												? "font-plus-jakarta-bold !text-[#005045]" 
-												: "font-plus-jakarta-medium !text-gray-500"
+												? "font-google-sans-bold !text-primary-600" 
+												: "font-google-sans-medium !text-gray-500"
 										}`}
 									>
 										{ev.label}
@@ -98,8 +98,8 @@ export function TimelineEventRow({ station, nextStation, isFirst, isLast, isTrun
 									<ThemedText 
 										className={`text-[13px] ${
 											ev.isActual 
-												? "font-plus-jakarta-bold !text-[#005045]" 
-												: "font-plus-jakarta-medium !text-gray-500"
+												? "font-google-sans-bold !text-primary-600" 
+												: "font-google-sans-medium !text-gray-500"
 										}`}
 									>
 										{ev.time}
@@ -135,17 +135,17 @@ export function TimelineEventRow({ station, nextStation, isFirst, isLast, isTrun
 
 					{/* Rounded terminal cap for Origin Station (no arrival events) */}
 					{!hasArrival && (
-						<View className="absolute z-20 bg-[#005045] rounded-full" style={{ left: 29, width: 10, height: 10, top: '50%', marginTop: -5 }} />
+						<View className="absolute z-20 bg-primary-600 rounded-full" style={{ left: 29, width: 10, height: 10, top: '50%', marginTop: -5 }} />
 					)}
 
 					{/* Rounded terminal cap for Destination Station (no departure events) */}
 					{!hasDeparture && (
-						<View className={`absolute z-20 rounded-full ${isArrivalActual ? 'bg-[#005045]' : 'bg-[#e5e7eb]'}`} style={{ left: 29, width: 10, height: 10, top: '50%', marginTop: -5 }} />
+						<View className={`absolute z-20 rounded-full ${isArrivalActual ? 'bg-primary-600' : 'bg-[#e5e7eb]'}`} style={{ left: 29, width: 10, height: 10, top: '50%', marginTop: -5 }} />
 					)}
 
 					{/* Solid background behind dot to ensure white dot has a border */}
 					<View 
-						className={`absolute z-20 rounded-full ${isArrivalActual || isDepartureActual ? 'bg-[#005045]' : 'bg-[#e5e7eb]'}`} 
+						className={`absolute z-20 rounded-full ${isArrivalActual || isDepartureActual ? 'bg-primary-600' : 'bg-[#e5e7eb]'}`} 
 						style={{ left: 29, width: 10, height: 10, top: '50%', marginTop: -5 }} 
 					/>
 
@@ -162,11 +162,11 @@ export function TimelineEventRow({ station, nextStation, isFirst, isLast, isTrun
 
 						{/* Station Name & Bin */}
 						<View className="ml-7 flex-1 flex-row items-center justify-between">
-							<ThemedText className="text-base font-plus-jakarta-bold !text-gray-950 mr-2 flex-shrink">
+							<ThemedText className="text-base font-google-sans-bold !text-gray-950 mr-2 flex-shrink">
 								{station.name}
 							</ThemedText>
 							<View className="bg-[#e5e7eb] px-2 py-1 rounded">
-								<ThemedText className="text-[11px] font-plus-jakarta-bold !text-gray-700">
+								<ThemedText className="text-[11px] font-google-sans-bold !text-gray-700">
 									BIN {station.bin}
 								</ThemedText>
 							</View>
@@ -202,7 +202,7 @@ export function TimelineEventRow({ station, nextStation, isFirst, isLast, isTrun
 						
 						{/* Executive in coda badge */}
 						<View className="bg-[#f3f4f6] self-start px-2 py-0.5 rounded border border-gray-200 mb-1">
-							<ThemedText className="text-[11px] font-plus-jakarta-medium !text-gray-700">
+							<ThemedText className="text-[11px] font-google-sans-medium !text-gray-700">
 								Executive in coda
 							</ThemedText>
 						</View>
@@ -213,8 +213,8 @@ export function TimelineEventRow({ station, nextStation, isFirst, isLast, isTrun
 								<ThemedText 
 									className={`text-[13px] ${
 										ev.isActual 
-											? "font-plus-jakarta-bold !text-[#005045]" 
-											: "font-plus-jakarta-medium !text-gray-500"
+											? "font-google-sans-bold !text-primary-600" 
+											: "font-google-sans-medium !text-gray-500"
 									}`}
 								>
 									{ev.label}
@@ -222,8 +222,8 @@ export function TimelineEventRow({ station, nextStation, isFirst, isLast, isTrun
 								<ThemedText 
 									className={`text-[13px] ${
 										ev.isActual 
-											? "font-plus-jakarta-bold !text-[#005045]" 
-											: "font-plus-jakarta-medium !text-gray-500"
+											? "font-google-sans-bold !text-primary-600" 
+											: "font-google-sans-medium !text-gray-500"
 									}`}
 								>
 									{ev.time}
@@ -234,7 +234,7 @@ export function TimelineEventRow({ station, nextStation, isFirst, isLast, isTrun
 
 					{/* Terminal rounded cap for the green line */}
 					{!isTruncatedBottom && isDepartureActual && !isNextArrivalActual && hasDeparture && (
-						<View className="absolute z-20 bg-[#005045] rounded-full" style={{ left: 29, width: 10, height: 10, bottom: -5 }} />
+						<View className="absolute z-20 bg-primary-600 rounded-full" style={{ left: 29, width: 10, height: 10, bottom: -5 }} />
 					)}
 				</View>
 
@@ -243,7 +243,7 @@ export function TimelineEventRow({ station, nextStation, isFirst, isLast, isTrun
 					<View className="relative h-12">
 						{hasDeparture && (
 							<View 
-								className={`absolute top-0 bottom-[-2px] z-0 ${(isDepartureActual && isNextArrivalActual) ? 'bg-[#005045]' : 'bg-[#e5e7eb]'}`} 
+								className={`absolute top-0 bottom-[-2px] z-0 ${(isDepartureActual && isNextArrivalActual) ? 'bg-primary-600' : 'bg-[#e5e7eb]'}`} 
 								style={{ left: 29, width: 10 }}
 							/>
 						)}

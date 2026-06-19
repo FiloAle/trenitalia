@@ -36,6 +36,14 @@ export default function TicketDetailScreen() {
 	const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
 	const dateString = `${day}/${month}/${dateObj.getFullYear()}`;
 
+	const todayObj = new Date();
+	const isToday =
+		dateObj.getDate() === todayObj.getDate() &&
+		dateObj.getMonth() === todayObj.getMonth() &&
+		dateObj.getFullYear() === todayObj.getFullYear();
+
+	const displayDate = isToday ? "Oggi" : dateString;
+
 	return (
 		<View className="flex-1 bg-white">
 			{/* Gradient Header Background */}
@@ -57,10 +65,10 @@ export default function TicketDetailScreen() {
 					<Icon name="ios_share" size={28} color="white" />
 				</Pressable>
 				<View className="items-center">
-					<ThemedText className="text-[15px] font-plus-jakarta-bold !text-white uppercase">
+					<ThemedText className="text-[15px] font-google-sans-bold !text-white uppercase">
 						{USER_DATA.firstName} {USER_DATA.lastName}
 					</ThemedText>
-					<ThemedText className="text-sm font-plus-jakarta-medium !text-white">
+					<ThemedText className="text-sm font-google-sans-medium !text-white">
 						Adulto
 					</ThemedText>
 				</View>
@@ -78,7 +86,7 @@ export default function TicketDetailScreen() {
 				{trip.trains.map((train, index) => (
 					<TicketCard
 						key={index}
-						dateString={dateString}
+						dateString={displayDate}
 						origin={train.origin || ""}
 						destination={train.destination || ""}
 						departureTime={train.departureTime || ""}
@@ -90,6 +98,7 @@ export default function TicketDetailScreen() {
 						carrozza={train.coach}
 						posto={train.seat}
 						passengerClass={train.selectedClass || "Standard"}
+						passengerName={(train as any).passengerName}
 						offer={train.selectedOffer || "Super Economy"}
 						price={train.price}
 						onOpenDettagli={() => setIsDettagliOpen(true)}
@@ -108,7 +117,7 @@ export default function TicketDetailScreen() {
 			>
 				<View className="gap-3">
 					<Pressable className="border border-gray-200 rounded-2xl p-4 items-center active:bg-gray-50">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900">
+						<ThemedText className="font-google-sans-bold !text-gray-900">
 							Smart Refund
 						</ThemedText>
 					</Pressable>
@@ -128,12 +137,12 @@ export default function TicketDetailScreen() {
 							}, 300);
 						}}
 					>
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900">
+						<ThemedText className="font-google-sans-bold !text-gray-900">
 							Aggiungi servizi
 						</ThemedText>
 					</Pressable>
 					<Pressable className="border border-gray-200 rounded-2xl p-4 items-center active:bg-gray-50">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900">
+						<ThemedText className="font-google-sans-bold !text-gray-900">
 							Indennizzo
 						</ThemedText>
 					</Pressable>
@@ -147,26 +156,26 @@ export default function TicketDetailScreen() {
 			>
 				<View className="gap-4 mb-6 mt-2">
 					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-bold !text-gray-900 text-[15px]">
 							N. CartaFreccia/X-GO
 						</ThemedText>
-						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-medium !text-gray-900 text-[15px]">
 							{USER_DATA.loyaltyCode}
 						</ThemedText>
 					</View>
 					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-bold !text-gray-900 text-[15px]">
 							Punti CartaFreccia/X-GO
 						</ThemedText>
-						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-medium !text-gray-900 text-[15px]">
 							19.70
 						</ThemedText>
 					</View>
 					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-plus-jakarta-bold !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-bold !text-gray-900 text-[15px]">
 							CO2 rispetto al viaggio in auto:
 						</ThemedText>
-						<ThemedText className="font-plus-jakarta-medium !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-medium !text-gray-900 text-[15px]">
 							-24.88 Kg
 						</ThemedText>
 					</View>

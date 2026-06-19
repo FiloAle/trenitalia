@@ -31,7 +31,7 @@ export function SelectionSection<T>({
 
 	return (
 		<View className={containerClassName}>
-			<ThemedText className="px-5 text-[14px] font-plus-jakarta-bold !text-gray-950 mb-2">
+			<ThemedText className="px-5 text-[14px] font-google-sans-bold !text-gray-950 mb-2">
 				{title}
 			</ThemedText>
 			<FlatList

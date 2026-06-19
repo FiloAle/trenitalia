@@ -63,7 +63,7 @@ export default function QRCodeScreen() {
 						resizeMode="contain"
 					/>
 				) : (
-					<ActivityIndicator size="large" color="#005045" />
+					<ActivityIndicator size="large" color="#004141" />
 				)}
 			</View>
 

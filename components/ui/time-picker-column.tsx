@@ -44,7 +44,7 @@ export function TimePickerColumn({
 						style={{ height: itemHeight }}
 					>
 						<ThemedText 
-							className={`text-lg font-plus-jakarta-bold ${
+							className={`text-lg font-google-sans-bold ${
 								item === selectedValue ? "!text-white" : "!text-gray-950"
 							}`}
 						>
