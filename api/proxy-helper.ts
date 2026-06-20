@@ -9,7 +9,7 @@ export function getLefrecceUrl(path: string) {
       const proxyBase = hostUri ? `http://${hostUri}/api/proxy?url=` : "/api/proxy?url=";
       return `${proxyBase}${encodeURIComponent(fullUrl)}`;
     } else {
-      return `/api/proxy?url=${encodeURIComponent(fullUrl)}`;
+      return `/proxy-lefrecce${path}`;
     }
   }
   return fullUrl;
