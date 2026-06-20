@@ -1,4 +1,5 @@
 import { searchJourneys, setSelectedSolutionCache } from "@/api/search";
+import { getViaggiatrenoUrl } from "@/api/proxy-helper";
 import { BottomSheet } from "@/components/modals/bottom-sheet";
 import {
 	TravelSolution,
@@ -415,25 +416,13 @@ export default function SearchResultsScreen() {
 
 		const fetchedData = [];
 
-		const hostUri = Constants.expoConfig?.hostUri;
-		const proxyBase =
-			Platform.OS === "web"
-				? hostUri
-					? `http://${hostUri}/api/proxy?url=`
-					: "/api/proxy?url="
-				: "";
-
 		try {
 			for (const train of trains) {
 				const trainNumber = train.number;
-				const autoUrl = `http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/${trainNumber}`;
+				const targetFetchUrl = getViaggiatrenoUrl(`/cercaNumeroTrenoTrenoAutocomplete/${trainNumber}`);
 
 				const controller = new AbortController();
 				const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-				const targetFetchUrl = proxyBase
-					? `${proxyBase}${encodeURIComponent(autoUrl)}`
-					: autoUrl;
 
 				let autoText = "";
 				try {
@@ -463,17 +452,13 @@ export default function SearchResultsScreen() {
 				const codLocOrig = ids[1];
 				const dataPartenza = ids[2];
 
-				const detailsUrl = `http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/andamentoTreno/${codLocOrig}/${tNum}/${dataPartenza}`;
+				const detailsTargetFetchUrl = getViaggiatrenoUrl(`/andamentoTreno/${codLocOrig}/${tNum}/${dataPartenza}`);
 
 				const detailsController = new AbortController();
 				const detailsTimeoutId = setTimeout(
 					() => detailsController.abort(),
 					5000,
 				);
-
-				const detailsTargetFetchUrl = proxyBase
-					? `${proxyBase}${encodeURIComponent(detailsUrl)}`
-					: detailsUrl;
 
 				let data;
 				try {

@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/proxy-lefrecce/:match*",
+      "destination": "https://www.lefrecce.it/Channels.Website.BFF.WEB/website/:match*"
+    },
+    {
+      "source": "/proxy-viaggiatreno/:match*",
+      "destination": "http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/:match*"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { STATIONS } from "@/constants/stations";
+import { getViaggiatrenoUrl } from "./proxy-helper";
 
 export interface TrainInfo {
 	delay: string | null;
@@ -54,7 +55,7 @@ export async function getTrainInfo(
 
 	// 1. Try Viaggiatreno JSON API first (most reliable, works for trains en route)
 	try {
-		const autoUrl = `http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/${trainNumber}`;
+		const autoUrl = getViaggiatrenoUrl(`/cercaNumeroTrenoTrenoAutocomplete/${trainNumber}`);
 		const autoResp = await fetch(autoUrl);
 		const autoText = await autoResp.text();
 		
@@ -69,7 +70,7 @@ export async function getTrainInfo(
 					const originId = ids[1];
 					const timestamp = ids[2];
 
-					const andamentoUrl = `http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/andamentoTreno/${originId}/${trainNumber}/${timestamp}`;
+					const andamentoUrl = getViaggiatrenoUrl(`/andamentoTreno/${originId}/${trainNumber}/${timestamp}`);
 					const andamentoResp = await fetch(andamentoUrl);
 					const data = await andamentoResp.json();
 
