@@ -1,5 +1,12 @@
 import { encode } from 'base-64';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
+
+function getProxyUrl(targetUrl: string) {
+  const hostUri = Constants.expoConfig?.hostUri;
+  const proxyBase = hostUri ? `http://${hostUri}/api/proxy?url=` : "/api/proxy?url=";
+  return `${proxyBase}${encodeURIComponent(targetUrl)}`;
+}
 
 export interface TrenitLeg {
   ts: string;  // Train type, e.g., "FrRossa"
@@ -51,7 +58,7 @@ async function getLocationId(stationName: string): Promise<number> {
 
   let url = `https://www.lefrecce.it/Channels.Website.BFF.WEB/website/locations/search?name=${encodeURIComponent(stationName)}&limit=1`;
   if (Platform.OS === 'web') {
-    url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+    url = getProxyUrl(url);
   }
 
   const response = await fetch(url, {
@@ -120,7 +127,7 @@ export async function searchJourneys(from: string, to: string, date: Date = new 
 
     let url = "https://www.lefrecce.it/Channels.Website.BFF.WEB/website/ticket/solutions";
     if (Platform.OS === 'web') {
-      url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+      url = getProxyUrl(url);
     }
 
     const response = await fetch(url, {

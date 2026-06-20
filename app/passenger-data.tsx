@@ -144,10 +144,6 @@ export default function PassengerDataScreen() {
 
 				{/* Passeggeri Section */}
 				<View className="bg-white pb-6 px-5">
-					<View className="mb-4">
-						<InfoBanner title="I biglietti sono nominativi. Lascia anche l'email e/o il telefono nel caso dovessimo contattarti." />
-					</View>
-
 					{/* Riepilogo Header */}
 					<View className="flex-row items-center justify-between mb-4 mt-2">
 						<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
