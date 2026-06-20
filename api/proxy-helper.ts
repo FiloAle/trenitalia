@@ -9,7 +9,7 @@ export function getLefrecceUrl(path: string) {
       const proxyBase = hostUri ? `http://${hostUri}/api/proxy?url=` : "/api/proxy?url=";
       return `${proxyBase}${encodeURIComponent(fullUrl)}`;
     } else {
-      return `/proxy-lefrecce${path}`;
+      return `/api/proxy?url=${encodeURIComponent(fullUrl)}`;
     }
   }
   return fullUrl;
@@ -23,7 +23,7 @@ export function getViaggiatrenoUrl(path: string) {
       const proxyBase = hostUri ? `http://${hostUri}/api/proxy?url=` : "/api/proxy?url=";
       return `${proxyBase}${encodeURIComponent(fullUrl)}`;
     } else {
-      return `https://corsproxy.io/?url=${encodeURIComponent(fullUrl)}`;
+      return `/api/proxy?url=${encodeURIComponent(fullUrl)}`;
     }
   }
   return fullUrl;
@@ -36,7 +36,7 @@ export function getGenericUrl(fullUrl: string) {
       const proxyBase = hostUri ? `http://${hostUri}/api/proxy?url=` : "/api/proxy?url=";
       return `${proxyBase}${encodeURIComponent(fullUrl)}`;
     } else {
-      return `https://corsproxy.io/?url=${encodeURIComponent(fullUrl)}`;
+      return `/api/proxy?url=${encodeURIComponent(fullUrl)}`;
     }
   }
   return fullUrl;
