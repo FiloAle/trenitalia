@@ -14,6 +14,7 @@
     "@bwip-js/react-native": "^4.11.1",
     "@expo-google-fonts/google-sans": "^0.4.0",
     "@expo-google-fonts/material-symbols": "^0.4.34",
+    "@expo/server": "^0.7.5",
     "@expo/ui": "~56.0.17",
     "@expo/vector-icons": "^15.0.3",
     "babel-preset-expo": "~56.0.0",
