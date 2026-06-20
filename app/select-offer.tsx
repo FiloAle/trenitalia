@@ -475,15 +475,29 @@ export default function SelectOfferScreen() {
 				contentContainerStyle={{ paddingBottom: 180 }}
 			>
 				{segments.map((segment: any, sIdx: number) => {
+					let segmentDate = new Date(departureDate);
+					if (sIdx > 0 && segments[0].departureTime) {
+						const firstTrainDep = segments[0].departureTime;
+						const currTrainDep = segment.departureTime || "00:00";
+						const firstMins = parseInt(firstTrainDep.split(":")[0]) * 60 + parseInt(firstTrainDep.split(":")[1]);
+						const currMins = parseInt(currTrainDep.split(":")[0]) * 60 + parseInt(currTrainDep.split(":")[1]);
+						// If current train departs at a numerically earlier time than the first train, it must be the next day
+						if (currMins < firstMins) {
+							segmentDate.setDate(segmentDate.getDate() + 1);
+						}
+					}
+					const segmentDdMMyyyy = `${String(segmentDate.getDate()).padStart(2, "0")}/${String(segmentDate.getMonth() + 1).padStart(2, "0")}/${segmentDate.getFullYear()}`;
+
 					const normalizedType = segment.type.trim().toLowerCase();
 					const logoKey = Object.keys(LOGOS).find(
 						(k) => k.toLowerCase() === normalizedType,
 					);
-					const logoData = logoKey ? LOGOS[logoKey] : undefined;
-					const realClasses = getRealClasses(sIdx);
+					const logoInfo = LOGOS[logoKey || "Frecciarossa"];
+
 					const currentSelectedClass = selectedClasses[sIdx] || "Standard";
+					const realClasses = getRealClasses(sIdx);
 					const realOffers = getRealOffers(sIdx, currentSelectedClass);
-					const isExpanded = expandedSegments[sIdx] === true;
+					const isExpanded = !!expandedSegments[sIdx];
 
 					const selectedOfferObj = realOffers.find(
 						(o) => o.id === selectedOffers[sIdx],
@@ -526,7 +540,7 @@ export default function SelectOfferScreen() {
 										delay: segment.delay || solution?.delay,
 									}}
 									route={{ from: segment.origin, to: segment.destination }}
-									searchDate={departureDate}
+									searchDate={segmentDate}
 									isSelectOfferMode={true}
 									selectOfferModeProps={{
 										dateStr: calculateDuration(
@@ -536,7 +550,7 @@ export default function SelectOfferScreen() {
 											segment.arrivalTime || solution?.arrivalTime || "00:00",
 										),
 										isExpanded,
-										passengerName: ddMMyyyy,
+										passengerName: segmentDdMMyyyy,
 									}}
 									onPress={() => toggleSegment(sIdx)}
 								/>

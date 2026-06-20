@@ -342,7 +342,7 @@ export default function PaymentScreen() {
 									<Animated.View
 										entering={Platform.OS === "web" ? undefined : FadeIn}
 										exiting={Platform.OS === "web" ? undefined : FadeOut}
-										className="bg-neutral-50 px-3 py-3 rounded-xl border border-neutral-200"
+										className="pt-4 mt-1 border-t border-neutral-200 gap-6"
 									>
 										{/* Carta di debito o credito */}
 										<Pressable

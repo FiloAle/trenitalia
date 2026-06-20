@@ -1,4 +1,5 @@
 import { BottomSheet } from "@/components/modals/bottom-sheet";
+import { JourneySearchBar } from "@/components/search/journey-search-bar";
 import { SearchListItem } from "@/components/search/search-list-item";
 import { SectionHeader } from "@/components/search/section-header";
 import { ThemedText } from "@/components/themed-text";
@@ -13,6 +14,7 @@ import {
 	STATIONS,
 } from "@/constants/stations";
 import { USER_DATA, getInitials } from "@/constants/user";
+import { StickyFooter } from "@/components/select-offer/sticky-footer";
 import { SelectionItem, setGlobalSelectionList } from "@/utils/selection-store";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -715,126 +717,14 @@ export default function SearchScreen() {
 								<View
 									className={`${Platform.OS === "web" ? "relative " : ""}flex-col gap-2`}
 								>
-									<View className="rounded-2xl border border-neutral-200 bg-white flex-row items-center px-4 h-[56px] overflow-visible">
-										<Pressable
-											className="flex-1 justify-center"
-											onPress={() => {
-												setActiveInput("from");
-												fromInputRef.current?.focus();
-											}}
-										>
-											{(activeInput === "from" || fromText.length > 0) && (
-												<ThemedText className="text-[13px] font-google-sans-medium !text-neutral-500">
-													Partenza
-												</ThemedText>
-											)}
-											<View
-												className={`relative w-full ${
-													activeInput === "from" || fromText.length > 0
-														? "mt-1"
-														: ""
-												}`}
-											>
-												<TextInput
-													ref={fromInputRef}
-													className={`w-full text-[14px] text-neutral-950 p-0 m-0 ${
-														fromText
-															? "font-google-sans-semibold"
-															: "font-google-sans-medium"
-													} ${activeInput !== "from" && fromText ? "opacity-0" : "opacity-100"}`}
-													placeholder={
-														activeInput === "from" || fromText.length > 0
-															? ""
-															: "Partenza"
-													}
-													placeholderTextColor="#6b7280"
-													value={fromText}
-													onChangeText={setFromText}
-													onFocus={() => setActiveInput("from")}
-												/>
-												{activeInput !== "from" && fromText ? (
-													<View
-														pointerEvents="none"
-														className="absolute inset-0 justify-center"
-													>
-														<ThemedText
-															numberOfLines={1}
-															className="text-[14px] font-google-sans-semibold !text-neutral-950"
-														>
-															{fromText}
-														</ThemedText>
-													</View>
-												) : null}
-											</View>
-										</Pressable>
-
-										<Pressable
-											onPress={() => {
-												const temp = fromText;
-												setFromText(toText);
-												setToText(temp);
-											}}
-											className="h-10 w-10 bg-[#F0F7F7] border border-[#DCEBEB] rounded-full items-center justify-center mx-2 z-50"
-										>
-											<Icon
-												name="swap_horiz"
-												size={24}
-												className="!text-primary-500"
-											/>
-										</Pressable>
-
-										<Pressable
-											className="flex-1 justify-center ml-2"
-											onPress={() => {
-												setActiveInput("to");
-												toInputRef.current?.focus();
-											}}
-										>
-											{(activeInput === "to" || toText.length > 0) && (
-												<ThemedText className="text-[13px] font-google-sans-medium !text-neutral-500">
-													Arrivo
-												</ThemedText>
-											)}
-											<View
-												className={`relative w-full ${
-													activeInput === "to" || toText.length > 0
-														? "mt-1"
-														: ""
-												}`}
-											>
-												<TextInput
-													ref={toInputRef}
-													className={`w-full text-[14px] text-left text-neutral-950 p-0 m-0 ${
-														toText
-															? "font-google-sans-semibold"
-															: "font-google-sans-medium"
-													} ${activeInput !== "to" && toText ? "opacity-0" : "opacity-100"}`}
-													placeholder={
-														activeInput === "to" || toText.length > 0
-															? ""
-															: "Arrivo"
-													}
-													placeholderTextColor="#6b7280"
-													value={toText}
-													onChangeText={setToText}
-													onFocus={() => setActiveInput("to")}
-												/>
-												{activeInput !== "to" && toText ? (
-													<View
-														pointerEvents="none"
-														className="absolute inset-0 justify-center"
-													>
-														<ThemedText
-															numberOfLines={1}
-															className="text-[14px] font-google-sans-semibold !text-neutral-950"
-														>
-															{toText}
-														</ThemedText>
-													</View>
-												) : null}
-											</View>
-										</Pressable>
-									</View>
+									<JourneySearchBar
+										fromText={fromText}
+										setFromText={setFromText}
+										toText={toText}
+										setToText={setToText}
+										activeInput={activeInput}
+										setActiveInput={setActiveInput}
+									/>
 									{!isSubscriptionOrCarnet && (
 										<View className="flex-row gap-2">
 											<View className="flex-1">
@@ -865,125 +755,6 @@ export default function SearchScreen() {
 										</View>
 									)}
 								</View>
-
-								{/* Dropdown Suggestions */}
-								<DropdownMenu
-									isVisible={!!activeInput}
-									className="top-[90px] left-0 right-0"
-								>
-									{showSuggestions ? (
-										<FlatList
-											data={filteredStations}
-											keyExtractor={(item, index) => `${item}-${index}`}
-											showsVerticalScrollIndicator={false}
-											keyboardShouldPersistTaps="handled"
-											contentContainerStyle={{
-												paddingHorizontal: 16,
-												paddingTop: 12,
-												paddingBottom: 4,
-											}}
-											initialNumToRender={20}
-											maxToRenderPerBatch={20}
-											windowSize={5}
-											ListHeaderComponent={
-												<SectionHeader title="SUGGERIMENTI" />
-											}
-											ListEmptyComponent={
-												<View className="py-6 items-center justify-center">
-													<ThemedText className="text-[14px] font-google-sans-regular !text-neutral-400 text-center">
-														Nessuna stazione corrispondente
-													</ThemedText>
-												</View>
-											}
-											renderItem={({ item, index }) => (
-												<SearchListItem
-													iconName="train"
-													text={item.name}
-													showBorder={index < filteredStations.length - 1}
-													weight={300}
-													onPress={() => handleStationSelect(item.name)}
-												/>
-											)}
-										/>
-									) : (
-										<FlatList
-											data={STATIONS}
-											keyExtractor={(item, index) => `${item.name}-${index}`}
-											showsVerticalScrollIndicator={false}
-											keyboardShouldPersistTaps="handled"
-											contentContainerStyle={{
-												paddingHorizontal: 16,
-												paddingTop: 8,
-												paddingBottom: 16,
-											}}
-											initialNumToRender={20}
-											maxToRenderPerBatch={20}
-											windowSize={5}
-											ListHeaderComponent={
-												<View className="pb-4">
-													{/* Current Location */}
-													<SearchListItem
-														iconName="my_location"
-														text="Milano Centrale"
-														className="!px-0"
-														weight={300}
-														onPress={() =>
-															handleStationSelect("Milano Centrale")
-														}
-													/>
-
-													{/* Saved Searches */}
-													<View className="mt-4">
-														<SectionHeader title="TRATTE SALVATE" />
-														{SAVED_SEARCHES.map((item, index) => {
-															const route = `${item.from} - ${item.to}`;
-															return (
-																<SearchListItem
-																	key={index}
-																	iconName="route"
-																	secondaryIconName="bookmark"
-																	text={route}
-																	//className="!px-0"
-																	weight={300}
-																	onPress={() =>
-																		handleRouteSelect(item.from, item.to)
-																	}
-																/>
-															);
-														})}
-													</View>
-
-													{/* Last Searches */}
-													<View className="mt-4">
-														<SectionHeader title="ULTIME RICERCHE" />
-														{RECENT_SEARCHES.map((item, index) => (
-															<SearchListItem
-																key={index}
-																text={`${item.from} - ${item.to}`}
-																iconName="schedule"
-																weight={300}
-																onPress={() =>
-																	handleRouteSelect(item.from, item.to)
-																}
-															/>
-														))}
-													</View>
-
-													<View className="mt-4">
-														<SectionHeader title="STAZIONI" />
-													</View>
-												</View>
-											}
-											renderItem={({ item }) => (
-												<SearchListItem
-													text={item.name}
-													weight={300}
-													onPress={() => handleStationSelect(item.name)}
-												/>
-											)}
-										/>
-									)}
-								</DropdownMenu>
 							</View>
 
 							{/* Quick Options Grid */}
@@ -1053,7 +824,6 @@ export default function SearchScreen() {
 							)}
 						</View>
 
-						{/* Legal Info */}
 						<View className="mt-8 flex-row gap-2 pb-8">
 							<Icon
 								name="info"
@@ -1070,8 +840,40 @@ export default function SearchScreen() {
 						</View>
 					</ScrollView>
 
-					<View className="-mx-5 px-5 py-6 bg-white border-t border-neutral-100 mt-auto">
-						<View className="flex-row gap-3 items-stretch">
+					<StickyFooter
+						buttonTitle="Ricerca viaggio"
+						buttonClassName="flex-1"
+						disabled={!fromText || !toText}
+						onPress={() => {
+							Keyboard.dismiss();
+							setActiveInput(null);
+							setGlobalSelectionList(passengersList);
+							setTimeout(() => {
+								router.push({
+									pathname: "/search-results",
+									params: {
+										from: fromText,
+										to: toText,
+										dateStr: departureDate.toISOString(),
+										noChanges: noChanges ? "true" : "false",
+										bike: bikes > 0 ? "true" : "false",
+										travelType: travelType,
+										sortOrder,
+										passengerText:
+											`${adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : ""}${youths > 0 ? ` ${youths} Ragazz${youths > 1 ? "i" : "o"}` : ""}${children > 0 ? ` ${children} Bambin${children > 1 ? "i" : "i"}` : ""}`.trim(),
+										passengerNamesText: passengersList
+											.filter((p) => p.itemType === "passenger")
+											.map((p, idx) =>
+												p.firstName || p.lastName
+													? `${p.firstName || ""} ${p.lastName || ""}`.trim()
+													: `Passeggero ${idx + 1}`,
+											)
+											.join(", "),
+									},
+								});
+							}, 50);
+						}}
+						leftContent={
 							<Pressable
 								onPress={() => {
 									Keyboard.dismiss();
@@ -1079,51 +881,12 @@ export default function SearchScreen() {
 									setShowTravelType(false);
 									setShowFiltersSheet(true);
 								}}
-								className="h-14 w-14 shrink-0 self-stretch items-center justify-center rounded-2xl bg-white border border-neutral-200"
+								className="h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white border border-neutral-200 mr-3"
 							>
-								<Icon
-									name="page_info"
-									size={22}
-									className="!text-primary-500"
-								/>
+								<Icon name="page_info" size={22} className="!text-primary-500" />
 							</Pressable>
-							<MainButton
-								title="Ricerca viaggio"
-								onPress={() => {
-									Keyboard.dismiss();
-									setActiveInput(null);
-									setGlobalSelectionList(passengersList);
-									setTimeout(() => {
-										router.push({
-											pathname: "/search-results",
-											params: {
-												from: fromText,
-												to: toText,
-												dateStr: departureDate.toISOString(),
-												noChanges: noChanges ? "true" : "false",
-												bike: bikes > 0 ? "true" : "false",
-												travelType: travelType,
-												sortOrder,
-												passengerText:
-													`${adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : ""}${youths > 0 ? ` ${youths} Ragazz${youths > 1 ? "i" : "o"}` : ""}${children > 0 ? ` ${children} Bambin${children > 1 ? "i" : "i"}` : ""}`.trim(),
-												passengerNamesText: passengersList
-													.filter((p) => p.itemType === "passenger")
-													.map((p, idx) =>
-														p.firstName || p.lastName
-															? `${p.firstName || ""} ${p.lastName || ""}`.trim()
-															: `Passeggero ${idx + 1}`,
-													)
-													.join(", "),
-											},
-										});
-									}, 50);
-								}}
-								disabled={!fromText || !toText}
-								className="flex-1"
-								style={{ marginBottom: insets.bottom }}
-							/>
-						</View>
-					</View>
+						}
+					/>
 				</View>
 
 				{/* Calendar Bottom Sheet */}

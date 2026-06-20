@@ -5,8 +5,8 @@ import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export interface StickyFooterProps {
-	totalPrice: number;
-	basePrice: number;
+	totalPrice?: number;
+	basePrice?: number;
 	buttonTitle?: string;
 	onPress?: () => void;
 	hideSeatSelection?: boolean;
@@ -14,6 +14,7 @@ export interface StickyFooterProps {
 	disabled?: boolean;
 	isLoading?: boolean;
 	buttonClassName?: string;
+	leftContent?: React.ReactNode;
 }
 
 export function StickyFooter({
@@ -25,6 +26,7 @@ export function StickyFooter({
 	disabled = false,
 	isLoading = false,
 	buttonClassName = "w-auto min-w-[160px]",
+	leftContent,
 }: StickyFooterProps) {
 	const insets = useSafeAreaInsets();
 
@@ -39,20 +41,21 @@ export function StickyFooter({
 				elevation: 6,
 			}}
 		>
-			<View
-				className="px-5 py-4 flex-row items-center justify-between"
-				style={{ paddingBottom: insets.bottom + 16 }}
-			>
-				<View>
-					<ThemedText
-						className={`text-[13px] font-google-sans-medium mb-0.5 ${subtitle === "Totale" ? "!text-neutral-500" : "!text-neutral-900"}`}
-					>
-						{subtitle}
-					</ThemedText>
-					<ThemedText className="text-[22px] font-google-sans-bold !text-neutral-950">
-						{totalPrice.toFixed(2).replace(".", ",")} €
-					</ThemedText>
-				</View>
+			<View className="px-5 pt-4 pb-12 flex-row items-center justify-between">
+				{leftContent ? (
+					leftContent
+				) : (
+					<View>
+						<ThemedText
+							className={`text-[13px] font-google-sans-medium mb-0.5 ${subtitle === "Totale" ? "!text-neutral-500" : "!text-neutral-900"}`}
+						>
+							{subtitle}
+						</ThemedText>
+						<ThemedText className="text-[22px] font-google-sans-bold !text-neutral-950">
+							{totalPrice !== undefined ? totalPrice.toFixed(2).replace(".", ",") : "0,00"} €
+						</ThemedText>
+					</View>
+				)}
 				<View className={buttonClassName}>
 					<MainButton
 						title={buttonTitle}

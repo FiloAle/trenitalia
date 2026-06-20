@@ -2,6 +2,7 @@ import { getTrainInfo } from "@/api/delay";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { formatClassName, formatOfferName } from "@/utils/format";
+import { STATIONS } from "@/constants/stations";
 import { Image } from "expo-image";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
@@ -84,6 +85,7 @@ interface TravelSolutionCardProps {
 	isPurchasedTrip?: boolean;
 	onLongPress?: () => void;
 	bulkDelay?: string;
+	isInfomobilityMode?: boolean;
 }
 
 export function TravelSolutionCard({
@@ -99,6 +101,7 @@ export function TravelSolutionCard({
 	isPurchasedTrip,
 	onLongPress,
 	bulkDelay,
+	isInfomobilityMode,
 }: TravelSolutionCardProps) {
 	const [liveDelay, setLiveDelay] = useState<string | null | undefined>(
 		bulkDelay !== undefined ? bulkDelay : undefined,
@@ -106,6 +109,28 @@ export function TravelSolutionCard({
 	const [cardWidth, setCardWidth] = useState(0);
 	const [cardLayout, setCardLayout] = useState({ width: 0, height: 0 });
 	const [notchY, setNotchY] = useState(0);
+	const [fullOrigin, setFullOrigin] = useState<string | null>(null);
+	const [fullDestination, setFullDestination] = useState<string | null>(null);
+
+	const getFormattedStationName = (name: string | null | undefined) => {
+		if (!name) return "";
+		const cleanName = name.trim().toLowerCase();
+		const station = STATIONS.find(s => s.name.toLowerCase() === cleanName);
+		if (station) return station.name;
+		// Fallback: Title Case
+		return name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+	};
+
+	const isToday = useMemo(() => {
+		if (!solution.date) return true; // Default to true if no date provided
+		const today = new Date();
+		const ticketDate = new Date(solution.date);
+		return (
+			today.getFullYear() === ticketDate.getFullYear() &&
+			today.getMonth() === ticketDate.getMonth() &&
+			today.getDate() === ticketDate.getDate()
+		);
+	}, [solution.date]);
 
 	const addMinutes = (time: string, minutes: number) => {
 		if (!time) return time;
@@ -167,18 +192,24 @@ export function TravelSolutionCard({
 	}, [bulkDelay]);
 
 	useEffect(() => {
-		if (isPurchasedTrip && solution.trains.length > 0) {
+		if ((isPurchasedTrip || isInfomobilityMode) && solution.trains.length > 0) {
+			if (!isToday && isPurchasedTrip) {
+				return; // Don't fetch or show delay for non-today purchased tickets
+			}
+
 			const fetchDelay = async () => {
 				const firstTrain = solution.trains[0];
 				if (!firstTrain.number || !firstTrain.origin) return;
 				const info = await getTrainInfo(firstTrain.origin, firstTrain.number);
-				if (info && info.delay !== null) {
-					setLiveDelay(info.delay);
+				if (info) {
+					if (info.delay !== null) setLiveDelay(info.delay);
+					if (info.origin) setFullOrigin(info.origin);
+					if (info.destination) setFullDestination(info.destination);
 				}
 			};
 			fetchDelay();
 		}
-	}, [isPurchasedTrip, solution]);
+	}, [isPurchasedTrip, isInfomobilityMode, solution, isToday]);
 
 	const getReadableType = (type: string) => {
 		const normalizedType = type.trim().toLowerCase();
@@ -292,7 +323,7 @@ export function TravelSolutionCard({
 				)}
 				{trains.length === 1 && (
 					<View className="flex-row items-center">
-						{(isSelectOfferMode || isPurchasedTrip) && (
+						{(isSelectOfferMode || isPurchasedTrip) && !isInfomobilityMode && (
 							<ThemedText className="text-[12px] font-google-sans-bold !text-neutral-900 ml-2">
 								{getReadableType(trains[0].type)}
 							</ThemedText>
@@ -355,7 +386,7 @@ export function TravelSolutionCard({
 		<Pressable
 			onPress={onPress}
 			onLongPress={onLongPress}
-			disabled={!solution.price && !isPurchasedTrip}
+			disabled={!solution.price && !isPurchasedTrip && !isInfomobilityMode}
 			className={`relative overflow-hidden`}
 			onLayout={(e) => setCardLayout(e.nativeEvent.layout)}
 			style={{
@@ -380,7 +411,7 @@ export function TravelSolutionCard({
 					/>
 				</Svg>
 			)}
-			<View className={`${!(solution.price > 0) && "opacity-40"} p-5 pb-0`}>
+			<View className={`${!(solution.price > 0) && !isInfomobilityMode ? "opacity-40" : ""} p-5 pb-0`}>
 				{/* Top Row: Logos & Diretto/Cambi */}
 				<View className="flex-row justify-between items-center -mt-1">
 					<View className="flex-1">{renderTrainLogos(solution.trains)}</View>
@@ -395,7 +426,7 @@ export function TravelSolutionCard({
 							}}
 						>
 							<ThemedText
-								className={`text-[14px] !text-neutral-800 ${(isSelectOfferMode && selectOfferModeProps?.passengerName) || isPurchasedTrip ? "font-google-sans-regular" : "font-google-sans-medium"}`}
+								className={`text-[14px] !text-neutral-800 ${(isSelectOfferMode && selectOfferModeProps?.passengerName) || isPurchasedTrip || isInfomobilityMode ? "font-google-sans-regular" : "font-google-sans-medium"}`}
 							>
 								{isPurchasedTrip && (solution as any).date
 									? (() => {
@@ -412,11 +443,13 @@ export function TravelSolutionCard({
 										})()
 									: isSelectOfferMode && selectOfferModeProps?.passengerName
 										? selectOfferModeProps.passengerName
-										: solution.trains.length === 1
-											? "Diretto"
-											: `${solution.trains.length - 1} ${
-													solution.trains.length - 1 === 1 ? "Cambio" : "Cambi"
-												}`}
+										: isInfomobilityMode
+											? `${getFormattedStationName(fullOrigin || solution.trains[0]?.origin || route.from)} - ${getFormattedStationName(fullDestination || solution.trains[solution.trains.length - 1]?.destination || route.to)}`
+											: solution.trains.length === 1
+												? "Diretto"
+												: `${solution.trains.length - 1} ${
+														solution.trains.length - 1 === 1 ? "Cambio" : "Cambi"
+													}`}
 							</ThemedText>
 						</Pressable>
 					</View>
@@ -462,8 +495,13 @@ export function TravelSolutionCard({
 							: false;
 					const isPurchasable =
 						isPurchasedTrip || (solution.price && solution.price > 0);
+					
+					// If it's a purchased trip from a past/future day, don't show strike-through delays
+					const shouldShowDelayStrikethrough = isPurchasedTrip ? isToday : true;
+
 					const hasDelay =
 						isPurchasable &&
+						shouldShowDelayStrikethrough &&
 						!isNaN(delayNum) &&
 						delayNum > 0 &&
 						!isNegative &&
@@ -485,7 +523,7 @@ export function TravelSolutionCard({
 											{solution.departureTime}
 										</ThemedText>
 										<ThemedText
-											className={`text-[20px] font-google-sans-bold !text-rose-500 mt-0.5 ${isPurchasedTrip ? "-mb-5" : ""}`}
+											className={`text-[20px] font-google-sans-bold !text-rose-500 mt-0.5 ${(isPurchasedTrip || isInfomobilityMode) ? "-mb-5" : ""}`}
 										>
 											{addMinutes(solution.departureTime, delayNum)}
 										</ThemedText>
@@ -522,7 +560,7 @@ export function TravelSolutionCard({
 								</View>
 								{(() => {
 									if (
-										!isPurchasedTrip &&
+										(!isPurchasedTrip && !isInfomobilityMode) &&
 										(!solution.price || solution.price <= 0)
 									)
 										return null;
@@ -533,7 +571,12 @@ export function TravelSolutionCard({
 											: solution.delay
 												? solution.delay
 												: null;
-									if (!delayVal && delayVal !== "0" && delayVal !== 0) return null;
+									
+									if (isPurchasedTrip && !isToday) {
+										return null;
+									}
+
+									if (!delayVal && delayVal !== "0") return null;
 
 									const cleanedDelay = String(delayVal).replace(/[^0-9]/g, "");
 									const dNum = parseInt(cleanedDelay, 10);
@@ -559,16 +602,18 @@ export function TravelSolutionCard({
 										const [hours, minutes] = solution.departureTime
 											.split(":")
 											.map(Number);
-										const departureDate = solution.date
-											? new Date(solution.date)
-											: new Date();
+										const departureDate = searchDate
+											? new Date(searchDate)
+											: solution.date
+												? new Date(solution.date)
+												: new Date();
 										departureDate.setHours(hours, minutes, 0, 0);
 
 										const now = new Date();
 										const diffMinutes =
 											(departureDate.getTime() - now.getTime()) / (1000 * 60);
 
-										if (diffMinutes > 15) {
+										if ((!isPurchasedTrip && !isInfomobilityMode) && diffMinutes > 15) {
 											return null;
 										}
 
@@ -603,7 +648,7 @@ export function TravelSolutionCard({
 											{solution.arrivalTime}
 										</ThemedText>
 										<ThemedText
-											className={`text-[20px] font-google-sans-bold !text-rose-500 mt-0.5 ${isPurchasedTrip ? "-mb-5" : ""}`}
+											className={`text-[20px] font-google-sans-bold !text-rose-500 mt-0.5 ${(isPurchasedTrip || isInfomobilityMode) ? "-mb-5" : ""}`}
 										>
 											{addMinutes(solution.arrivalTime, delayNum)}
 										</ThemedText>
@@ -727,7 +772,7 @@ export function TravelSolutionCard({
 					);
 				})()}
 
-				{isPurchasedTrip ? (
+				{isPurchasedTrip || isInfomobilityMode ? (
 					<View
 						className={`mb-4 ${(() => {
 							const delayVal = liveDelay || solution.delay;

@@ -4,6 +4,8 @@ import { getViaggiatrenoUrl } from "./proxy-helper";
 export interface TrainInfo {
 	delay: string | null;
 	binario: string | null;
+	origin?: string | null;
+	destination?: string | null;
 }
 
 function parseInfoFromHtml(html: string, trainNumber: string): TrainInfo | null {
@@ -36,7 +38,7 @@ function parseInfoFromHtml(html: string, trainNumber: string): TrainInfo | null 
 		if (val && val.length > 0) binario = val;
 	}
 
-	return { delay, binario };
+	return { delay, binario, origin: null, destination: null };
 }
 
 function parseDelayFromHtml(html: string, trainNumber: string): string | null {
@@ -106,8 +108,13 @@ export async function getTrainInfo(
 						}
 					}
 
-					if (delay !== null) {
-						const info = { delay, binario };
+					if (delay !== null || data.origine) {
+						const info = { 
+							delay, 
+							binario, 
+							origin: data.origine || null, 
+							destination: data.destinazione || null 
+						};
 						infoCache.set(cacheKey, { value: info, timestamp: Date.now() });
 						return info;
 					}

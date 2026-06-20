@@ -715,7 +715,7 @@ export function TicketCard({
 			>
 				{isExpanded && (
 					<Animated.View
-						className="px-5 pb-4 w-full"
+						className="px-5 pt-2 pb-2 w-full"
 						entering={FadeIn.duration(200)}
 						exiting={FadeOut.duration(200)}
 					>
@@ -794,7 +794,7 @@ export function TicketCard({
 			{/* Maggiori Dettagli Toggle */}
 			<Animated.View layout={LinearTransition.duration(200)}>
 				<Pressable
-					className={`items-center justify-center pb-4 active:bg-neutral-50 ${dateString === "Oggi" ? "pt-2" : "-mt-4"}`}
+					className={`items-center justify-center pb-4 active:bg-neutral-50 ${dateString === "Oggi" || isExpanded ? "pt-2" : "-mt-4"}`}
 					onPress={() => setIsExpanded(!isExpanded)}
 				>
 					<ThemedText

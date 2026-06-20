@@ -67,7 +67,7 @@ export default function StationBoardScreen() {
 			</View>
 
 			{/* Tabs */}
-			<View className="px-5 py-5">
+			<View className="px-5 pt-5 z-50">
 				<TabSelector
 					tabs={["Partenze", "Arrivi"]}
 					activeTab={activeTab}

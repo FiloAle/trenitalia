@@ -9,6 +9,9 @@ import { MainButton } from "@/components/ui/main-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { TabSelector } from "@/components/ui/tab-selector";
 import { RECENT_STATIONS, STATIONS } from "@/constants/stations";
+import { JourneySearchBar } from "@/components/search/journey-search-bar";
+import { TravelSolutionCard } from "@/components/search/travel-solution-card";
+import { searchJourneys } from "@/api/search";
 import {
 	getRecentTrains,
 	RecentTrainSearch,
@@ -22,6 +25,7 @@ import {
 	Dimensions,
 	FlatList,
 	Image,
+	Keyboard,
 	KeyboardAvoidingView,
 	Platform,
 	Pressable,
@@ -55,6 +59,63 @@ export default function InfoScreen() {
 	const [expandedNewsIndex, setExpandedNewsIndex] = useState<number | null>(
 		null,
 	);
+
+	// JourneySearchBar state
+	const [fromText, setFromText] = useState("");
+	const [toText, setToText] = useState("");
+	const [activeInput, setActiveInput] = useState<"from" | "to" | null>(null);
+	const [solutions, setSolutions] = useState<any[]>([]);
+	const [isLoadingSolutions, setIsLoadingSolutions] = useState(false);
+
+	const formatDuration = (dur: string) => {
+		if (!dur) return "";
+		const clean = dur.replace("'", "").trim();
+		if (clean.includes("h")) {
+			const parts = clean.split("h");
+			const hours = parts[0].trim();
+			const mins = parts[1] ? parts[1].trim() : "00";
+			if (mins === "00" || mins === "0") {
+				return `${hours}h`;
+			} else {
+				return `${hours}h ${mins}min`;
+			}
+		}
+		return `${clean}min`;
+	};
+
+	const fetchSolutions = async (from: string, to: string) => {
+		if (!from || !to) return;
+		Keyboard.dismiss();
+		setIsLoadingSolutions(true);
+		setSolutions([]);
+		try {
+			const result = await searchJourneys(from, to, new Date());
+			const routes = result?.data?.routes || [];
+			const mapped = routes
+				.filter((r: any) => r.l?.length === 1) // Only direct solutions
+				.map((r: any) => ({
+					id: String(r.dx),
+					trains: r.l?.map((leg: any) => ({
+						type: leg.ts,
+						number: leg.n,
+						origin: leg.ds,
+						destination: leg.as,
+						departureTime: leg.dt,
+						arrivalTime: leg.at
+					})) || [],
+					departureTime: r.dt,
+					arrivalTime: r.at,
+					duration: formatDuration(r.dur),
+					price: r.pr ? parseFloat(r.pr.replace(",", ".")) : 0,
+					offerName: "",
+				}));
+			setSolutions(mapped);
+		} catch (e) {
+			console.warn("Error fetching solutions", e);
+		} finally {
+			setIsLoadingSolutions(false);
+		}
+	};
 
 	useEffect(() => {
 		const subscription = DeviceEventEmitter.addListener("openInfoNews", () => {
@@ -261,29 +322,61 @@ export default function InfoScreen() {
 			}
 			case "Da/a":
 				return (
-					<ScrollView
-						className="flex-1"
-						showsVerticalScrollIndicator={false}
-						contentContainerStyle={{ paddingBottom: 200 }}
-						keyboardShouldPersistTaps="handled"
-					>
-						<View className="mt-20 items-center justify-center px-10">
-							<Icon name="visibility" size={64} color="#d1d5db" />
-							<ThemedText className="mt-6 text-center text-xl font-google-sans-bold !text-neutral-950">
-								Ricerca inserendo origine e destinazione
-							</ThemedText>
-							<ThemedText className="mt-2 text-center font-google-sans-medium !text-neutral-500">
-								Avvia la ricerca per visualizzare tutte le informazioni del tuo
-								treno
-							</ThemedText>
-							<View className="w-full mt-8">
-								<MainButton
-									title="Ricerca treno"
-									onPress={() => handleSearch()}
-								/>
-							</View>
+					<View className="flex-1">
+						<View className="px-5 pt-6 z-50">
+							<JourneySearchBar
+								fromText={fromText}
+								setFromText={setFromText}
+								toText={toText}
+								setToText={setToText}
+								activeInput={activeInput}
+								setActiveInput={setActiveInput}
+								onSearchComplete={(from, to) => fetchSolutions(from, to)}
+							/>
 						</View>
-					</ScrollView>
+						<ScrollView
+							className="flex-1"
+							showsVerticalScrollIndicator={false}
+							contentContainerStyle={{ paddingBottom: 200, paddingTop: 16 }}
+							keyboardShouldPersistTaps="handled"
+						>
+							{isLoadingSolutions ? (
+								<View className="py-10 items-center justify-center">
+									<ActivityIndicator size="large" color="#006666" />
+								</View>
+							) : solutions.length > 0 ? (
+								<View className="px-5 gap-4">
+									{solutions.map((solution, idx) => (
+										<TravelSolutionCard
+											key={idx}
+											solution={solution}
+											route={{ from: fromText, to: toText }}
+											searchDate={new Date()}
+											isInfomobilityMode={true}
+											onPress={() => {
+												// In Infomobility mode we want to open the first train's board
+												const firstLeg = solution.legs?.[0] || solution.trains?.[0];
+												if (firstLeg && (firstLeg.trainIdentifier || firstLeg.number)) {
+													router.navigate({
+														pathname: "/train-details",
+														params: { trainNumber: firstLeg.trainIdentifier || firstLeg.number },
+													});
+												}
+											}}
+										/>
+									))}
+								</View>
+							) : (
+								<View className="mt-10 items-center justify-center px-10">
+									<Icon name="visibility" size={64} color="#d1d5db" />
+									<ThemedText className="mt-6 text-center text-[16px] font-google-sans-medium !text-neutral-500">
+										Compila i campi "Partenza" e "Arrivo" per visualizzare le
+										soluzioni di viaggio per la giornata odierna
+									</ThemedText>
+								</View>
+							)}
+						</ScrollView>
+					</View>
 				);
 			case "Treni seguiti":
 				return hasFollowedTrain ? (
