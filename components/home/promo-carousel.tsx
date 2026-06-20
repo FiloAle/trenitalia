@@ -10,7 +10,7 @@ export function PromoCarousel() {
 			className="-mx-6 px-1"
 			contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
 		>
-			<View className="h-40 w-80 rounded-2xl overflow-hidden relative bg-gray-200">
+			<View className="h-40 w-80 rounded-2xl overflow-hidden relative bg-neutral-200">
 				<Image
 					source={require("@/assets/images/young.webp")}
 					style={{
@@ -34,7 +34,7 @@ export function PromoCarousel() {
 					</ThemedText>
 				</View>
 			</View>
-			<View className="h-40 w-80 rounded-2xl overflow-hidden relative bg-gray-200">
+			<View className="h-40 w-80 rounded-2xl overflow-hidden relative bg-neutral-200">
 				<Image
 					source={require("@/assets/images/senior.webp")}
 					className="w-full h-full"
@@ -53,7 +53,7 @@ export function PromoCarousel() {
 					</ThemedText>
 				</View>
 			</View>
-			<View className="h-40 w-80 rounded-2xl overflow-hidden relative bg-gray-200">
+			<View className="h-40 w-80 rounded-2xl overflow-hidden relative bg-neutral-200">
 				<Image
 					source={require("@/assets/images/freccia.webp")}
 					className="w-full h-full"

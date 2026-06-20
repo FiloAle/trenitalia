@@ -2,7 +2,6 @@ import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { getInitials } from "@/constants/user";
 import { SelectionItem } from "@/utils/selection-store";
-import React from "react";
 import { Pressable, View } from "react-native";
 
 interface PassengerSelectionProps {
@@ -26,7 +25,7 @@ export function PassengerSelection({
 }: PassengerSelectionProps) {
 	return (
 		<View className="px-5 py-4">
-			<ThemedText className="text-sm font-google-sans-medium !text-gray-600 mb-6">
+			<ThemedText className="text-sm font-google-sans-medium !text-neutral-600 mb-6">
 				{instructionText}
 			</ThemedText>
 
@@ -34,7 +33,10 @@ export function PassengerSelection({
 				const isSelected = selectedPassengerIds.includes(p.id);
 				const hasName = !!(p.firstName || p.lastName);
 				return (
-					<View key={p.id} className="flex-row items-center justify-between pb-6 border-b border-gray-100 mb-6">
+					<View
+						key={p.id}
+						className="flex-row items-center justify-between pb-6 border-b border-neutral-100 mb-6"
+					>
 						<View className="flex-row items-center">
 							{hasName ? (
 								<View className="h-12 w-12 rounded-full bg-[#008888] items-center justify-center mr-3">
@@ -44,23 +46,31 @@ export function PassengerSelection({
 								</View>
 							) : (
 								<View className="h-12 w-12 rounded-full bg-[#008888] items-center justify-center mr-3">
-									<Icon name="person_outline" size={24} className="!text-white" />
+									<Icon
+										name="person_outline"
+										size={24}
+										className="!text-white"
+									/>
 								</View>
 							)}
 							<View>
-								<ThemedText className="text-base font-google-sans-bold !text-gray-950">
+								<ThemedText className="text-base font-google-sans-bold !text-neutral-950">
 									{hasName
 										? `${p.firstName || ""} ${p.lastName || ""}`.trim()
 										: `Passeggero ${index + 1}`}
 								</ThemedText>
-								<ThemedText className="text-sm font-google-sans-medium !text-gray-600">
-									{p.type === "Adulto" || p.type === "Ragazzo" || p.type === "Bambino" ? p.type : "Adulto"}
+								<ThemedText className="text-sm font-google-sans-medium !text-neutral-600">
+									{p.type === "Adulto" ||
+									p.type === "Ragazzo" ||
+									p.type === "Bambino"
+										? p.type
+										: "Adulto"}
 								</ThemedText>
 							</View>
 						</View>
 
 						<View className="flex-row items-center">
-							<ThemedText className="text-base font-google-sans-medium !text-gray-600 mr-3">
+							<ThemedText className="text-base font-google-sans-medium !text-neutral-600 mr-3">
 								{price.toFixed(2).replace(".", ",")}€
 							</ThemedText>
 							<Pressable
@@ -68,7 +78,7 @@ export function PassengerSelection({
 								className={`h-5 w-5 rounded items-center justify-center border ${
 									isSelected
 										? "bg-primary-600 border-primary-600"
-										: "border-gray-400"
+										: "border-neutral-400"
 								}`}
 							>
 								{isSelected && (
@@ -90,7 +100,9 @@ export function PassengerSelection({
 			<Pressable className="flex-row items-center" onPress={onToggleTerms}>
 				<View
 					className={`h-5 w-5 rounded items-center justify-center mr-3 border ${
-						acceptedTerms ? "bg-primary-600 border-primary-600" : "border-gray-400"
+						acceptedTerms
+							? "bg-primary-600 border-primary-600"
+							: "border-neutral-400"
 					}`}
 				>
 					{acceptedTerms && (
@@ -103,9 +115,9 @@ export function PassengerSelection({
 						/>
 					)}
 				</View>
-				<ThemedText className="text-[15px] font-google-sans-medium !text-gray-700">
+				<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-700">
 					Ho letto le{" "}
-					<ThemedText className="!text-[#c1152c] underline">
+					<ThemedText className="!text-primary-500 underline">
 						condizioni di utilizzo
 					</ThemedText>
 				</ThemedText>

@@ -223,7 +223,7 @@ export default function TrainDetailsScreen() {
 		return (
 			<View className="flex-1 bg-white items-center justify-center">
 				<ActivityIndicator size="large" color="#004141" />
-				<ThemedText className="mt-4 text-gray-500 font-google-sans-medium">
+				<ThemedText className="mt-4 text-neutral-500 font-google-sans-medium">
 					Ricerca informazioni treno...
 				</ThemedText>
 			</View>
@@ -269,9 +269,9 @@ export default function TrainDetailsScreen() {
 	}
 
 	const delayBgColor = isDelay
-		? "bg-red-50 border-red-200"
+		? "bg-rose-50 border-rose-200"
 		: "bg-primary-600/10 border-primary-600/20";
-	const delayTextColor = isDelay ? "!text-red-500" : "!text-primary-600";
+	const delayTextColor = isDelay ? "!text-rose-500" : "!text-primary-600";
 
 	const lastDetection =
 		trainData.stazioneUltimoRilevamento !== "--"
@@ -295,14 +295,14 @@ export default function TrainDetailsScreen() {
 				style={{ paddingTop: insets.top + 16 }}
 			>
 				<View className="w-10" />
-				<ThemedText className="flex-1 text-center text-[15px] font-google-sans-bold !text-gray-950">
+				<ThemedText className="flex-1 text-center text-[15px] font-google-sans-bold !text-neutral-950">
 					Infomobilità
 				</ThemedText>
 				<Pressable onPress={() => router.back()} className="p-2 -mr-2">
 					<Icon
 						name="close"
 						size={28}
-						className="!text-gray-800"
+						className="!text-neutral-800"
 						weight={300}
 					/>
 				</Pressable>
@@ -320,11 +320,11 @@ export default function TrainDetailsScreen() {
 									resizeMode="contain"
 								/>
 							) : (
-								<ThemedText className="text-sm font-google-sans-bold !text-gray-900 mr-1">
+								<ThemedText className="text-sm font-google-sans-bold !text-neutral-900 mr-1">
 									{trainPrefix}
 								</ThemedText>
 							)}
-							<ThemedText className="ml-2 text-sm font-google-sans-bold !text-gray-900">
+							<ThemedText className="ml-2 text-sm font-google-sans-bold !text-neutral-900">
 								{trainNumOnly}
 							</ThemedText>
 						</View>
@@ -335,7 +335,7 @@ export default function TrainDetailsScreen() {
 								color="#4b5563"
 								className="mr-1"
 							/>
-							<ThemedText className="text-sm font-google-sans-medium !text-gray-700">
+							<ThemedText className="text-sm font-google-sans-medium !text-neutral-700">
 								{formattedDate}
 							</ThemedText>
 						</View>
@@ -358,16 +358,16 @@ export default function TrainDetailsScreen() {
 				</View>
 
 				{/* Delay Card */}
-				<View className="border border-gray-200 rounded-2xl p-4 mb-8">
+				<View className="border border-neutral-200 rounded-2xl p-4 mb-8">
 					<View className="flex-row items-center justify-between">
 						<View className="flex-1 mr-4">
 							<ThemedText
-								className={`font-google-sans-bold !text-gray-950 ${lastDetection !== "Nessun rilevamento" ? "mb-1" : ""}`}
+								className={`font-google-sans-bold !text-neutral-950 ${lastDetection !== "Nessun rilevamento" ? "mb-1" : ""}`}
 							>
 								{lastDetection}
 							</ThemedText>
 							{lastDetection !== "Nessun rilevamento" && (
-								<ThemedText className="text-xs font-google-sans-medium !text-gray-500">
+								<ThemedText className="text-xs font-google-sans-medium !text-neutral-500">
 									Ultimo rilevamento: {formattedDate}
 									{lastDetectionTime}
 								</ThemedText>

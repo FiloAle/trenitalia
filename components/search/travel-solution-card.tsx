@@ -1,10 +1,9 @@
-import { getTrainDelay } from "@/api/delay";
+import { getTrainInfo } from "@/api/delay";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { formatClassName, formatOfferName } from "@/utils/format";
 import { Image } from "expo-image";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useFocusEffect } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 import Svg, { Line, Path } from "react-native-svg";
 
@@ -84,6 +83,7 @@ interface TravelSolutionCardProps {
 	};
 	isPurchasedTrip?: boolean;
 	onLongPress?: () => void;
+	bulkDelay?: string;
 }
 
 export function TravelSolutionCard({
@@ -98,8 +98,11 @@ export function TravelSolutionCard({
 	selectOfferModeProps,
 	isPurchasedTrip,
 	onLongPress,
+	bulkDelay,
 }: TravelSolutionCardProps) {
-	const [liveDelay, setLiveDelay] = useState<string | null>(null);
+	const [liveDelay, setLiveDelay] = useState<string | null | undefined>(
+		bulkDelay !== undefined ? bulkDelay : undefined,
+	);
 	const [cardWidth, setCardWidth] = useState(0);
 	const [cardLayout, setCardLayout] = useState({ width: 0, height: 0 });
 	const [notchY, setNotchY] = useState(0);
@@ -155,32 +158,27 @@ export function TravelSolutionCard({
 		`;
 	};
 
-
 	const showSvgBg = cardLayout.width > 0 && cardLayout.height > 0 && notchY > 0;
 
-	useFocusEffect(
-		useCallback(() => {
-			async function fetchDelay() {
-				const targetDate = searchDate || ((solution as any).date ? new Date((solution as any).date) : null);
-				if (!targetDate) return;
-	
-				const isToday =
-					targetDate.getDate() === new Date().getDate() &&
-					targetDate.getMonth() === new Date().getMonth() &&
-					targetDate.getFullYear() === new Date().getFullYear();
-	
-				// "per ogni treno diretto che mostriamo nelle ricerche PER OGGI... mostriamo il ritardo"
-				if (isToday && solution.trains.length === 1) {
-					const delay = await getTrainDelay(
-						route.from,
-						solution.trains[0].number,
-					);
-					setLiveDelay(delay);
+	useEffect(() => {
+		if (bulkDelay !== undefined) {
+			setLiveDelay(bulkDelay);
+		}
+	}, [bulkDelay]);
+
+	useEffect(() => {
+		if (isPurchasedTrip && solution.trains.length > 0) {
+			const fetchDelay = async () => {
+				const firstTrain = solution.trains[0];
+				if (!firstTrain.number || !firstTrain.origin) return;
+				const info = await getTrainInfo(firstTrain.origin, firstTrain.number);
+				if (info && info.delay !== null) {
+					setLiveDelay(info.delay);
 				}
-			}
+			};
 			fetchDelay();
-		}, [searchDate, (solution as any).date, route.from, solution.trains])
-	);
+		}
+	}, [isPurchasedTrip, solution]);
 
 	const getReadableType = (type: string) => {
 		const normalizedType = type.trim().toLowerCase();
@@ -273,14 +271,14 @@ export function TravelSolutionCard({
 									contentFit="contain"
 								/>
 							) : (
-								<View className="bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
-									<ThemedText className="text-[12px] font-google-sans-bold !text-gray-700 capitalize">
+								<View className="bg-neutral-100 px-2 py-0.5 rounded-full border border-neutral-200">
+									<ThemedText className="text-[12px] font-google-sans-bold !text-neutral-700 capitalize">
 										{train.type}
 									</ThemedText>
 								</View>
 							)}
 							{!isLast && (
-								<ThemedText className="text-[20px] font-google-sans-regular !text-gray-400 -mb-[15px] -mt-[18px]">
+								<ThemedText className="text-[20px] font-google-sans-regular !text-neutral-400 -mb-[15px] -mt-[18px]">
 									+
 								</ThemedText>
 							)}
@@ -288,18 +286,18 @@ export function TravelSolutionCard({
 					);
 				})}
 				{extra !== "" && (
-					<ThemedText className="text-[12px] font-google-sans-bold !text-gray-500">
+					<ThemedText className="text-[12px] font-google-sans-bold !text-neutral-500">
 						{extra}
 					</ThemedText>
 				)}
 				{trains.length === 1 && (
 					<View className="flex-row items-center">
 						{(isSelectOfferMode || isPurchasedTrip) && (
-							<ThemedText className="text-[12px] font-google-sans-bold !text-gray-900 ml-2">
+							<ThemedText className="text-[12px] font-google-sans-bold !text-neutral-900 ml-2">
 								{getReadableType(trains[0].type)}
 							</ThemedText>
 						)}
-						<ThemedText className="text-[14px] font-google-sans-regular !text-gray-800 ml-1">
+						<ThemedText className="text-[14px] font-google-sans-regular !text-neutral-800 ml-1">
 							{trains[0].number}
 						</ThemedText>
 					</View>
@@ -366,7 +364,7 @@ export function TravelSolutionCard({
 			}}
 		>
 			{!showSvgBg && (
-				<View className="absolute inset-0 rounded-2xl border border-gray-200 bg-white" />
+				<View className="absolute inset-0 rounded-2xl border border-neutral-200 bg-white" />
 			)}
 			{showSvgBg && (
 				<Svg
@@ -397,7 +395,7 @@ export function TravelSolutionCard({
 							}}
 						>
 							<ThemedText
-								className={`text-[14px] !text-gray-800 ${(isSelectOfferMode && selectOfferModeProps?.passengerName) || isPurchasedTrip ? "font-google-sans-regular" : "font-google-sans-medium"}`}
+								className={`text-[14px] !text-neutral-800 ${(isSelectOfferMode && selectOfferModeProps?.passengerName) || isPurchasedTrip ? "font-google-sans-regular" : "font-google-sans-medium"}`}
 							>
 								{isPurchasedTrip && (solution as any).date
 									? (() => {
@@ -407,7 +405,7 @@ export function TravelSolutionCard({
 												d.getMonth() === new Date().getMonth() &&
 												d.getFullYear() === new Date().getFullYear();
 											if (isToday) return "Oggi";
-											
+
 											const dd = d.getDate().toString().padStart(2, "0");
 											const mm = (d.getMonth() + 1).toString().padStart(2, "0");
 											return `${dd}/${mm}/${d.getFullYear()}`;
@@ -450,14 +448,33 @@ export function TravelSolutionCard({
 
 				{/* Middle Row: Times, Stations & Duration */}
 				{(() => {
-					const delayNum = liveDelay ? parseInt(liveDelay, 10) : (solution.delay ? parseInt(solution.delay, 10) : 0);
-					const hasDelay = !isNaN(delayNum) && delayNum > 0;
+					const getCleanNum = (val: string) =>
+						parseInt(val.replace(/[^0-9]/g, ""), 10);
+					const delayNum = liveDelay
+						? getCleanNum(liveDelay)
+						: solution.delay
+							? getCleanNum(solution.delay)
+							: 0;
+					const isNegative = liveDelay
+						? liveDelay.includes("-")
+						: solution.delay
+							? solution.delay.includes("-")
+							: false;
+					const isPurchasable =
+						isPurchasedTrip || (solution.price && solution.price > 0);
+					const hasDelay =
+						isPurchasable &&
+						!isNaN(delayNum) &&
+						delayNum > 0 &&
+						!isNegative &&
+						liveDelay !== "in orario" &&
+						liveDelay !== "non partito";
 
 					return (
 						<View className="flex-row items-start justify-between mt-3 relative">
 							<View className="items-start flex-1">
 								<ThemedText
-									className="text-[13px] font-google-sans-regular !text-gray-700 mb-0.5"
+									className="text-[13px] font-google-sans-regular !text-neutral-700 mb-0.5"
 									numberOfLines={1}
 								>
 									{route.from}
@@ -467,76 +484,115 @@ export function TravelSolutionCard({
 										<ThemedText className="text-[20px] font-google-sans-medium !text-neutral-700 line-through">
 											{solution.departureTime}
 										</ThemedText>
-										<ThemedText className="text-[20px] font-google-sans-bold !text-red-500 mt-0.5">
+										<ThemedText
+											className={`text-[20px] font-google-sans-bold !text-rose-500 mt-0.5 ${isPurchasedTrip ? "-mb-5" : ""}`}
+										>
 											{addMinutes(solution.departureTime, delayNum)}
 										</ThemedText>
 									</View>
 								) : (
-									<ThemedText className="text-[20px] font-google-sans-bold !text-gray-950">
+									<ThemedText className="text-[20px] font-google-sans-bold !text-neutral-950">
 										{solution.departureTime}
 									</ThemedText>
 								)}
 							</View>
 
-							<View className={`absolute left-0 right-0 ${hasDelay ? 'top-[18px]' : 'bottom-0'} -mb-[1px] items-center justify-center pointer-events-none`}>
-							<View className="flex-row items-center">
-								<View className="w-10 items-end justify-center">
-									<View className="h-[2px] w-6 bg-neutral-300" />
-								</View>
+							<View
+								className={`absolute left-0 right-0 ${hasDelay ? "top-[18px]" : "bottom-0"} -mb-[1px] items-center justify-center pointer-events-none`}
+							>
+								<View className="flex-row items-center">
+									<View className="w-10 items-end justify-center">
+										<View className="h-[2px] w-6 bg-neutral-300" />
+									</View>
 									<View className="bg-neutral-100 px-2.5 py-1 rounded-full mx-1">
-										<ThemedText
-											className="text-[13px] font-google-sans-bold !text-neutral-600"
-										>
+										<ThemedText className="text-[13px] font-google-sans-bold !text-neutral-600">
 											{isSelectOfferMode && selectOfferModeProps
 												? selectOfferModeProps.dateStr
 												: solution.duration}
 										</ThemedText>
 									</View>
-								<View className="w-10 flex-row items-center justify-start">
-									<View className="h-[2px] w-6 bg-neutral-300" />
-									<Icon
-										name="chevron_right"
-										size={24}
-										className="!text-neutral-300 -ml-[13px]"
-									/>
+									<View className="w-10 flex-row items-center justify-start">
+										<View className="h-[2px] w-6 bg-neutral-300" />
+										<Icon
+											name="chevron_right"
+											size={24}
+											className="!text-neutral-300 -ml-[13px]"
+										/>
+									</View>
 								</View>
-							</View>
-									{(() => {
-										if (!isPurchasedTrip && (!solution.price || solution.price <= 0)) return null;
+								{(() => {
+									if (
+										!isPurchasedTrip &&
+										(!solution.price || solution.price <= 0)
+									)
+										return null;
 
-										const delayVal = liveDelay || solution.delay;
-										if (!delayVal) return null;
-										
-									const dNum = parseInt(delayVal, 10);
-									if (!isNaN(dNum) && dNum > 0) {
+									const delayVal =
+										liveDelay !== undefined && liveDelay !== null
+											? liveDelay
+											: solution.delay
+												? solution.delay
+												: null;
+									if (!delayVal && delayVal !== "0" && delayVal !== 0) return null;
+
+									const cleanedDelay = String(delayVal).replace(/[^0-9]/g, "");
+									const dNum = parseInt(cleanedDelay, 10);
+									const isNegative = String(delayVal).includes("-");
+
+									if (!isNaN(dNum) && dNum > 0 && !isNegative) {
 										return (
-											<ThemedText className="text-[12px] font-google-sans-bold !text-red-500 absolute -bottom-5">
+											<ThemedText className="text-[12px] font-google-sans-bold !text-rose-500 absolute -bottom-5">
 												{`+${dNum} MIN`}
 											</ThemedText>
 										);
-									} else if (delayVal === "0" || delayVal.toLowerCase().trim() === "in orario") {
+									} else if (
+										String(delayVal) === "0" ||
+										isNegative ||
+										String(delayVal).toLowerCase().trim() === "in orario"
+									) {
 										return (
 											<ThemedText className="text-[12px] font-google-sans-bold !text-primary-500 absolute -bottom-5">
 												IN ORARIO
 											</ThemedText>
 										);
-									} else if (delayVal.toLowerCase().trim() === "non partito") {
-										if (isPurchasedTrip) {
-											return (
-												<ThemedText className="text-[12px] font-google-sans-bold !text-neutral-500 absolute -bottom-5">
-													NON PARTITO
-												</ThemedText>
-											);
+									} else if (String(delayVal).toLowerCase().trim() === "non partito") {
+										const [hours, minutes] = solution.departureTime
+											.split(":")
+											.map(Number);
+										const departureDate = solution.date
+											? new Date(solution.date)
+											: new Date();
+										departureDate.setHours(hours, minutes, 0, 0);
+
+										const now = new Date();
+										const diffMinutes =
+											(departureDate.getTime() - now.getTime()) / (1000 * 60);
+
+										if (diffMinutes > 15) {
+											return null;
 										}
-										return null;
+
+										return (
+											<ThemedText className="text-[12px] font-google-sans-bold !text-neutral-500 absolute -bottom-5">
+												NON PARTITO
+											</ThemedText>
+										);
 									}
-									return null;
+
+									// Fallback di sicurezza: se la stringa non matcha nulla ma esiste, la stampiamo così com'è in rosso
+									return (
+										<ThemedText className="text-[12px] font-google-sans-bold !text-rose-500 absolute -bottom-5 uppercase">
+											{String(delayVal).includes("MIN")
+												? String(delayVal)
+												: `+${cleanedDelay || delayVal} MIN`}
+										</ThemedText>
+									);
 								})()}
-						</View>
+							</View>
 
 							<View className="items-end flex-1">
 								<ThemedText
-									className="text-[13px] font-google-sans-regular !text-gray-700 text-right mb-0.5"
+									className="text-[13px] font-google-sans-regular !text-neutral-700 text-right mb-0.5"
 									numberOfLines={1}
 								>
 									{route.to}
@@ -546,12 +602,14 @@ export function TravelSolutionCard({
 										<ThemedText className="text-[20px] font-google-sans-medium !text-neutral-700 line-through">
 											{solution.arrivalTime}
 										</ThemedText>
-										<ThemedText className="text-[20px] font-google-sans-bold !text-red-500 mt-0.5">
+										<ThemedText
+											className={`text-[20px] font-google-sans-bold !text-rose-500 mt-0.5 ${isPurchasedTrip ? "-mb-5" : ""}`}
+										>
 											{addMinutes(solution.arrivalTime, delayNum)}
 										</ThemedText>
 									</View>
 								) : (
-									<ThemedText className="text-[20px] font-google-sans-bold !text-gray-950">
+									<ThemedText className="text-[20px] font-google-sans-bold !text-neutral-950">
 										{solution.arrivalTime}
 									</ThemedText>
 								)}
@@ -613,7 +671,7 @@ export function TravelSolutionCard({
 										}
 										weight={600}
 									/>
-									<ThemedText className="text-[12px] font-google-sans-regular !text-gray-700 mt-0.5">
+									<ThemedText className="text-[12px] font-google-sans-regular !text-neutral-700 mt-0.5">
 										Modificabile
 									</ThemedText>
 								</View>
@@ -626,7 +684,7 @@ export function TravelSolutionCard({
 										}
 										weight={600}
 									/>
-									<ThemedText className="text-[12px] font-google-sans-regular !text-gray-700 mt-0.5">
+									<ThemedText className="text-[12px] font-google-sans-regular !text-neutral-700 mt-0.5">
 										Rimborsabile
 									</ThemedText>
 								</View>
@@ -639,9 +697,9 @@ export function TravelSolutionCard({
 											<Icon
 												name="directions_railway"
 												size={16}
-												className="!text-gray-700"
+												className="!text-neutral-700"
 											/>
-											<ThemedText className="text-[12px] font-google-sans-regular !text-gray-700 mt-0.5">
+											<ThemedText className="text-[12px] font-google-sans-regular !text-neutral-700 mt-0.5">
 												{assignedSeat.coach}
 											</ThemedText>
 										</View>
@@ -649,9 +707,9 @@ export function TravelSolutionCard({
 											<Icon
 												name="flight_class"
 												size={16}
-												className="!text-gray-700"
+												className="!text-neutral-700"
 											/>
-											<ThemedText className="text-[12px] font-google-sans-regular !text-gray-700 mt-0.5">
+											<ThemedText className="text-[12px] font-google-sans-regular !text-neutral-700 mt-0.5">
 												{assignedSeat.seat}
 											</ThemedText>
 										</View>
@@ -670,7 +728,15 @@ export function TravelSolutionCard({
 				})()}
 
 				{isPurchasedTrip ? (
-					<View className="mb-4" />
+					<View
+						className={`mb-4 ${(() => {
+							const delayVal = liveDelay || solution.delay;
+							if (!delayVal) return "";
+							const dNum = parseInt(delayVal, 10);
+							const hasDelay = !isNaN(dNum) && dNum > 0;
+							return !hasDelay ? "mt-5" : "";
+						})()}`}
+					/>
 				) : isSelectOfferMode ? (
 					<View className="bg-primary-500 flex-row justify-between items-center py-2.5 -mx-5 px-5 rounded-b-[15px] mt-4">
 						<View className="flex-row items-center gap-1">
@@ -720,11 +786,11 @@ export function TravelSolutionCard({
 									<View className="flex-1">
 										<View className="flex-row items-end flex-wrap mb-[3px]">
 											{solution.serviceClass && (
-												<ThemedText className="text-[12px] font-google-sans-bold !text-gray-950 mr-1">
+												<ThemedText className="text-[12px] font-google-sans-bold !text-neutral-950 mr-1">
 													{formatClassName(solution.serviceClass)}
 												</ThemedText>
 											)}
-											<ThemedText className="text-[12px] font-google-sans-regular !text-gray-700">
+											<ThemedText className="text-[12px] font-google-sans-regular !text-neutral-700">
 												{solution.offerName}
 											</ThemedText>
 										</View>
@@ -734,13 +800,13 @@ export function TravelSolutionCard({
 									<View className="items-end ml-2">
 										<View className="flex-row items-end">
 											{solution.originalPrice && (
-												<ThemedText className="text-[13px] font-google-sans-medium !text-gray-400 line-through mr-1.5 mb-[2px]">
+												<ThemedText className="text-[13px] font-google-sans-medium !text-neutral-400 line-through mr-1.5 mb-[2px]">
 													{solution.originalPrice.toFixed(2).replace(".", ",")}{" "}
 													€
 												</ThemedText>
 											)}
 											<>
-												<ThemedText className="text-[13px] font-google-sans-regular !text-gray-900 mr-1 mb-[3px]">
+												<ThemedText className="text-[13px] font-google-sans-regular !text-neutral-900 mr-1 mb-[3px]">
 													da
 												</ThemedText>
 												<ThemedText className="text-[22px] font-google-sans-bold !text-primary-500 leading-[26px]">

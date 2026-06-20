@@ -1,12 +1,11 @@
 import { ThemedText } from "@/components/themed-text";
-import { Icon } from "@/components/ui/icon";
-import React from "react";
-import { Pressable, View } from "react-native";
+import { Image, View } from "react-native";
 
 export interface TrainData {
 	time: string;
 	destination: string;
 	trainName: string;
+	category: string;
 	status: string;
 	bin: string;
 	binType: string;
@@ -17,45 +16,108 @@ interface StationBoardTrainRowProps {
 	train: TrainData;
 }
 
+const getTrainLogoData = (category: string) => {
+	if (!category) return null;
+	const name = category.toUpperCase();
+	const words = name.split(" ");
+	if (
+		name.includes("FR") ||
+		name.includes("FRECCIAROSSA") ||
+		(name.includes("TRENITALIA") && name.includes("AV"))
+	)
+		return { source: require("@/assets/logos/small/f.png"), ratio: 1.4 };
+	if (name.includes("FA") || name.includes("FRECCIARGENTO"))
+		return { source: require("@/assets/logos/small/f.png"), ratio: 1.4 };
+	if (name.includes("FB") || name.includes("FRECCIABIANCA"))
+		return { source: require("@/assets/logos/small/f.png"), ratio: 1.4 };
+	if (name.includes("IC") || name.includes("INTERCITY"))
+		return { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 };
+	if (name.includes("TPER"))
+		return { source: require("@/assets/logos/small/rtper.png"), ratio: 2.13 };
+	if (
+		name.includes("REG") ||
+		words.includes("R") ||
+		words.includes("RV") ||
+		name.includes("REGIONALE")
+	)
+		return { source: require("@/assets/logos/small/r.png"), ratio: 2.03 };
+	if (name.includes("EC") || name.includes("EUROCITY"))
+		return { source: require("@/assets/logos/small/ec.png"), ratio: 1.1 };
+	return null;
+};
+
 export function StationBoardTrainRow({ train }: StationBoardTrainRowProps) {
+	const logoData = getTrainLogoData(train.category);
+
 	return (
-		<View className="flex-row items-center py-3 border-b border-gray-100">
-			<View className="w-[15%]">
-				<ThemedText className="text-sm font-google-sans-medium !text-gray-950">
+		<View className="flex-row items-center py-4 border-b border-neutral-100">
+			<View className="w-[18%]">
+				<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
 					{train.time}
 				</ThemedText>
 			</View>
-			<View className="w-[35%] pl-2 pr-2">
+			<View className="flex-1 pl-1 pr-2">
 				<ThemedText
-					className="text-sm font-google-sans-bold !text-gray-950"
+					className="text-[15px] font-google-sans-medium !text-neutral-950"
 					numberOfLines={1}
 				>
 					{train.destination}
 				</ThemedText>
-				<ThemedText className="text-xs font-google-sans-medium !text-gray-500">
-					{train.trainName}
-				</ThemedText>
-			</View>
-			<View className="w-[25%] pr-2 items-center">
-				<ThemedText className="text-xs font-google-sans-bold !text-gray-950 text-center">
-					{train.status}
-				</ThemedText>
-			</View>
-			<View className="w-[20%] flex-row items-center justify-center relative">
-				<View className="items-center justify-center">
-					<ThemedText className="text-sm font-google-sans-bold !text-gray-950 text-center">
-						{train.bin}
-					</ThemedText>
-					{!!train.binType && (
-						<ThemedText className="text-[10px] font-google-sans-medium !text-gray-500 text-center">
-							{train.binType}
-						</ThemedText>
+				<View className="flex-row items-center mt-0.5">
+					{logoData && (
+						<Image
+							source={logoData.source}
+							style={{
+								width: 12 * logoData.ratio,
+								height: 12,
+								marginRight: 4,
+								marginTop: -2,
+							}}
+							resizeMode="contain"
+						/>
 					)}
+					<ThemedText className="text-[13px] font-google-sans-regular !text-neutral-600">
+						{logoData
+							? train.trainName
+							: `${train.category} ${train.trainName}`.trim()}
+					</ThemedText>
 				</View>
-				{train.hasMenu && (
-					<Pressable className="absolute right-0 -mr-6">
-						<Icon name="more_vert" size={20} color="#9ca3af" />
-					</Pressable>
+			</View>
+			<View className="w-[28%] pr-2 items-center">
+				<View
+					className={`w-[76px] py-1.5 rounded-full items-center justify-center ${
+						train.status &&
+						train.status.toLowerCase() !== "in orario" &&
+						train.status.trim() !== ""
+							? "bg-rose-100"
+							: "bg-primary-500/10"
+					}`}
+				>
+					<ThemedText
+						className={`text-[11px] font-google-sans-bold ${
+							train.status &&
+							train.status.toLowerCase() !== "in orario" &&
+							train.status.trim() !== ""
+								? "!text-rose-600"
+								: "!text-primary-500"
+						}`}
+						numberOfLines={1}
+						adjustsFontSizeToFit
+					>
+						{train.status && train.status.trim() !== ""
+							? train.status.toUpperCase()
+							: "IN ORARIO"}
+					</ThemedText>
+				</View>
+			</View>
+			<View className="w-[18%] items-center justify-center">
+				<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950 text-center">
+					{train.bin}
+				</ThemedText>
+				{!!train.binType && (
+					<ThemedText className="text-[11px] font-google-sans-medium !text-neutral-500 text-center mt-0.5">
+						{train.binType}
+					</ThemedText>
 				)}
 			</View>
 		</View>

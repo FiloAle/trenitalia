@@ -6,6 +6,7 @@ import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import { PageHeader } from "@/components/ui/page-header";
+import { TabSelector } from "@/components/ui/tab-selector";
 import {
 	RECENT_SEARCHES,
 	SAVED_SEARCHES,
@@ -67,7 +68,7 @@ const SearchOptionCard = ({
 		className={`w-full rounded-2xl border px-4 py-2 justify-center ${
 			isAdd
 				? "flex-row items-center justify-center gap-2 bg-[#F0F7F7] border-[#DCEBEB]"
-				: "bg-white border-gray-200"
+				: "bg-white border-neutral-200"
 		}`}
 	>
 		{isAdd ? (
@@ -84,13 +85,13 @@ const SearchOptionCard = ({
 			>
 				<View className="flex-1 justify-center">
 					<ThemedText
-						className="text-[13px] font-google-sans-medium !text-gray-500"
+						className="text-[13px] font-google-sans-medium !text-neutral-500"
 						numberOfLines={1}
 					>
 						{label}
 					</ThemedText>
 					<ThemedText
-						className="text-[14px] font-google-sans-semibold !text-gray-950 mt-1"
+						className="text-[14px] font-google-sans-semibold !text-neutral-950 mt-1"
 						numberOfLines={1}
 					>
 						{value}
@@ -129,28 +130,28 @@ const ModalHeader = ({
 		{isCentered ? (
 			<>
 				<View className="w-10" />
-				<ThemedText className="flex-1 text-center text-[15px] font-google-sans-bold !text-gray-950">
+				<ThemedText className="flex-1 text-center text-[15px] font-google-sans-bold !text-neutral-950">
 					{title}
 				</ThemedText>
 				<Pressable onPress={onClose} className="p-2">
 					<Icon
 						name="close"
 						size={28}
-						className="!text-gray-800"
+						className="!text-neutral-800"
 						weight={300}
 					/>
 				</Pressable>
 			</>
 		) : (
 			<>
-				<ThemedText className="text-[22px] font-google-sans-bold !text-gray-950">
+				<ThemedText className="text-[22px] font-google-sans-bold !text-neutral-950">
 					{title}
 				</ThemedText>
 				<Pressable onPress={onClose} className="p-2">
 					<Icon
 						name="close"
 						size={28}
-						className="!text-gray-800"
+						className="!text-neutral-800"
 						weight={300}
 					/>
 				</Pressable>
@@ -184,7 +185,7 @@ const PassengerInput = ({
 	const inputRef = useRef<TextInput>(null);
 
 	return (
-		<View className="flex-1 h-[56px] rounded-2xl border border-gray-200 px-4 bg-white justify-center overflow-visible">
+		<View className="flex-1 h-[56px] rounded-2xl border border-neutral-200 px-4 bg-white justify-center overflow-visible">
 			<Pressable
 				className="w-full flex-1 justify-center"
 				onPress={() => {
@@ -193,7 +194,7 @@ const PassengerInput = ({
 				}}
 			>
 				{isActive && (
-					<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+					<ThemedText className="text-[13px] font-google-sans-medium !text-neutral-500">
 						{label}
 					</ThemedText>
 				)}
@@ -204,7 +205,7 @@ const PassengerInput = ({
 						onChangeText={onChangeText}
 						onFocus={() => setFocusedInputId(inputId)}
 						onBlur={() => setFocusedInputId(null)}
-						className={`w-full text-[14px] text-gray-950 p-0 m-0 ${
+						className={`w-full text-[14px] text-neutral-950 p-0 m-0 ${
 							hasText ? "font-google-sans-semibold" : "font-google-sans-medium"
 						} ${!isFocused && hasText ? "opacity-0" : "opacity-100"}`}
 						placeholder={isActive ? "" : label}
@@ -219,7 +220,7 @@ const PassengerInput = ({
 						>
 							<ThemedText
 								numberOfLines={1}
-								className="text-[14px] font-google-sans-semibold !text-gray-950"
+								className="text-[14px] font-google-sans-semibold !text-neutral-950"
 							>
 								{value}
 							</ThemedText>
@@ -228,29 +229,6 @@ const PassengerInput = ({
 				</View>
 			</Pressable>
 		</View>
-	);
-};
-
-const AnimatedTabLabel = ({
-	label,
-	isActive,
-}: {
-	label: string;
-	isActive: boolean;
-}) => {
-	const animatedStyle = useAnimatedStyle(
-		() => ({
-			color: withTiming(isActive ? "#ffffff" : "#004141", { duration: 250 }),
-		}),
-		[isActive],
-	);
-	return (
-		<Animated.Text
-			className="text-[14px] font-google-sans-semibold"
-			style={animatedStyle}
-		>
-			{label}
-		</Animated.Text>
 	);
 };
 
@@ -360,21 +338,6 @@ export default function SearchScreen() {
 	const [showPurchaseTypeSheet, setShowPurchaseTypeSheet] = useState(false);
 	const isSubscriptionOrCarnet =
 		purchaseType === "Abbonamento" || purchaseType === "Carnet";
-	const [tabWidth, setTabWidth] = useState(0);
-	const activeTabIndex = purchaseTypes.indexOf(purchaseType);
-	const tabPillStyle = useAnimatedStyle(
-		() => ({
-			transform: [
-				{
-					translateX: withTiming(
-						activeTabIndex * (tabWidth / purchaseTypes.length),
-						{ duration: 250 },
-					),
-				},
-			],
-		}),
-		[activeTabIndex, tabWidth],
-	);
 
 	const hourScrollRef = useRef<FlatList>(null);
 	const fromInputRef = useRef<TextInput>(null);
@@ -717,32 +680,11 @@ export default function SearchScreen() {
 
 				{/* Selettore — fuori dall'header, nel body bianco, come in I miei viaggi */}
 				<View className="px-5 pt-5 z-50">
-					<View
-						className="bg-primary-500/10 rounded-xl p-1 flex-row relative"
-						onLayout={(e) => setTabWidth(e.nativeEvent.layout.width - 8)}
-					>
-						{tabWidth > 0 && (
-							<Animated.View
-								className="absolute top-1 bottom-1 bg-primary-600 rounded-lg"
-								style={[
-									{ left: 4, width: tabWidth / purchaseTypes.length },
-									tabPillStyle,
-								]}
-							/>
-						)}
-						{purchaseTypes.map((type) => (
-							<Pressable
-								key={type}
-								onPress={() => setPurchaseType(type)}
-								className="flex-1 items-center justify-center py-2.5 z-10"
-							>
-								<AnimatedTabLabel
-									label={type}
-									isActive={purchaseType === type}
-								/>
-							</Pressable>
-						))}
-					</View>
+					<TabSelector
+						tabs={purchaseTypes}
+						activeTab={purchaseType}
+						onTabChange={setPurchaseType}
+					/>
 				</View>
 				{/* ===== Fine header ===== */}
 
@@ -773,7 +715,7 @@ export default function SearchScreen() {
 								<View
 									className={`${Platform.OS === "web" ? "relative " : ""}flex-col gap-2`}
 								>
-									<View className="rounded-2xl border border-gray-200 bg-white flex-row items-center px-4 h-[56px] overflow-visible">
+									<View className="rounded-2xl border border-neutral-200 bg-white flex-row items-center px-4 h-[56px] overflow-visible">
 										<Pressable
 											className="flex-1 justify-center"
 											onPress={() => {
@@ -782,7 +724,7 @@ export default function SearchScreen() {
 											}}
 										>
 											{(activeInput === "from" || fromText.length > 0) && (
-												<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+												<ThemedText className="text-[13px] font-google-sans-medium !text-neutral-500">
 													Partenza
 												</ThemedText>
 											)}
@@ -795,7 +737,7 @@ export default function SearchScreen() {
 											>
 												<TextInput
 													ref={fromInputRef}
-													className={`w-full text-[14px] text-gray-950 p-0 m-0 ${
+													className={`w-full text-[14px] text-neutral-950 p-0 m-0 ${
 														fromText
 															? "font-google-sans-semibold"
 															: "font-google-sans-medium"
@@ -817,7 +759,7 @@ export default function SearchScreen() {
 													>
 														<ThemedText
 															numberOfLines={1}
-															className="text-[14px] font-google-sans-semibold !text-gray-950"
+															className="text-[14px] font-google-sans-semibold !text-neutral-950"
 														>
 															{fromText}
 														</ThemedText>
@@ -849,7 +791,7 @@ export default function SearchScreen() {
 											}}
 										>
 											{(activeInput === "to" || toText.length > 0) && (
-												<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+												<ThemedText className="text-[13px] font-google-sans-medium !text-neutral-500">
 													Arrivo
 												</ThemedText>
 											)}
@@ -862,7 +804,7 @@ export default function SearchScreen() {
 											>
 												<TextInput
 													ref={toInputRef}
-													className={`w-full text-[14px] text-left text-gray-950 p-0 m-0 ${
+													className={`w-full text-[14px] text-left text-neutral-950 p-0 m-0 ${
 														toText
 															? "font-google-sans-semibold"
 															: "font-google-sans-medium"
@@ -884,7 +826,7 @@ export default function SearchScreen() {
 													>
 														<ThemedText
 															numberOfLines={1}
-															className="text-[14px] font-google-sans-semibold !text-gray-950"
+															className="text-[14px] font-google-sans-semibold !text-neutral-950"
 														>
 															{toText}
 														</ThemedText>
@@ -927,11 +869,7 @@ export default function SearchScreen() {
 								{/* Dropdown Suggestions */}
 								<DropdownMenu
 									isVisible={!!activeInput}
-									className={
-										Platform.OS === "web"
-											? "top-[92px] left-0 right-0"
-											: "top-[56%] mt-2 left-0 right-0"
-									}
+									className="top-[90px] left-0 right-0"
 								>
 									{showSuggestions ? (
 										<FlatList
@@ -952,7 +890,7 @@ export default function SearchScreen() {
 											}
 											ListEmptyComponent={
 												<View className="py-6 items-center justify-center">
-													<ThemedText className="text-[14px] font-google-sans-regular !text-gray-400 text-center">
+													<ThemedText className="text-[14px] font-google-sans-regular !text-neutral-400 text-center">
 														Nessuna stazione corrispondente
 													</ThemedText>
 												</View>
@@ -986,11 +924,11 @@ export default function SearchScreen() {
 													{/* Current Location */}
 													<SearchListItem
 														iconName="my_location"
-														text="Milano Bovisa Politecnico"
+														text="Milano Centrale"
 														className="!px-0"
 														weight={300}
 														onPress={() =>
-															handleStationSelect("Milano Bovisa Politecnico")
+															handleStationSelect("Milano Centrale")
 														}
 													/>
 
@@ -1057,7 +995,7 @@ export default function SearchScreen() {
 									<Pressable
 										onPress={() => setShowPassengersSheet(true)}
 										style={{ minHeight: 68 }}
-										className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 justify-center"
+										className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 justify-center"
 									>
 										<View className="flex-row items-center gap-0.5">
 											<Icon
@@ -1072,24 +1010,24 @@ export default function SearchScreen() {
 												<View className="flex-row items-center gap-1 flex-wrap flex-1">
 													<ThemedText
 														numberOfLines={1}
-														className="text-[15px] font-google-sans-semibold !text-gray-950"
+														className="text-[15px] font-google-sans-semibold !text-neutral-950"
 													>
 														{passengerSummary}
 													</ThemedText>
 													{(hasAnimal || hasBike) && (
 														<View className="flex-row items-center gap-1">
-															<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-950">
+															<ThemedText className="text-[15px] font-google-sans-semibold !text-neutral-950">
 																+
 															</ThemedText>
 															{hasAnimal && (
 																<Icon
 																	name="pet_supplies"
 																	size={16}
-																	className="!text-gray-950"
+																	className="!text-neutral-950"
 																/>
 															)}
 															{hasAnimal && hasBike && (
-																<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-950">
+																<ThemedText className="text-[15px] font-google-sans-semibold !text-neutral-950">
 																	+
 																</ThemedText>
 															)}
@@ -1097,7 +1035,7 @@ export default function SearchScreen() {
 																<Icon
 																	name="pedal_bike"
 																	size={16}
-																	className="!text-gray-950"
+																	className="!text-neutral-950"
 																/>
 															)}
 														</View>
@@ -1106,7 +1044,7 @@ export default function SearchScreen() {
 											</View>
 										</View>
 										<View className="mt-0.5">
-											<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+											<ThemedText className="text-[13px] font-google-sans-medium !text-neutral-500">
 												Aggiungi passeggeri, animali e biciclette
 											</ThemedText>
 										</View>
@@ -1121,9 +1059,9 @@ export default function SearchScreen() {
 								name="info"
 								size={18}
 								weight={300}
-								className="!text-gray-500 -mt-0.5"
+								className="!text-neutral-500 -mt-0.5"
 							/>
-							<ThemedText className="flex-1 text-[12px] font-google-sans-medium !text-gray-500 !leading-tight">
+							<ThemedText className="flex-1 text-[12px] font-google-sans-medium !text-neutral-500 !leading-tight">
 								Prima di procedere con l&apos;acquisto consulta le{" "}
 								<ThemedText className="!text-primary-500 underline">
 									Modifiche della Circolazione Programmata
@@ -1132,7 +1070,7 @@ export default function SearchScreen() {
 						</View>
 					</ScrollView>
 
-					<View className="-mx-5 px-5 py-6 bg-white border-t border-gray-100 mt-auto">
+					<View className="-mx-5 px-5 py-6 bg-white border-t border-neutral-100 mt-auto">
 						<View className="flex-row gap-3 items-stretch">
 							<Pressable
 								onPress={() => {
@@ -1141,7 +1079,7 @@ export default function SearchScreen() {
 									setShowTravelType(false);
 									setShowFiltersSheet(true);
 								}}
-								className="h-14 w-14 shrink-0 self-stretch items-center justify-center rounded-2xl bg-white border border-gray-200"
+								className="h-14 w-14 shrink-0 self-stretch items-center justify-center rounded-2xl bg-white border border-neutral-200"
 							>
 								<Icon
 									name="page_info"
@@ -1219,11 +1157,11 @@ export default function SearchScreen() {
 									<Icon
 										name="chevron_left"
 										size={32}
-										className="!text-gray-950"
+										className="!text-neutral-950"
 										weight={200}
 									/>
 								</Pressable>
-								<ThemedText className="text-[14px] font-google-sans-medium !text-gray-950 capitalize">
+								<ThemedText className="text-[14px] font-google-sans-medium !text-neutral-950 capitalize">
 									{currentMonth.toLocaleString("it-IT", {
 										month: "long",
 										year: "numeric",
@@ -1240,7 +1178,7 @@ export default function SearchScreen() {
 									<Icon
 										name="chevron_right"
 										size={32}
-										className="!text-gray-950"
+										className="!text-neutral-950"
 										weight={200}
 									/>
 								</Pressable>
@@ -1251,7 +1189,7 @@ export default function SearchScreen() {
 								{["LUN", "MAR", "MER", "GIO", "VEN", "SAB", "DOM"].map((d) => (
 									<ThemedText
 										key={d}
-										className="text-[13px] font-google-sans-medium !text-gray-400 w-[14.28%] text-center"
+										className="text-[13px] font-google-sans-medium !text-neutral-400 w-[14.28%] text-center"
 									>
 										{d}
 									</ThemedText>
@@ -1328,8 +1266,8 @@ export default function SearchScreen() {
 															d.isSelected
 																? "!text-white"
 																: d.isPast
-																	? "!text-gray-500"
-																	: "!text-gray-950"
+																	? "!text-neutral-500"
+																	: "!text-neutral-950"
 														}`}
 													>
 														{d.day}
@@ -1342,11 +1280,11 @@ export default function SearchScreen() {
 							</View>
 
 							{/* Selection Tabs */}
-							<View className="border-t border-gray-100 mt-4 pt-4 px-4">
+							<View className="border-t border-neutral-100 mt-4 pt-4 px-4">
 								{/* Labels */}
 								<View className="flex-row items-center gap-2 mb-2.5 px-1">
 									<View style={{ flex: 1 }}>
-										<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+										<ThemedText className="text-[13px] font-google-sans-medium !text-neutral-500">
 											Andata
 										</ThemedText>
 									</View>
@@ -1356,7 +1294,7 @@ export default function SearchScreen() {
 										style={{ flex: 1 }}
 										className="flex-row flex-start justify-between items-center"
 									>
-										<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+										<ThemedText className="text-[13px] font-google-sans-medium !text-neutral-500">
 											Ritorno
 										</ThemedText>
 										{hasReturn && (
@@ -1389,11 +1327,11 @@ export default function SearchScreen() {
 										className={`flex-row items-center justify-center gap-2 rounded-2xl px-3 border ${
 											activeCalendarTab === "andata"
 												? "border-primary-600 bg-white"
-												: "border-gray-100 bg-gray-50"
+												: "border-neutral-100 bg-neutral-50"
 										}`}
 										style={{ flex: 1, height: 48, alignItems: "center" }}
 									>
-										<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-950">
+										<ThemedText className="text-[15px] font-google-sans-semibold !text-neutral-950">
 											{`${
 												["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"][
 													departureDate.getDay()
@@ -1415,8 +1353,8 @@ export default function SearchScreen() {
 												][departureDate.getMonth()]
 											}`}
 										</ThemedText>
-										<View className="bg-gray-200 rounded-2xl px-2 py-1">
-											<ThemedText className="text-[14px] font-google-sans-semibold !text-gray-800">
+										<View className="bg-neutral-200 rounded-2xl px-2 py-1">
+											<ThemedText className="text-[14px] font-google-sans-semibold !text-neutral-800">
 												{`${departureDate.getHours()}:${departureDate.getMinutes().toString().padStart(2, "0")}`}
 											</ThemedText>
 										</View>
@@ -1426,7 +1364,7 @@ export default function SearchScreen() {
 									<Icon
 										name="arrow_forward"
 										size={20}
-										className="!text-gray-400"
+										className="!text-neutral-400"
 										style={{ opacity: hasReturn ? 1 : 0 }}
 									/>
 
@@ -1445,7 +1383,7 @@ export default function SearchScreen() {
 											hasReturn
 												? activeCalendarTab === "ritorno"
 													? "border-primary-600 bg-white"
-													: "border-gray-100 bg-gray-50"
+													: "border-neutral-100 bg-neutral-50"
 												: "border-[#DCEBEB] bg-[#F0F7F7]"
 										}`}
 										style={{
@@ -1458,7 +1396,7 @@ export default function SearchScreen() {
 										{hasReturn ? (
 											<>
 												<View className="flex-row items-center justify-center gap-2">
-													<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-950">
+													<ThemedText className="text-[15px] font-google-sans-semibold !text-neutral-950">
 														{`${
 															["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"][
 																returnDate.getDay()
@@ -1480,8 +1418,8 @@ export default function SearchScreen() {
 															][returnDate.getMonth()]
 														}`}
 													</ThemedText>
-													<View className="bg-gray-200 rounded-2xl px-2 py-1">
-														<ThemedText className="text-[14px] font-google-sans-semibold !text-gray-800">
+													<View className="bg-neutral-200 rounded-2xl px-2 py-1">
+														<ThemedText className="text-[14px] font-google-sans-semibold !text-neutral-800">
 															{`${returnDate.getHours()}:${returnDate.getMinutes().toString().padStart(2, "0")}`}
 														</ThemedText>
 													</View>
@@ -1508,7 +1446,7 @@ export default function SearchScreen() {
 								style={{ width: SCREEN_WIDTH, alignSelf: "center" }}
 							>
 								<View className="px-5 mb-6">
-									<ThemedText className="text-[14px] font-google-sans-medium !text-gray-950">
+									<ThemedText className="text-[14px] font-google-sans-medium !text-neutral-950">
 										{activeCalendarTab === "andata"
 											? "Scegli l'orario di andata"
 											: "Scegli l'orario di ritorno"}
@@ -1584,7 +1522,7 @@ export default function SearchScreen() {
 												className={`py-3 rounded-full border items-center justify-center ${
 													isSelected
 														? "bg-primary-600 border-primary-600"
-														: "bg-white border-gray-200"
+														: "bg-white border-neutral-200"
 												} ${isDisabled ? "opacity-50" : ""}`}
 												style={{ width: 80 }}
 											>
@@ -1593,8 +1531,8 @@ export default function SearchScreen() {
 														isSelected
 															? "!text-white"
 															: isDisabled
-																? "!text-gray-300"
-																: "!text-gray-800"
+																? "!text-neutral-300"
+																: "!text-neutral-800"
 													}`}
 												>
 													{t}
@@ -1629,18 +1567,18 @@ export default function SearchScreen() {
 									onPress={() => setShowTravelType(!showTravelType)}
 									className="min-h-[50px] flex-row items-center justify-between py-1.5 relative"
 								>
-									<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+									<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
 										Soluzioni
 									</ThemedText>
 									<View className="flex-row items-center gap-1">
-										<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+										<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
 											{travelType}
 										</ThemedText>
 										<Animated.View style={travelTypeChevronAnimatedStyle}>
 											<Icon
 												name="expand_more"
 												size={20}
-												className="!text-gray-950 -mb-0.5"
+												className="!text-neutral-950 -mb-0.5"
 											/>
 										</Animated.View>
 									</View>
@@ -1663,7 +1601,7 @@ export default function SearchScreen() {
 													className="flex-row items-center justify-between px-4 py-2"
 												>
 													<ThemedText
-														className={`text-[15px] ${travelType === type ? "font-google-sans-semibold !text-gray-950" : "font-google-sans-regular !text-gray-500"}`}
+														className={`text-[15px] ${travelType === type ? "font-google-sans-semibold !text-neutral-950" : "font-google-sans-regular !text-neutral-500"}`}
 													>
 														{type}
 													</ThemedText>
@@ -1679,12 +1617,12 @@ export default function SearchScreen() {
 								</DropdownMenu>
 
 								<View className="flex-row items-center justify-between py-0.5">
-									<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+									<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
 										Solo treni diretti
 									</ThemedText>
 									<View
 										className={
-											Platform.OS === "ios" ? "bg-gray-200 rounded-full" : ""
+											Platform.OS === "ios" ? "bg-neutral-200 rounded-full" : ""
 										}
 									>
 										<Switch
@@ -1710,7 +1648,7 @@ export default function SearchScreen() {
 										className="flex-row items-center justify-between py-2"
 									>
 										<ThemedText
-											className={`text-[15px] ${pendingSortOrder === sort ? "font-google-sans-semibold !text-gray-950" : "font-google-sans-regular !text-gray-500"}`}
+											className={`text-[15px] ${pendingSortOrder === sort ? "font-google-sans-semibold !text-neutral-950" : "font-google-sans-regular !text-neutral-500"}`}
 										>
 											{sort}
 										</ThemedText>
@@ -1718,7 +1656,7 @@ export default function SearchScreen() {
 											className={`h-6 w-6 rounded-full border-2 items-center justify-center ${
 												pendingSortOrder === sort
 													? "border-primary-600"
-													: "border-gray-200"
+													: "border-neutral-200"
 											}`}
 										>
 											{pendingSortOrder === sort && (
@@ -1766,20 +1704,20 @@ export default function SearchScreen() {
 								</View>
 								<View className="ml-4 flex-1">
 									<View className="flex-row items-center justify-between">
-										<ThemedText className="text-[16px] font-google-sans-bold !text-gray-950 uppercase">
+										<ThemedText className="text-[16px] font-google-sans-bold !text-neutral-950 uppercase">
 											{USER_DATA.firstName} {USER_DATA.lastName}
 										</ThemedText>
 										<Icon
 											name={isPassengerExpanded ? "expand_less" : "expand_more"}
 											size={24}
-											className="!text-gray-950"
+											className="!text-neutral-950"
 										/>
 									</View>
-									<ThemedText className="text-[14px] font-google-sans-medium !text-gray-500 mt-1">
+									<ThemedText className="text-[14px] font-google-sans-medium !text-neutral-500 mt-1">
 										Adulto · CF/X-GO: {USER_DATA.loyaltyCode}
 									</ThemedText>
 									{!isPassengerExpanded && (
-										<ThemedText className="text-[14px] font-google-sans-medium !text-gray-500 mt-0.5">
+										<ThemedText className="text-[14px] font-google-sans-medium !text-neutral-500 mt-0.5">
 											{USER_DATA.email} · {USER_DATA.phone}
 										</ThemedText>
 									)}
@@ -1789,7 +1727,7 @@ export default function SearchScreen() {
 							{isPassengerExpanded && (
 								<View className="mb-6">
 									<View className="flex-row items-center justify-between mb-4">
-										<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
+										<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-950">
 											Dettagli passeggero
 										</ThemedText>
 										<ThemedText className="text-[14px] font-google-sans-bold !text-primary-600">
@@ -1811,32 +1749,32 @@ export default function SearchScreen() {
 										].map((field, idx) => (
 											<View
 												key={idx}
-												className="rounded-2xl border border-gray-200 p-3 bg-white flex-row items-center justify-between"
+												className="rounded-2xl border border-neutral-200 p-3 bg-white flex-row items-center justify-between"
 											>
 												<View>
-													<ThemedText className="text-[11px] font-google-sans-medium !text-gray-400 mb-0.5">
+													<ThemedText className="text-[11px] font-google-sans-medium !text-neutral-400 mb-0.5">
 														{field.label}
 													</ThemedText>
-													<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950 uppercase">
+													<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-950 uppercase">
 														{field.value}
 													</ThemedText>
 												</View>
 												<Icon
 													name="cancel"
 													size={20}
-													className="!text-gray-300"
+													className="!text-neutral-300"
 												/>
 											</View>
 										))}
 									</View>
-									<ThemedText className="text-[12px] font-google-sans-medium !text-gray-400 mt-4">
+									<ThemedText className="text-[12px] font-google-sans-medium !text-neutral-400 mt-4">
 										* Dati obbligatori
 									</ThemedText>
 								</View>
 							)}
 						</ScrollView>
 
-						<View className="px-6 py-6 border-t border-gray-100 bg-white">
+						<View className="px-6 py-6 border-t border-neutral-100 bg-white">
 							<MainButton
 								title="Conferma"
 								onPress={() => setShowPassengers(false)}
@@ -1860,11 +1798,11 @@ export default function SearchScreen() {
 									onPress={() => setShowPassengersSheet(false)}
 									className="p-1 -ml-1"
 								>
-									<Icon name="close" size={26} className="!text-gray-900" />
+									<Icon name="close" size={26} className="!text-neutral-900" />
 								</Pressable>
 							</View>
 							<View className="flex-[2] items-center justify-center">
-								<ThemedText className="text-[18px] font-google-sans-bold !text-gray-950 text-center">
+								<ThemedText className="text-[18px] font-google-sans-bold !text-primary-500 text-center">
 									Passeggeri
 								</ThemedText>
 							</View>
@@ -1957,9 +1895,9 @@ export default function SearchScreen() {
 												<Icon
 													name="person_outline"
 													size={18}
-													className="!text-gray-600"
+													className="!text-neutral-600"
 												/>
-												<ThemedText className="text-[14px] font-google-sans-bold !text-gray-700">
+												<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-700">
 													{
 														passengersList.filter(
 															(p) => p.itemType === "passenger",
@@ -1974,9 +1912,9 @@ export default function SearchScreen() {
 												<Icon
 													name="pedal_bike"
 													size={18}
-													className="!text-gray-600"
+													className="!text-neutral-600"
 												/>
-												<ThemedText className="text-[14px] font-google-sans-bold !text-gray-700">
+												<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-700">
 													{
 														passengersList.filter(
 															(p) => p.type === "Bicicletta",
@@ -1991,9 +1929,9 @@ export default function SearchScreen() {
 												<Icon
 													name="pet_supplies"
 													size={18}
-													className="!text-gray-600"
+													className="!text-neutral-600"
 												/>
-												<ThemedText className="text-[14px] font-google-sans-bold !text-gray-700">
+												<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-700">
 													{
 														passengersList.filter((p) => p.type === "Animale")
 															.length
@@ -2015,7 +1953,7 @@ export default function SearchScreen() {
 									return (
 										<View
 											key={item.id}
-											className="flex-col py-4 border-b border-gray-100"
+											className="flex-col py-4 border-b border-neutral-100"
 										>
 											<Pressable
 												className="flex-row items-center justify-between"
@@ -2057,14 +1995,14 @@ export default function SearchScreen() {
 														</View>
 													)}
 													<View>
-														<ThemedText className="text-[16px] font-google-sans-bold !text-gray-950">
+														<ThemedText className="text-[16px] font-google-sans-bold !text-neutral-950">
 															{hasName
 																? `${item.firstName || ""} ${item.lastName || ""}`.trim()
 																: item.itemType === "passenger"
 																	? `Passeggero ${passengerIndex}`
 																	: item.name}
 														</ThemedText>
-														<ThemedText className="text-[13px] font-google-sans-regular !text-gray-500">
+														<ThemedText className="text-[13px] font-google-sans-regular !text-neutral-500">
 															{item.itemType === "service"
 																? "Servizio aggiuntivo"
 																: item.type}
@@ -2082,7 +2020,7 @@ export default function SearchScreen() {
 														<Icon
 															name="expand_more"
 															size={24}
-															className="!text-gray-800"
+															className="!text-neutral-800"
 														/>
 													</Animated.View>
 												) : (
@@ -2107,7 +2045,7 @@ export default function SearchScreen() {
 												<View className="mt-4">
 													{item.itemType === "passenger" && (
 														<>
-															<ThemedText className="text-[14px] font-google-sans-bold !text-gray-950 mb-3">
+															<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-950 mb-3">
 																Dettagli passeggero
 															</ThemedText>
 															<View className="flex-row gap-2 mb-2">
@@ -2228,7 +2166,7 @@ export default function SearchScreen() {
 													>
 														{!item.isMock && (
 															<Pressable
-																className="flex-row items-center bg-red-50 px-3 py-2 rounded-lg"
+																className="flex-row items-center bg-rose-50 px-3 py-2 rounded-lg"
 																onPress={() => {
 																	setPassengersList((prev) =>
 																		prev.filter((p) => p.id !== item.id),
@@ -2239,16 +2177,16 @@ export default function SearchScreen() {
 																<Icon
 																	name="delete"
 																	size={18}
-																	className="!text-red-500 mr-1"
+																	className="!text-rose-500 mr-1"
 																/>
-																<ThemedText className="text-[14px] font-google-sans-medium !text-red-500">
+																<ThemedText className="text-[14px] font-google-sans-medium !text-rose-500">
 																	Rimuovi
 																</ThemedText>
 															</Pressable>
 														)}
 														{item.itemType === "passenger" && (
 															<Pressable
-																className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg"
+																className="flex-row items-center bg-neutral-100 px-3 py-2 rounded-lg"
 																onPress={() => {
 																	setPassengersList((prev) =>
 																		prev.map((p) =>
@@ -2270,9 +2208,9 @@ export default function SearchScreen() {
 																<Icon
 																	name="clear_all"
 																	size={18}
-																	className="!text-gray-700 mr-1"
+																	className="!text-neutral-700 mr-1"
 																/>
-																<ThemedText className="text-[14px] font-google-sans-medium !text-gray-700">
+																<ThemedText className="text-[14px] font-google-sans-medium !text-neutral-700">
 																	Svuota
 																</ThemedText>
 															</Pressable>
@@ -2283,7 +2221,7 @@ export default function SearchScreen() {
 																onPress={() => setExpandedPassengerId(null)}
 															>
 																<Icon
-																	name="bookmark_border"
+																	name="bookmark"
 																	size={18}
 																	className="!text-primary-600 mr-1"
 																/>
@@ -2301,7 +2239,7 @@ export default function SearchScreen() {
 							</ScrollView>
 						</KeyboardAvoidingView>
 
-						<View className="absolute bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-100 pb-10">
+						<View className="absolute bottom-0 left-0 right-0 p-5 bg-white border-t border-neutral-100 pb-10">
 							<MainButton
 								title="Conferma"
 								onPress={() => setShowPassengersSheet(false)}
@@ -2315,15 +2253,15 @@ export default function SearchScreen() {
 					>
 						{/* Passengers Rows */}
 						<View className="mb-8">
-							<View className="flex-row items-center justify-between py-7 border-b border-gray-100">
-								<ThemedText className="text-[16px] font-google-sans-medium !text-gray-950">
+							<View className="flex-row items-center justify-between py-7 border-b border-neutral-100">
+								<ThemedText className="text-[16px] font-google-sans-medium !text-neutral-950">
 									Adulti
 								</ThemedText>
 								<View className="flex-row items-center gap-4">
 									<Pressable
 										onPress={() => setNewAdults(Math.max(0, newAdults - 1))}
 										className={`h-10 w-10 items-center justify-center rounded-full ${
-											newAdults <= 0 ? "bg-gray-200" : "bg-primary-500"
+											newAdults <= 0 ? "bg-neutral-200" : "bg-primary-500"
 										}`}
 									>
 										<Icon name="remove" size={24} className="!text-white" />
@@ -2340,15 +2278,15 @@ export default function SearchScreen() {
 								</View>
 							</View>
 
-							<View className="flex-row items-center justify-between py-7 border-b border-gray-100">
-								<ThemedText className="text-[16px] font-google-sans-medium !text-gray-950">
+							<View className="flex-row items-center justify-between py-7 border-b border-neutral-100">
+								<ThemedText className="text-[16px] font-google-sans-medium !text-neutral-950">
 									Ragazzi
 								</ThemedText>
 								<View className="flex-row items-center gap-4">
 									<Pressable
 										onPress={() => setNewYouths(Math.max(0, newYouths - 1))}
 										className={`h-10 w-10 items-center justify-center rounded-full ${
-											newYouths <= 0 ? "bg-gray-200" : "bg-primary-500"
+											newYouths <= 0 ? "bg-neutral-200" : "bg-primary-500"
 										}`}
 									>
 										<Icon name="remove" size={24} className="!text-white" />
@@ -2365,12 +2303,12 @@ export default function SearchScreen() {
 								</View>
 							</View>
 
-							<View className="flex-row items-center justify-between py-7 border-b border-gray-100">
+							<View className="flex-row items-center justify-between py-7 border-b border-neutral-100">
 								<View className="flex-row items-center">
-									<ThemedText className="text-[16px] font-google-sans-medium !text-gray-950">
+									<ThemedText className="text-[16px] font-google-sans-medium !text-neutral-950">
 										Bambini
 									</ThemedText>
-									<ThemedText className="ml-2 text-[14px] font-google-sans-medium !text-gray-500">
+									<ThemedText className="ml-2 text-[14px] font-google-sans-medium !text-neutral-500">
 										(0-4 anni non compiuti)
 									</ThemedText>
 								</View>
@@ -2378,7 +2316,7 @@ export default function SearchScreen() {
 									<Pressable
 										onPress={() => setNewChildren(Math.max(0, newChildren - 1))}
 										className={`h-10 w-10 items-center justify-center rounded-full ${
-											newChildren <= 0 ? "bg-gray-200" : "bg-primary-500"
+											newChildren <= 0 ? "bg-neutral-200" : "bg-primary-500"
 										}`}
 									>
 										<Icon name="remove" size={24} className="!text-white" />

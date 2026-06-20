@@ -96,7 +96,7 @@ export function TicketItem({ ticket, onLongPress }: TicketItemProps) {
 				}}
 			>
 				{!showSvgBg && (
-					<View className="absolute inset-0 rounded-2xl border border-gray-200 bg-white" />
+					<View className="absolute inset-0 rounded-2xl border border-neutral-200 bg-white" />
 				)}
 				{showSvgBg && (
 					<Svg
@@ -149,24 +149,24 @@ export function TicketItem({ ticket, onLongPress }: TicketItemProps) {
 						setNotchX(e.nativeEvent.layout.x + e.nativeEvent.layout.width);
 					}}
 				>
-					<ThemedText className="text-[25px] font-google-sans-semibold !text-gray-900">
+					<ThemedText className="text-[25px] font-google-sans-semibold !text-neutral-900">
 						{day}
 					</ThemedText>
-					<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-900">
+					<ThemedText className="text-[15px] font-google-sans-semibold !text-neutral-900">
 						{month}
 					</ThemedText>
 				</View>
 
 				{/* Info column */}
 				<View className="flex-1">
-					<ThemedText className="mb-1 text-[13px] font-google-sans-medium !text-gray-500">
+					<ThemedText className="mb-1 text-[13px] font-google-sans-medium !text-neutral-500">
 						Biglietto
 					</ThemedText>
-					<ThemedText className="mb-1 text-[14px] font-google-sans-medium !text-gray-950">
+					<ThemedText className="mb-1 text-[14px] font-google-sans-medium !text-neutral-950">
 						{route}
 					</ThemedText>
 					<View className="flex-row items-center">
-						<ThemedText className="mr-2 text-[13px] font-google-sans-medium !text-gray-500">
+						<ThemedText className="mr-2 text-[13px] font-google-sans-medium !text-neutral-500">
 							{time} · {details}
 						</ThemedText>
 						<Icon name="cloud" size={16} color="#9ca3af" />

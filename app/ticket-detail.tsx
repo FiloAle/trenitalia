@@ -2,16 +2,14 @@ import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { ThemedText } from "@/components/themed-text";
 import { TicketBottomActions } from "@/components/ticket-detail/ticket-bottom-actions";
 import { TicketCard } from "@/components/ticket-detail/ticket-card";
-import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
+import { PageHeader } from "@/components/ui/page-header";
 import { USER_DATA } from "@/constants/user";
 import { getPurchasedTrips } from "@/utils/trips-store";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CheckoutHeader } from "@/components/checkout-header";
-import { PageHeader } from "@/components/ui/page-header";
 
 export default function TicketDetailScreen() {
 	const params = useLocalSearchParams();
@@ -60,27 +58,43 @@ export default function TicketDetailScreen() {
 				contentContainerStyle={{ paddingBottom: 220, gap: 16 }}
 			>
 				{/* Multi-Segment Ticket Cards */}
-				{trip.trains.map((train, index) => (
-					<TicketCard
-						key={index}
-						dateString={displayDate}
-						origin={train.origin || ""}
-						destination={train.destination || ""}
-						departureTime={train.departureTime || ""}
-						arrivalTime={train.arrivalTime || ""}
-						pnr={train.pnr || ""}
-						trainType={train.type || ""}
-						trainNumber={train.number || ""}
-						cp={train.cp}
-						carrozza={train.coach}
-						posto={train.seat}
-						passengerClass={train.selectedClass || "Standard"}
-						passengerName={(train as any).passengerName}
-						offer={train.selectedOffer || "Super Economy"}
-						price={train.price}
-						onOpenDettagli={() => setIsDettagliOpen(true)}
-					/>
-				))}
+				{trip.trains.map((train, index) => {
+					// Calcola se il treno è già partito confrontando orario di partenza e data
+					let isPast = false;
+					try {
+						const depDate = new Date(trip.date || Date.now());
+						const [hours, minutes] = (train.departureTime || "00:00").split(
+							":",
+						);
+						depDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+						isPast = depDate < new Date();
+					} catch (e) {
+						// Ignora
+					}
+
+					return (
+						<TicketCard
+							key={index}
+							dateString={displayDate}
+							isPastTrip={isPast}
+							origin={train.origin || ""}
+							destination={train.destination || ""}
+							departureTime={train.departureTime || ""}
+							arrivalTime={train.arrivalTime || ""}
+							pnr={train.pnr || ""}
+							trainType={train.type || ""}
+							trainNumber={train.number || ""}
+							cp={train.cp}
+							carrozza={train.coach}
+							posto={train.seat}
+							passengerClass={train.selectedClass || "Standard"}
+							passengerName={(train as any).passengerName}
+							offer={train.selectedOffer || "Super Economy"}
+							price={train.price}
+							onOpenDettagli={() => setIsDettagliOpen(true)}
+						/>
+					);
+				})}
 			</ScrollView>
 
 			{/* Bottom Fixed Actions */}
@@ -93,13 +107,13 @@ export default function TicketDetailScreen() {
 				title="Gestisci"
 			>
 				<View className="gap-3">
-					<Pressable className="border border-gray-200 rounded-2xl p-4 items-center active:bg-gray-50">
-						<ThemedText className="font-google-sans-bold !text-gray-900">
+					<Pressable className="border border-neutral-200 rounded-2xl p-4 items-center active:bg-neutral-50">
+						<ThemedText className="font-google-sans-bold !text-neutral-900">
 							Smart Refund
 						</ThemedText>
 					</Pressable>
 					<Pressable
-						className="border border-gray-200 rounded-2xl p-4 items-center active:bg-gray-50"
+						className="border border-neutral-200 rounded-2xl p-4 items-center active:bg-neutral-50"
 						onPress={() => {
 							setIsGestisciOpen(false);
 							// Give modal time to close before navigating
@@ -114,12 +128,12 @@ export default function TicketDetailScreen() {
 							}, 300);
 						}}
 					>
-						<ThemedText className="font-google-sans-bold !text-gray-900">
+						<ThemedText className="font-google-sans-bold !text-neutral-900">
 							Aggiungi servizi
 						</ThemedText>
 					</Pressable>
-					<Pressable className="border border-gray-200 rounded-2xl p-4 items-center active:bg-gray-50">
-						<ThemedText className="font-google-sans-bold !text-gray-900">
+					<Pressable className="border border-neutral-200 rounded-2xl p-4 items-center active:bg-neutral-50">
+						<ThemedText className="font-google-sans-bold !text-neutral-900">
 							Indennizzo
 						</ThemedText>
 					</Pressable>
@@ -133,26 +147,26 @@ export default function TicketDetailScreen() {
 			>
 				<View className="gap-4 mb-6 mt-2">
 					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-google-sans-bold !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-bold !text-neutral-900 text-[15px]">
 							N. CartaFreccia/X-GO
 						</ThemedText>
-						<ThemedText className="font-google-sans-medium !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-medium !text-neutral-900 text-[15px]">
 							{USER_DATA.loyaltyCode}
 						</ThemedText>
 					</View>
 					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-google-sans-bold !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-bold !text-neutral-900 text-[15px]">
 							Punti CartaFreccia/X-GO
 						</ThemedText>
-						<ThemedText className="font-google-sans-medium !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-medium !text-neutral-900 text-[15px]">
 							19.70
 						</ThemedText>
 					</View>
 					<View className="flex-row justify-between items-center">
-						<ThemedText className="font-google-sans-bold !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-bold !text-neutral-900 text-[15px]">
 							CO2 rispetto al viaggio in auto:
 						</ThemedText>
-						<ThemedText className="font-google-sans-medium !text-gray-900 text-[15px]">
+						<ThemedText className="font-google-sans-medium !text-neutral-900 text-[15px]">
 							-24.88 Kg
 						</ThemedText>
 					</View>

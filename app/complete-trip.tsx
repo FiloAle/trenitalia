@@ -2,13 +2,17 @@ import { selectedSolutionCache } from "@/api/search";
 import { PassengerSelection } from "@/components/complete-trip/passenger-selection";
 import { StickyFooter } from "@/components/select-offer/sticky-footer";
 import { ThemedText } from "@/components/themed-text";
-import { getGlobalSelectionList, setGlobalSelectionList } from "@/utils/selection-store";
 import { Icon } from "@/components/ui/icon";
+import { ADDITIONAL_SERVICES } from "@/constants/services";
 import { STATIONS } from "@/constants/stations";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import {
+	getGlobalSelectionList,
+	setGlobalSelectionList,
+} from "@/utils/selection-store";
 import { Image } from "expo-image";
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const LOGOS: Record<string, { source: any; ratio: number }> = {
@@ -21,7 +25,10 @@ const LOGOS: Record<string, { source: any; ratio: number }> = {
 
 	Intercity: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
 	InterCity: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
-	IntercityNotte: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
+	IntercityNotte: {
+		source: require("@/assets/logos/small/ic.png"),
+		ratio: 0.89,
+	},
 	ICNotte: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
 	ICnotte: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
 	Ni: { source: require("@/assets/logos/small/ic.png"), ratio: 0.89 },
@@ -34,8 +41,14 @@ const LOGOS: Record<string, { source: any; ratio: number }> = {
 	Reg: { source: require("@/assets/logos/small/r.png"), ratio: 2.03 },
 	Re: { source: require("@/assets/logos/small/r.png"), ratio: 2.03 },
 
-	"Reg Tper": { source: require("@/assets/logos/small/rtper.png"), ratio: 2.13 },
-	"Regv Tper": { source: require("@/assets/logos/small/rtper.png"), ratio: 2.13 },
+	"Reg Tper": {
+		source: require("@/assets/logos/small/rtper.png"),
+		ratio: 2.13,
+	},
+	"Regv Tper": {
+		source: require("@/assets/logos/small/rtper.png"),
+		ratio: 2.13,
+	},
 	Ttper: { source: require("@/assets/logos/small/rtper.png"), ratio: 2.13 },
 
 	EuroCity: { source: require("@/assets/logos/small/ec.png"), ratio: 1.1 },
@@ -87,62 +100,35 @@ export default function CompleteTripScreen() {
 	];
 	const dateFormatted = `${displayDate.getDate()} ${months[displayDate.getMonth()]} - ${displayDate.getFullYear()}`;
 
-	const servicesMap: Record<
-		string,
-		{ title: string; description: string; passengerSelectionText: string }
-	> = {
-		dog: {
-			title: "Viaggia con il tuo cane",
-			description:
-				"Acquista ora il biglietto per viaggiare insieme al tuo cane.",
-			passengerSelectionText:
-				"Seleziona i passeggeri che viaggiano con il cane.",
-		},
-		bike: {
-			title: "Viaggia con la tua bici",
-			description: "Viaggia portando con te la tua bici",
-			passengerSelectionText: "Seleziona i passeggeri che viaggiano con la bici",
-		},
-		lounge: {
-			title: "FRECCIAClub/FRECCIALounge",
-			description: "Ogni momento del tuo viaggio per noi è importante.",
-			passengerSelectionText:
-				"Seleziona i passeggeri per l'accesso a FRECCIAClub/FRECCIALounge.",
-		},
-		parking: {
-			title: "Parcheggio FS Park",
-			description:
-				"Prenota il tuo parcheggio nelle principali stazioni italiane.",
-			passengerSelectionText:
-				"Seleziona i passeggeri che usufruiscono del parcheggio.",
-		},
-	};
-	const serviceInfo = servicesMap[serviceId] || servicesMap.dog;
+	const serviceInfo =
+		ADDITIONAL_SERVICES.find((s) => s.id === serviceId) ||
+		ADDITIONAL_SERVICES[0];
 
 	const [acceptedTerms, setAcceptedTerms] = useState(false);
-	const [selectedPassengerIds, setSelectedPassengerIds] = useState<string[]>([]);
-	const passengers = getGlobalSelectionList().filter(p => p.itemType === "passenger");
+	const [selectedPassengerIds, setSelectedPassengerIds] = useState<string[]>(
+		[],
+	);
+	const passengers = getGlobalSelectionList().filter(
+		(p) => p.itemType === "passenger",
+	);
 	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(true);
 
 	return (
 		<View className="flex-1 bg-white">
-				{/* Header Modale */}
-				<View className="flex-row items-center justify-between px-5 pt-14 pb-4 bg-white ">
-					<View className="flex-1 items-start justify-center">
-						<Pressable
-							onPress={() => router.back()}
-							className="p-1 -ml-1"
-						>
-							<Icon name="close" size={26} className="!text-gray-900" />
-						</Pressable>
-					</View>
-					<View className="flex-[2] items-center justify-center">
-						<ThemedText className="text-[18px] font-google-sans-bold !text-gray-950 text-center">
-							Completa il viaggio
-						</ThemedText>
-					</View>
-					<View className="flex-1" />
+			{/* Header Modale */}
+			<View className="flex-row items-center justify-between px-5 pt-14 pb-4 bg-white ">
+				<View className="flex-1 items-start justify-center">
+					<Pressable onPress={() => router.back()} className="p-1 -ml-1">
+						<Icon name="close" size={26} className="!text-neutral-900" />
+					</Pressable>
 				</View>
+				<View className="flex-[2] items-center justify-center">
+					<ThemedText className="text-[18px] font-google-sans-bold !text-primary-500 text-center">
+						Completa il viaggio
+					</ThemedText>
+				</View>
+				<View className="flex-1" />
+			</View>
 
 			<ScrollView
 				className="flex-1"
@@ -157,7 +143,7 @@ export default function CompleteTripScreen() {
 						onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
 					>
 						<View className="flex-row items-center">
-							<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-950 mr-2">
+							<ThemedText className="text-[15px] font-google-sans-semibold !text-neutral-950 mr-2">
 								{serviceInfo.title}
 							</ThemedText>
 							<Icon name="info" size={18} color="#4b5563" />
@@ -169,7 +155,7 @@ export default function CompleteTripScreen() {
 						/>
 					</Pressable>
 					{isDescriptionExpanded && (
-						<ThemedText className="text-[14px] font-google-sans-medium !text-gray-700 leading-tight">
+						<ThemedText className="text-[14px] font-google-sans-medium !text-neutral-700 leading-tight">
 							{serviceInfo.description}
 						</ThemedText>
 					)}
@@ -231,8 +217,8 @@ export default function CompleteTripScreen() {
 														contentFit="contain"
 													/>
 												) : (
-													<View className="bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
-														<ThemedText className="text-[11px] font-google-sans-bold !text-gray-700 capitalize">
+													<View className="bg-neutral-100 px-2 py-0.5 rounded-full border border-neutral-200">
+														<ThemedText className="text-[11px] font-google-sans-bold !text-neutral-700 capitalize">
 															{t.type}
 														</ThemedText>
 													</View>
@@ -241,12 +227,12 @@ export default function CompleteTripScreen() {
 										);
 									})}
 									{hiddenCount > 0 && (
-										<ThemedText className="text-[12px] font-google-sans-bold !text-gray-500">
+										<ThemedText className="text-[12px] font-google-sans-bold !text-neutral-500">
 											+{hiddenCount}
 										</ThemedText>
 									)}
 									{trains.length === 1 && (
-										<ThemedText className="text-[12px] font-google-sans-regular !text-gray-800 ml-1">
+										<ThemedText className="text-[12px] font-google-sans-regular !text-neutral-800 ml-1">
 											{trains[0].number}
 										</ThemedText>
 									)}
@@ -254,7 +240,7 @@ export default function CompleteTripScreen() {
 							);
 						})()}
 					</View>
-					<ThemedText className="text-base font-google-sans-bold !text-gray-950 mb-1">
+					<ThemedText className="text-base font-google-sans-bold !text-neutral-950 mb-1">
 						{origin} - {destination}
 					</ThemedText>
 					<View className="flex-row items-center">
@@ -264,11 +250,11 @@ export default function CompleteTripScreen() {
 							color="#4b5563"
 							className="mr-1"
 						/>
-						<ThemedText className="text-sm font-google-sans-medium !text-gray-700 mr-3">
+						<ThemedText className="text-sm font-google-sans-medium !text-neutral-700 mr-3">
 							{dateFormatted}, {departureTime} - {arrivalTime}
 						</ThemedText>
 						<Icon name="person" size={16} color="#4b5563" className="mr-1" />
-						<ThemedText className="text-sm font-google-sans-medium !text-gray-700">
+						<ThemedText className="text-sm font-google-sans-medium !text-neutral-700">
 							{passengerText}
 						</ThemedText>
 					</View>
@@ -276,40 +262,56 @@ export default function CompleteTripScreen() {
 
 				{/* Passenger Selection */}
 				<PassengerSelection
-						price={price}
-						acceptedTerms={acceptedTerms}
-						onToggleTerms={() => setAcceptedTerms(!acceptedTerms)}
-						passengers={passengers}
-						selectedPassengerIds={selectedPassengerIds}
-						onTogglePassenger={(id) => {
-							setSelectedPassengerIds(prev => 
-								prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
-							);
-						}}
-						instructionText={serviceInfo.passengerSelectionText}
-					/>
+					price={price}
+					acceptedTerms={acceptedTerms}
+					onToggleTerms={() => setAcceptedTerms(!acceptedTerms)}
+					passengers={passengers}
+					selectedPassengerIds={selectedPassengerIds}
+					onTogglePassenger={(id) => {
+						setSelectedPassengerIds((prev) =>
+							prev.includes(id)
+								? prev.filter((pId) => pId !== id)
+								: [...prev, id],
+						);
+					}}
+					instructionText={serviceInfo.subtitle}
+				/>
 			</ScrollView>
 
 			<StickyFooter
-					totalPrice={selectedPassengerIds.length * price}
-					basePrice={0}
-					buttonTitle="Conferma"
-					subtitle={selectedPassengerIds.length === 1 ? "1 Servizio" : `${selectedPassengerIds.length} Servizi`}
-					hideSeatSelection={true}
-					disabled={selectedPassengerIds.length === 0 || !acceptedTerms}
-					onPress={() => {
-						const globalList = getGlobalSelectionList();
-						const newItems = selectedPassengerIds.map(pid => ({
-							id: Math.random().toString(),
-							itemType: "service" as const,
-							type: (serviceId === "dog" || serviceId === "bike") ? (serviceId === "dog" ? "Animale" : "Bicicletta") : serviceInfo.title,
-							name: (serviceId === "dog" || serviceId === "bike") ? (serviceId === "dog" ? "Animale" : "Bicicletta") : serviceInfo.title,
-							price: price,
-						}));
-						setGlobalSelectionList([...globalList, ...newItems]);
-						router.dismiss(2);
-					}}
-				/>
+				totalPrice={selectedPassengerIds.length * price}
+				basePrice={0}
+				buttonTitle="Conferma"
+				subtitle={
+					selectedPassengerIds.length === 1
+						? "1 Servizio"
+						: `${selectedPassengerIds.length} Servizi`
+				}
+				hideSeatSelection={true}
+				disabled={selectedPassengerIds.length === 0 || !acceptedTerms}
+				onPress={() => {
+					const globalList = getGlobalSelectionList();
+					const newItems = selectedPassengerIds.map((pid) => ({
+						id: Math.random().toString(),
+						itemType: "service" as const,
+						type:
+							serviceId === "dog" || serviceId === "bike"
+								? serviceId === "dog"
+									? "Animale"
+									: "Bicicletta"
+								: serviceInfo.title,
+						name:
+							serviceId === "dog" || serviceId === "bike"
+								? serviceId === "dog"
+									? "Animale"
+									: "Bicicletta"
+								: serviceInfo.title,
+						price: price,
+					}));
+					setGlobalSelectionList([...globalList, ...newItems]);
+					router.dismiss(2);
+				}}
+			/>
 		</View>
 	);
 }

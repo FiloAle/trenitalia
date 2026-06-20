@@ -2,14 +2,14 @@ import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, View, DeviceEventEmitter } from "react-native";
+import { DeviceEventEmitter, Pressable, StyleSheet, View } from "react-native";
 
 import { DiscountCard } from "@/components/home/discount-card";
 import { InfoBanner } from "@/components/home/info-banner";
 import { PromoCarousel } from "@/components/home/promo-carousel";
 import { SectionHeader } from "@/components/home/section-header";
-import { ThemedText } from "@/components/themed-text";
 import { TravelSolutionCard } from "@/components/search/travel-solution-card";
+import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { USER_DATA } from "@/constants/user";
 import { getPurchasedTrips, PurchasedTrip } from "@/utils/trips-store";
@@ -62,7 +62,7 @@ export default function HomeScreen() {
 								className="mt-6 flex-row items-center rounded-full bg-white px-5 py-4"
 							>
 								<Icon name="search" size={24} color="#4b5563" />
-								<ThemedText className="ml-3 text-[16px] font-google-sans-medium !text-gray-600">
+								<ThemedText className="ml-3 text-[16px] font-google-sans-medium !text-neutral-600">
 									Cerca la tua destinazione
 								</ThemedText>
 							</Pressable>
@@ -74,11 +74,19 @@ export default function HomeScreen() {
 					{nextTrip && (
 						<View className="gap-4">
 							<SectionHeader title="Il tuo prossimo viaggio" />
-							<TravelSolutionCard 
-								isPurchasedTrip 
-								solution={nextTrip as any} 
-								route={{ from: nextTrip.trains[0].origin!, to: nextTrip.trains[nextTrip.trains.length - 1].destination! }} 
-								onPress={() => router.push({ pathname: "/ticket-detail" as any, params: { tripId: nextTrip.id } })}
+							<TravelSolutionCard
+								isPurchasedTrip
+								solution={nextTrip as any}
+								route={{
+									from: nextTrip.trains[0].origin!,
+									to: nextTrip.trains[nextTrip.trains.length - 1].destination!,
+								}}
+								onPress={() =>
+									router.push({
+										pathname: "/ticket-detail" as any,
+										params: { tripId: nextTrip.id },
+									})
+								}
 							/>
 						</View>
 					)}
@@ -90,9 +98,9 @@ export default function HomeScreen() {
 							title="Notizie di infomobilità"
 							actionText="Vedi tutte"
 							onActionPress={() => {
-								router.push('/info');
+								router.push("/info");
 								setTimeout(() => {
-									DeviceEventEmitter.emit('openInfoNews');
+									DeviceEventEmitter.emit("openInfoNews");
 								}, 100);
 							}}
 						/>
@@ -106,7 +114,7 @@ export default function HomeScreen() {
 					</View>
 				</View>
 
-				<View className="bg-gray-50 flex-1 gap-8 px-5 py-8">
+				<View className="bg-neutral-50 flex-1 gap-8 px-5 py-8">
 					<View className="gap-4">
 						<SectionHeader title="Promo e servizi" actionText="Vedi tutte" />
 						<PromoCarousel />

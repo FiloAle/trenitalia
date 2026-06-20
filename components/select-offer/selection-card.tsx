@@ -32,23 +32,23 @@ export function SelectionCard({
 			} ${
 				isSelected
 					? "border-primary-600 bg-primary-100/30"
-					: "border-gray-200 bg-white"
+					: "border-neutral-200 bg-white"
 			}`}
 		>
 			{isClass ? (
 				<>
 					<View className="flex-row justify-between items-start mb-2">
 						<ThemedText
-							className="text-[14px] font-google-sans-semibold !text-gray-950 flex-1"
+							className="text-[14px] font-google-sans-semibold !text-neutral-950 flex-1"
 							numberOfLines={1}
 						>
 							{title}
 						</ThemedText>
 						{showInfo && (
-							<Icon name="info" size={18} className="!text-gray-600 ml-2" />
+							<Icon name="info" size={18} className="!text-neutral-600 ml-2" />
 						)}
 					</View>
-					<ThemedText className="text-[11px] font-google-sans-semibold !text-gray-600 -mt-1">
+					<ThemedText className="text-[11px] font-google-sans-semibold !text-neutral-600 -mt-1">
 						da {priceStr}
 					</ThemedText>
 				</>
@@ -56,12 +56,12 @@ export function SelectionCard({
 				<>
 					<View>
 						<ThemedText
-							className="text-[13px] font-google-sans-semibold uppercase !text-gray-950 mb-1"
+							className="text-[13px] font-google-sans-semibold uppercase !text-neutral-950 mb-1"
 							numberOfLines={1}
 						>
 							{title}
 						</ThemedText>
-						<ThemedText className="text-[17px] font-google-sans-bold !text-gray-950">
+						<ThemedText className="text-[17px] font-google-sans-bold !text-neutral-950">
 							{priceStr}
 						</ThemedText>
 					</View>
@@ -76,7 +76,7 @@ export function SelectionCard({
 							<View />
 						)}
 						{showInfo && (
-							<Icon name="info" size={18} className="!text-gray-600" />
+							<Icon name="info" size={18} className="!text-neutral-600" />
 						)}
 					</View>
 				</>

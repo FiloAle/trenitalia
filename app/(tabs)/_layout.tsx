@@ -25,7 +25,7 @@ export default function TabLayout() {
 						</Text>
 					),
 					tabBarBackground: () => (
-						<View className="absolute bottom-0 left-0 right-0 h-full border-t border-gray-200 bg-white" />
+						<View className="absolute bottom-0 left-0 right-0 h-full border-t border-neutral-200 bg-white" />
 					),
 					tabBarStyle: {
 						height: 84,

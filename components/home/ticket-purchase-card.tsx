@@ -15,23 +15,23 @@ export function TicketPurchaseCard({ onPress }: TicketPurchaseCardProps) {
 			</ThemedText>
 
 			<Pressable className="relative" onPress={onPress}>
-				<View className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+				<View className="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
 					{/* Da Section */}
-					<View className="flex-row items-center border-b border-gray-200 px-4 py-4">
-						<ThemedText className="mr-4 w-6 font-google-sans-medium !text-gray-500">
+					<View className="flex-row items-center border-b border-neutral-200 px-4 py-4">
+						<ThemedText className="mr-4 w-6 font-google-sans-medium !text-neutral-500">
 							Da
 						</ThemedText>
-						<ThemedText className="flex-1 font-google-sans-medium !text-gray-500">
+						<ThemedText className="flex-1 font-google-sans-medium !text-neutral-500">
 							Stazione di partenza
 						</ThemedText>
 					</View>
 
 					{/* A Section */}
 					<View className="flex-row items-center px-4 py-4">
-						<ThemedText className="mr-4 w-6 font-google-sans-medium !text-gray-500">
+						<ThemedText className="mr-4 w-6 font-google-sans-medium !text-neutral-500">
 							A
 						</ThemedText>
-						<ThemedText className="flex-1 font-google-sans-medium !text-gray-500">
+						<ThemedText className="flex-1 font-google-sans-medium !text-neutral-500">
 							Stazione di arrivo
 						</ThemedText>
 					</View>

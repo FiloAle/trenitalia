@@ -1,16 +1,21 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, StyleSheet, View } from "react-native";
 
 export function DiscountCard() {
 	return (
-		<Pressable className="rounded-2xl overflow-hidden border border-gray-200">
+		<Pressable className="rounded-2xl overflow-hidden border border-neutral-200">
 			<View className="h-[140px] relative overflow-hidden bg-black">
 				<Image
 					source={require("@/assets/images/summer.webp")}
-					style={{ width: "100%", aspectRatio: 16/9, position: "absolute", bottom: 0 }}
+					style={{
+						width: "100%",
+						aspectRatio: 16 / 9,
+						position: "absolute",
+						bottom: 0,
+					}}
 					contentFit="cover"
 				/>
 				<LinearGradient

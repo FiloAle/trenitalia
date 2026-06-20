@@ -1,11 +1,11 @@
 import TrenitaliaLogo from "@/assets/logos/trenitalia_color.svg";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
+import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
 	Animated,
 	Dimensions,
-	Modal,
 	Platform,
 	Pressable,
 	ScrollView,
@@ -13,7 +13,6 @@ import {
 	TouchableWithoutFeedback,
 	View,
 } from "react-native";
-import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { USER_DATA, getInitials } from "@/constants/user";
@@ -24,7 +23,11 @@ const MENU_DATA = [
 	{
 		id: "RICERCA E ACQUISTO",
 		items: [
-			{ label: "Biglietti", icon: "confirmation_number", action: "open_search" },
+			{
+				label: "Biglietti",
+				icon: "confirmation_number",
+				action: "open_search",
+			},
 			{ label: "Abbonamenti", icon: "credit_card" },
 			{ label: "Carnet", icon: "view_day" },
 			{ label: "Promo e Servizi", icon: "local_mall" },
@@ -39,7 +42,11 @@ const MENU_DATA = [
 			{ label: "Infomobilità", icon: "train", route: "/info" },
 			{ label: "In caso di sciopero", icon: "campaign" },
 			{ label: "Notizie in tempo reale", icon: "feed" },
-			{ label: "Tabellone partenze/arrivi", icon: "view_list", route: "/station-board" },
+			{
+				label: "Tabellone partenze/arrivi",
+				icon: "view_list",
+				route: "/station-board",
+			},
 			{ label: "FrecciaPlay", icon: "play_circle" },
 		],
 	},
@@ -74,19 +81,19 @@ interface SubMenuItemProps {
 
 function SubMenuItem({ label, icon, onItemPress }: SubMenuItemProps) {
 	return (
-		<Pressable 
+		<Pressable
 			onPress={onItemPress}
-			className="flex-row items-center border-b border-gray-100/50 py-3 ps-2 pe-4"
+			className="flex-row items-center border-b border-neutral-100/50 py-3 ps-2 pe-4"
 		>
-			<Icon name={icon} size={28} className="!text-gray-700" weight={300} />
-			<ThemedText className="ml-4 flex-1 text-[14px] font-google-sans-medium !text-gray-700">
+			<Icon name={icon} size={28} className="!text-neutral-700" weight={300} />
+			<ThemedText className="ml-4 flex-1 text-[14px] font-google-sans-medium !text-neutral-700">
 				{label}
 			</ThemedText>
 			<Icon
 				name="chevron_right"
 				size={28}
 				weight={200}
-				className="!text-gray-400"
+				className="!text-neutral-400"
 			/>
 		</Pressable>
 	);
@@ -101,10 +108,10 @@ interface MenuItemProps {
 
 function MenuItem({ label, isOpen, onToggle, children }: MenuItemProps) {
 	return (
-		<View className="border-b border-gray-100">
+		<View className="border-b border-neutral-100">
 			<Pressable
 				onPress={onToggle}
-				className="flex-row items-center justify-between py-1 bg-gray-100 ps-5 pe-4"
+				className="flex-row items-center justify-between py-1 bg-neutral-100 ps-5 pe-4"
 			>
 				<ThemedText className="text-[13px] font-google-sans-bold uppercase tracking-wider !text-slate-600">
 					{label}
@@ -113,7 +120,7 @@ function MenuItem({ label, isOpen, onToggle, children }: MenuItemProps) {
 					name={isOpen ? "expand_less" : "expand_more"}
 					size={28}
 					weight={200}
-					className="!text-gray-700"
+					className="!text-neutral-700"
 				/>
 			</Pressable>
 			{isOpen && <View className="pl-2">{children}</View>}
@@ -127,7 +134,11 @@ interface SideMenuProps {
 	onProfilePress?: () => void;
 }
 
-export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) {
+export function SideMenu({
+	isVisible,
+	onClose,
+	onProfilePress,
+}: SideMenuProps) {
 	const insets = useSafeAreaInsets();
 	const [openSection, setOpenSection] = React.useState<string | null>(
 		"RICERCA E ACQUISTO",
@@ -213,14 +224,14 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 								<Icon
 									name="share"
 									size={16}
-									className="!text-gray-900"
+									className="!text-neutral-900"
 									weight={400}
 								/>
 								<Pressable onPress={() => handleClose()}>
 									<Icon
 										name="close"
 										size={26}
-										className="!text-gray-900"
+										className="!text-neutral-900"
 										weight={300}
 									/>
 								</Pressable>
@@ -235,7 +246,7 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 							{/* User Profile */}
 							<Pressable
 								onPress={onProfilePress}
-								className="flex-row items-center border-b border-gray-100 ps-5 pe-4 py-4"
+								className="flex-row items-center border-b border-neutral-100 ps-5 pe-4 py-4"
 							>
 								<View className="h-10 w-10 items-center justify-center rounded-full bg-primary-600">
 									<ThemedText className="text-sm font-google-sans-bold !text-white">
@@ -243,10 +254,10 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 									</ThemedText>
 								</View>
 								<View className="ml-4 flex-1">
-									<ThemedText className="text-[13px] font-google-sans-bold uppercase !text-gray-950">
+									<ThemedText className="text-[13px] font-google-sans-bold uppercase !text-neutral-950">
 										{USER_DATA.firstName} {USER_DATA.lastName}
 									</ThemedText>
-									<ThemedText className="text-[13px] font-google-sans-medium uppercase !text-gray-500">
+									<ThemedText className="text-[13px] font-google-sans-medium uppercase !text-neutral-500">
 										{USER_DATA.email}
 									</ThemedText>
 								</View>
@@ -254,7 +265,7 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 									name="chevron_right"
 									size={28}
 									weight={200}
-									className="!text-gray-400"
+									className="!text-neutral-400"
 								/>
 							</Pressable>
 
@@ -284,14 +295,16 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 													} else if (item.action === "open_search") {
 														handleClose(() => router.push("/search"));
 													} else if (item.route) {
-														handleClose(() => router.navigate(item.route as any));
+														handleClose(() =>
+															router.navigate(item.route as any),
+														);
 													}
 												}}
 											/>
 										))}
 									</MenuItem>
 								))}
-								<Pressable className="border-b border-gray-100 py-3 px-5 bg-gray-100">
+								<Pressable className="border-b border-neutral-100 py-3 px-5 bg-neutral-100">
 									<ThemedText className="text-[13px] font-google-sans-bold uppercase tracking-wider !text-slate-600">
 										Accesso
 									</ThemedText>
@@ -306,11 +319,11 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 									</ThemedText>
 								</Pressable>
 								<Pressable>
-									<ThemedText className="text-[15px] font-google-sans-medium !text-red-500">
+									<ThemedText className="text-[15px] font-google-sans-medium !text-rose-500">
 										Logout
 									</ThemedText>
 								</Pressable>
-								<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+								<ThemedText className="text-[13px] font-google-sans-medium !text-neutral-500">
 									Versione App 13.200.4.647
 								</ThemedText>
 							</View>
@@ -318,8 +331,6 @@ export function SideMenu({ isVisible, onClose, onProfilePress }: SideMenuProps) 
 					</View>
 				</Animated.View>
 			</View>
-
-
 		</View>
 	);
 }

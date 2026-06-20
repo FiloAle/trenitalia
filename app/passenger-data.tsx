@@ -1,4 +1,3 @@
-import { InfoBanner } from "@/components/home/info-banner";
 import { StickyFooter } from "@/components/select-offer/sticky-footer";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
@@ -12,7 +11,7 @@ import { setPendingPassengers } from "@/utils/trips-store";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Platform, Pressable, ScrollView, TextInput, View } from "react-native";
-import Animated from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 const PassengerInput = ({
 	label,
@@ -39,7 +38,7 @@ const PassengerInput = ({
 	const inputRef = useRef<TextInput>(null);
 
 	return (
-		<View className="flex-1 h-[56px] rounded-2xl border border-gray-200 px-4 bg-white justify-center overflow-visible">
+		<View className="flex-1 h-[56px] rounded-2xl border border-neutral-200 px-4 bg-white justify-center overflow-visible">
 			<Pressable
 				className="w-full flex-1 justify-center"
 				onPress={() => {
@@ -48,7 +47,7 @@ const PassengerInput = ({
 				}}
 			>
 				{isActive && (
-					<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+					<ThemedText className="text-[13px] font-google-sans-medium !text-neutral-500">
 						{label}
 					</ThemedText>
 				)}
@@ -63,7 +62,7 @@ const PassengerInput = ({
 						onBlur={() => setFocusedInputId(null)}
 						placeholder={!isActive ? label : ""}
 						placeholderTextColor="#9ca3af"
-						className={`text-[16px] font-google-sans-medium !text-gray-950 p-0 m-0 ${
+						className={`text-[16px] font-google-sans-medium !text-neutral-950 p-0 m-0 ${
 							Platform.OS === "web" ? "outline-none" : ""
 						}`}
 						style={{ includeFontPadding: false, height: 20 }}
@@ -156,9 +155,9 @@ export default function PassengerDataScreen() {
 									<Icon
 										name="person_outline"
 										size={18}
-										className="!text-gray-600"
+										className="!text-neutral-600"
 									/>
-									<ThemedText className="text-[14px] font-google-sans-bold !text-gray-700">
+									<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-700">
 										{
 											passengersList.filter((p) => p.itemType === "passenger")
 												.length
@@ -172,9 +171,9 @@ export default function PassengerDataScreen() {
 									<Icon
 										name="pedal_bike"
 										size={18}
-										className="!text-gray-600"
+										className="!text-neutral-600"
 									/>
-									<ThemedText className="text-[14px] font-google-sans-bold !text-gray-700">
+									<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-700">
 										{
 											passengersList.filter((p) => p.type === "Bicicletta")
 												.length
@@ -188,9 +187,9 @@ export default function PassengerDataScreen() {
 									<Icon
 										name="pet_supplies"
 										size={18}
-										className="!text-gray-600"
+										className="!text-neutral-600"
 									/>
-									<ThemedText className="text-[14px] font-google-sans-bold !text-gray-700">
+									<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-700">
 										{passengersList.filter((p) => p.type === "Animale").length}
 									</ThemedText>
 								</View>
@@ -202,8 +201,8 @@ export default function PassengerDataScreen() {
 									p.type !== "Bicicletta",
 							).length > 0 && (
 								<View className="flex-row items-center gap-1">
-									<Icon name="scene" size={18} className="!text-gray-600" />
-									<ThemedText className="text-[14px] font-google-sans-bold !text-gray-700">
+									<Icon name="scene" size={18} className="!text-neutral-600" />
+									<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-700">
 										{
 											passengersList.filter(
 												(p) =>
@@ -230,7 +229,7 @@ export default function PassengerDataScreen() {
 						return (
 							<View
 								key={item.id}
-								className="flex-col py-4 border-b border-gray-100"
+								className="flex-col py-4 border-b border-neutral-100"
 							>
 								<Pressable
 									className="flex-row items-center justify-between"
@@ -276,14 +275,14 @@ export default function PassengerDataScreen() {
 											</View>
 										)}
 										<View>
-											<ThemedText className="text-[16px] font-google-sans-bold !text-gray-950">
+											<ThemedText className="text-[16px] font-google-sans-bold !text-neutral-950">
 												{hasName
 													? `${item.firstName || ""} ${item.lastName || ""}`.trim()
 													: item.itemType === "passenger"
 														? `Passeggero ${passengerIndex}`
 														: item.name || item.type}
 											</ThemedText>
-											<ThemedText className="text-[13px] font-google-sans-regular !text-gray-500">
+											<ThemedText className="text-[13px] font-google-sans-regular !text-neutral-500">
 												{item.itemType === "service"
 													? "Servizio aggiuntivo"
 													: item.type}
@@ -299,7 +298,7 @@ export default function PassengerDataScreen() {
 											<Icon
 												name="expand_more"
 												size={24}
-												className="!text-gray-800"
+												className="!text-neutral-800"
 											/>
 										</Animated.View>
 									) : (
@@ -322,7 +321,7 @@ export default function PassengerDataScreen() {
 								</Pressable>
 								{isExpanded && item.itemType === "passenger" && (
 									<View className="mt-4">
-										<ThemedText className="text-[14px] font-google-sans-bold !text-gray-950 mb-3">
+										<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-950 mb-3">
 											Dettagli passeggero
 										</ThemedText>
 										<View className="flex-row gap-2 mb-2">
@@ -428,7 +427,7 @@ export default function PassengerDataScreen() {
 
 										<View className="flex-row justify-end items-center gap-2">
 											<Pressable
-												className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg"
+												className="flex-row items-center bg-neutral-100 px-3 py-2 rounded-lg"
 												onPress={() => {
 													setPassengersList((prev) =>
 														prev.map((p) =>
@@ -450,9 +449,9 @@ export default function PassengerDataScreen() {
 												<Icon
 													name="clear_all"
 													size={18}
-													className="!text-gray-700 mr-1"
+													className="!text-neutral-700 mr-1"
 												/>
-												<ThemedText className="text-[14px] font-google-sans-medium !text-gray-700">
+												<ThemedText className="text-[14px] font-google-sans-medium !text-neutral-700">
 													Svuota
 												</ThemedText>
 											</Pressable>
@@ -486,6 +485,7 @@ export default function PassengerDataScreen() {
 				basePrice={basePrice}
 				buttonTitle="Conferma"
 				hideSeatSelection={true}
+				buttonClassName="w-[160px]"
 				onPress={() => {
 					const passengerNames = passengersList
 						.filter((p) => p.itemType === "passenger")

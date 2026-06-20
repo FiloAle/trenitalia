@@ -1,5 +1,4 @@
 import { ThemedText } from "@/components/themed-text";
-import React from "react";
 import { ScrollView, View } from "react-native";
 
 interface TimePickerColumnProps {
@@ -9,11 +8,11 @@ interface TimePickerColumnProps {
 	itemHeight?: number;
 }
 
-export function TimePickerColumn({ 
-	items, 
-	selectedValue, 
-	onValueChange, 
-	itemHeight = 40 
+export function TimePickerColumn({
+	items,
+	selectedValue,
+	onValueChange,
+	itemHeight = 40,
 }: TimePickerColumnProps) {
 	// Find initial index to set scroll offset
 	const initialIndex = items.findIndex((item) => item === selectedValue);
@@ -21,9 +20,9 @@ export function TimePickerColumn({
 
 	return (
 		<View className="w-[60px] h-full items-center">
-			<ScrollView 
+			<ScrollView
 				className="w-full"
-				showsVerticalScrollIndicator={false} 
+				showsVerticalScrollIndicator={false}
 				snapToInterval={itemHeight}
 				decelerationRate="fast"
 				nestedScrollEnabled={true}
@@ -38,14 +37,14 @@ export function TimePickerColumn({
 				}}
 			>
 				{items.map((item, i) => (
-					<View 
-						key={i} 
+					<View
+						key={i}
 						className="items-center justify-center rounded-full w-full"
 						style={{ height: itemHeight }}
 					>
-						<ThemedText 
+						<ThemedText
 							className={`text-lg font-google-sans-bold ${
-								item === selectedValue ? "!text-white" : "!text-gray-950"
+								item === selectedValue ? "!text-white" : "!text-neutral-950"
 							}`}
 						>
 							{item}

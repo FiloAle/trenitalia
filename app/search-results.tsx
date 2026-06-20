@@ -1,5 +1,6 @@
-import { searchJourneys, setSelectedSolutionCache } from "@/api/search";
 import { getViaggiatrenoUrl } from "@/api/proxy-helper";
+import { getBulkStationDelays } from "@/api/delay";
+import { searchJourneys, setSelectedSolutionCache } from "@/api/search";
 import { BottomSheet } from "@/components/modals/bottom-sheet";
 import {
 	TravelSolution,
@@ -13,10 +14,9 @@ import { MainButton } from "@/components/ui/main-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { STATIONS } from "@/constants/stations";
 import { TimelineStation } from "@/constants/train-details-mock";
-import { getGlobalSelectionList } from "@/utils/selection-store";
 import { formatClassName, formatOfferName } from "@/utils/format";
+import { getGlobalSelectionList } from "@/utils/selection-store";
 import { getTrainStopsCount } from "@/utils/viaggiatreno";
-import Constants from "expo-constants";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -133,7 +133,7 @@ const InfomobilityTrainBlock = ({
 	return (
 		<View className="mb-10">
 			{/* Train Header */}
-			<View className="flex-row items-center justify-between mb-4 border-b border-gray-100 pb-3">
+			<View className="flex-row items-center justify-between mb-4 border-b border-neutral-100 pb-3">
 				<View className="flex-row items-center gap-3">
 					{logoSource ? (
 						<Image
@@ -149,13 +149,13 @@ const InfomobilityTrainBlock = ({
 							resizeMode="contain"
 						/>
 					) : (
-						<View className="bg-gray-100 px-2 py-1 rounded border border-gray-200">
-							<ThemedText className="text-[13px] font-google-sans-bold !text-gray-700 capitalize">
+						<View className="bg-neutral-100 px-2 py-1 rounded border border-neutral-200">
+							<ThemedText className="text-[13px] font-google-sans-bold !text-neutral-700 capitalize">
 								{train.trainInfo.type}
 							</ThemedText>
 						</View>
 					)}
-					<ThemedText className="text-[16px] font-google-sans-bold !text-gray-900">
+					<ThemedText className="text-[16px] font-google-sans-bold !text-neutral-900">
 						{train.trainInfo.number}
 					</ThemedText>
 				</View>
@@ -206,7 +206,7 @@ const InfomobilityTrainBlock = ({
 				{hasPrev && (
 					<Pressable
 						onPress={() => setShowPrev(!showPrev)}
-						className="items-center py-3 bg-gray-50 rounded-2xl mb-8"
+						className="items-center py-3 bg-neutral-50 rounded-2xl mb-8"
 					>
 						<ThemedText className="text-[13px] font-google-sans-bold text-primary-600">
 							{showPrev
@@ -239,7 +239,7 @@ const InfomobilityTrainBlock = ({
 				{hasNext && (
 					<Pressable
 						onPress={() => setShowNext(!showNext)}
-						className="items-center py-3 bg-gray-50 rounded-2xl mt-8"
+						className="items-center py-3 bg-neutral-50 rounded-2xl mt-8"
 					>
 						<ThemedText className="text-[13px] font-google-sans-bold text-primary-600">
 							{showNext
@@ -260,7 +260,6 @@ export default function SearchResultsScreen() {
 	const dateStr = params.dateStr as string;
 	const passengerText = (params.passengerText as string) || "1 Adulto";
 
-	const route = { from, to };
 	const departureDate = dateStr ? new Date(dateStr) : new Date();
 
 	const insets = useSafeAreaInsets();
@@ -290,9 +289,11 @@ export default function SearchResultsScreen() {
 		};
 	});
 
-	const [localFrom, setLocalFrom] = useState(route.from);
-	const [localTo, setLocalTo] = useState(route.to);
+	const [localFrom, setLocalFrom] = useState(from);
+	const [localTo, setLocalTo] = useState(to);
 	const [currentSelectedDate, setCurrentSelectedDate] = useState(departureDate);
+
+	const route = { from: localFrom, to: localTo };
 
 	const isToday =
 		currentSelectedDate.getDate() === new Date().getDate() &&
@@ -329,6 +330,10 @@ export default function SearchResultsScreen() {
 	const [infoTrainsData, setInfoTrainsData] = useState<
 		{ trainInfo: any; timeline: TimelineStation[]; data: any }[] | null
 	>(null);
+
+	const [bulkDelays, setBulkDelays] = useState<Record<string, string>>({});
+	const latestCoveredDelayTimeRef = useRef<Record<string, Date>>({});
+	const isFetchingBulkRef = useRef<Record<string, boolean>>({});
 
 	useEffect(() => {
 		if (!solutions || solutions.length === 0) return;
@@ -409,6 +414,73 @@ export default function SearchResultsScreen() {
 		};
 	}, [solutions]);
 
+	useEffect(() => {
+		if (solutions.length === 0) return;
+
+		// Group solutions by origin station to find the max departure time needed per origin
+		const originMaxTimes: Record<string, Date> = {};
+		const originFirstTimes: Record<string, Date> = {};
+
+		for (const sol of solutions) {
+			const origin = sol.trains[0]?.origin;
+			const timeStr = sol.trains[0]?.departureTime;
+			if (origin && timeStr) {
+				const [h, m] = timeStr.split(":");
+				if (h && m) {
+					const solDate = new Date(currentSelectedDate);
+					solDate.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
+
+					if (!originMaxTimes[origin] || solDate > originMaxTimes[origin]) {
+						originMaxTimes[origin] = solDate;
+					}
+					if (!originFirstTimes[origin] || solDate < originFirstTimes[origin]) {
+						originFirstTimes[origin] = solDate;
+					}
+				}
+			}
+		}
+
+		// For each unique origin, check if we need to fetch the next bulk chunk
+		for (const origin of Object.keys(originMaxTimes)) {
+			if (isFetchingBulkRef.current[origin]) continue;
+
+			const maxNeededTime = originMaxTimes[origin];
+			const coveredTime = latestCoveredDelayTimeRef.current[origin];
+
+			if (!coveredTime || maxNeededTime >= coveredTime) {
+				const fetchNextBulkForOrigin = async () => {
+					isFetchingBulkRef.current[origin] = true;
+
+					let fetchDate = new Date(currentSelectedDate);
+					if (!coveredTime) {
+						fetchDate = originFirstTimes[origin];
+					} else {
+						fetchDate = new Date(coveredTime.getTime() + 60000);
+					}
+
+					const { delays, lastTrainTime } = await getBulkStationDelays(
+						origin,
+						fetchDate,
+					);
+
+					setBulkDelays((prev) => ({ ...prev, ...delays }));
+
+					if (lastTrainTime) {
+						latestCoveredDelayTimeRef.current[origin] = lastTrainTime;
+					} else {
+						// Fallback to avoid infinite loops on failure
+						latestCoveredDelayTimeRef.current[origin] = new Date(
+							fetchDate.getTime() + 3600000,
+						);
+					}
+
+					isFetchingBulkRef.current[origin] = false;
+				};
+				fetchNextBulkForOrigin();
+			}
+		}
+	}, [solutions, currentSelectedDate, bulkDelays]);
+
 	const handleOpenInfomobilita = async (trains: TravelSolution["trains"]) => {
 		setIsInfoModalVisible(true);
 		setIsLoadingInfo(true);
@@ -419,7 +491,9 @@ export default function SearchResultsScreen() {
 		try {
 			for (const train of trains) {
 				const trainNumber = train.number;
-				const targetFetchUrl = getViaggiatrenoUrl(`/cercaNumeroTrenoTrenoAutocomplete/${trainNumber}`);
+				const targetFetchUrl = getViaggiatrenoUrl(
+					`/cercaNumeroTrenoTrenoAutocomplete/${trainNumber}`,
+				);
 
 				const controller = new AbortController();
 				const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -452,7 +526,9 @@ export default function SearchResultsScreen() {
 				const codLocOrig = ids[1];
 				const dataPartenza = ids[2];
 
-				const detailsTargetFetchUrl = getViaggiatrenoUrl(`/andamentoTreno/${codLocOrig}/${tNum}/${dataPartenza}`);
+				const detailsTargetFetchUrl = getViaggiatrenoUrl(
+					`/andamentoTreno/${codLocOrig}/${tNum}/${dataPartenza}`,
+				);
 
 				const detailsController = new AbortController();
 				const detailsTimeoutId = setTimeout(
@@ -579,7 +655,7 @@ export default function SearchResultsScreen() {
 
 			const sameDayRoutes = uniqueRoutes.filter((r: any) => {
 				const routeDate = new Date(r.dx * 1000);
-				return routeDate.toDateString() === targetDateStr;
+				return routeDate.toDateString() === targetDateStr && r.saleable;
 			});
 
 			return sameDayRoutes.map((r: any) => {
@@ -600,7 +676,9 @@ export default function SearchResultsScreen() {
 					duration: r.dur.replace("'", "min").replace("h", "h "),
 					price: isNaN(parsedPrice) ? 0 : parsedPrice,
 					offerName: formatOfferName(r.tk?.[0]?.sf || "Ordinaria"),
-					serviceClass: formatClassName(r.tk?.[0]?.sc || r.tk?.[0]?.c?.[0] || "Standard"),
+					serviceClass: formatClassName(
+						r.tk?.[0]?.sc || r.tk?.[0]?.c?.[0] || "Standard",
+					),
 					tickets: r.tk || [],
 				};
 			});
@@ -661,6 +739,9 @@ export default function SearchResultsScreen() {
 			setSolutions([]);
 			allRoutesRef.current = [];
 			setHasFetchedPrevious(false);
+			latestCoveredDelayTimeRef.current = {};
+			isFetchingBulkRef.current = {};
+			setBulkDelays({});
 
 			try {
 				let currentDateToFetch = new Date(currentSelectedDate);
@@ -783,7 +864,7 @@ export default function SearchResultsScreen() {
 		return () => {
 			isCancelled = true;
 		};
-	}, [localFrom, localTo, currentSelectedDate, mapRoutesToSolutions]);
+	}, [currentSelectedDate, localFrom, localTo, mapRoutesToSolutions]);
 
 	// Generate dates from today - 2 to today + 365
 	const dates = useMemo(() => {
@@ -1212,16 +1293,16 @@ export default function SearchResultsScreen() {
 			</View>
 
 			{/* Results List */}
-			<ScrollView className="flex-1 bg-gray-50">
+			<ScrollView className="flex-1 bg-neutral-50">
 				<View className="p-4 gap-4 pb-32">
 					{/* Previous Solutions Button */}
 					{!hasFetchedPrevious && (
 						<Pressable
 							onPress={handleFetchPrevious}
 							disabled={isFetchingPrevious || isLoading}
-							className="h-12 w-full items-center justify-center rounded-2xl border border-gray-200 bg-white mb-1"
+							className="h-12 w-full items-center justify-center rounded-2xl border border-neutral-200 bg-white mb-1"
 						>
-							<ThemedText className="text-[15px] font-google-sans-bold !text-gray-800">
+							<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-800">
 								Soluzioni precedenti
 							</ThemedText>
 						</Pressable>
@@ -1238,7 +1319,7 @@ export default function SearchResultsScreen() {
 						</View>
 					) : (
 						<>
-							{sortedSolutions.map((solution) => (
+							{sortedSolutions.map((solution, index) => (
 								<TravelSolutionCard
 									key={solution.id}
 									solution={{
@@ -1250,6 +1331,11 @@ export default function SearchResultsScreen() {
 									}}
 									route={route}
 									searchDate={currentSelectedDate}
+									bulkDelay={
+										solution.trains.length > 0
+											? bulkDelays[solution.trains[0].number]
+											: undefined
+									}
 									isCheapest={solution.price > 0 && solution.price === minPrice}
 									isFastest={
 										solution.price > 0 &&
@@ -1259,7 +1345,14 @@ export default function SearchResultsScreen() {
 									onPressInfo={() => handleOpenInfomobilita(solution.trains)}
 									onPress={() => {
 										if (!solution.price) return;
-										setSelectedSolutionCache(solution);
+										setSelectedSolutionCache({
+											...solution,
+											delay: solution.trains.length > 0 ? bulkDelays[solution.trains[0].number] : undefined,
+											trains: solution.trains.map((t: any) => ({
+												...t,
+												delay: bulkDelays[t.number]
+											}))
+										});
 										router.push({
 											pathname: "/select-offer",
 											params: {
@@ -1274,7 +1367,7 @@ export default function SearchResultsScreen() {
 							))}
 							{sortedSolutions.length === 0 && !isFetchingMore && (
 								<View className="items-center py-10">
-									<ThemedText className="text-gray-500 font-google-sans-medium">
+									<ThemedText className="text-neutral-500 font-google-sans-medium">
 										Nessuna soluzione trovata per questa tipologia.
 									</ThemedText>
 								</View>
@@ -1304,18 +1397,18 @@ export default function SearchResultsScreen() {
 							onPress={() => setShowTravelType(!showTravelType)}
 							className="min-h-[50px] flex-row items-center justify-between py-1.5 relative"
 						>
-							<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+							<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
 								Soluzioni
 							</ThemedText>
 							<View className="flex-row items-center gap-1">
-								<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+								<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
 									{activeTravelType}
 								</ThemedText>
 								<Animated.View style={travelTypeChevronAnimatedStyle}>
 									<Icon
 										name="expand_more"
 										size={20}
-										className="!text-gray-950 -mb-0.5"
+										className="!text-neutral-950 -mb-0.5"
 									/>
 								</Animated.View>
 							</View>
@@ -1337,7 +1430,7 @@ export default function SearchResultsScreen() {
 										className="flex-row items-center justify-between px-4 py-2"
 									>
 										<ThemedText
-											className={`text-[15px] ${activeTravelType === type ? "font-google-sans-semibold !text-gray-950" : "font-google-sans-regular !text-gray-500"}`}
+											className={`text-[15px] ${activeTravelType === type ? "font-google-sans-semibold !text-neutral-950" : "font-google-sans-regular !text-neutral-500"}`}
 										>
 											{type}
 										</ThemedText>
@@ -1352,12 +1445,12 @@ export default function SearchResultsScreen() {
 						</DropdownMenu>
 
 						<View className="flex-row items-center justify-between py-0.5">
-							<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+							<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
 								Solo treni diretti
 							</ThemedText>
 							<View
 								className={
-									Platform.OS === "ios" ? "bg-gray-200 rounded-full" : ""
+									Platform.OS === "ios" ? "bg-neutral-200 rounded-full" : ""
 								}
 							>
 								<Switch
@@ -1382,7 +1475,7 @@ export default function SearchResultsScreen() {
 									className="flex-row items-center justify-between py-2"
 								>
 									<ThemedText
-										className={`text-[15px] ${pendingSortOrder === sort ? "font-google-sans-semibold !text-gray-950" : "font-google-sans-regular !text-gray-500"}`}
+										className={`text-[15px] ${pendingSortOrder === sort ? "font-google-sans-semibold !text-neutral-950" : "font-google-sans-regular !text-neutral-500"}`}
 									>
 										{sort}
 									</ThemedText>
@@ -1390,7 +1483,7 @@ export default function SearchResultsScreen() {
 										className={`h-6 w-6 rounded-full border-2 items-center justify-center ${
 											pendingSortOrder === sort
 												? "border-primary-600"
-												: "border-gray-200"
+												: "border-neutral-200"
 										}`}
 									>
 										{pendingSortOrder === sort && (
@@ -1423,7 +1516,7 @@ export default function SearchResultsScreen() {
 				{isLoadingInfo ? (
 					<View className="py-20 items-center justify-center">
 						<ActivityIndicator size="large" color="#004141" />
-						<ThemedText className="mt-4 text-[15px] font-google-sans-medium !text-gray-500">
+						<ThemedText className="mt-4 text-[15px] font-google-sans-medium !text-neutral-500">
 							Recupero informazioni in tempo reale...
 						</ThemedText>
 					</View>
@@ -1450,8 +1543,12 @@ export default function SearchResultsScreen() {
 					</ScrollView>
 				) : (
 					<View className="py-20 items-center justify-center">
-						<Icon name="search_off" size={48} className="!text-gray-300 mb-4" />
-						<ThemedText className="text-[16px] font-google-sans-medium !text-gray-500">
+						<Icon
+							name="search_off"
+							size={48}
+							className="!text-neutral-300 mb-4"
+						/>
+						<ThemedText className="text-[16px] font-google-sans-medium !text-neutral-500">
 							Nessuna soluzione trovata in tempo reale.
 						</ThemedText>
 					</View>

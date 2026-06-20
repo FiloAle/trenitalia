@@ -12,6 +12,7 @@ import Animated, {
 	LinearTransition,
 	withTiming,
 } from "react-native-reanimated";
+import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -465,8 +466,6 @@ export default function SelectOfferScreen() {
 				(p.type === "Animale" || p.type === "Bicicletta"),
 		).length * 5.0;
 
-
-
 	return (
 		<View className="flex-1 bg-white">
 			<PageHeader title="Andata" showBackButton={true} />
@@ -497,7 +496,7 @@ export default function SelectOfferScreen() {
 						<Animated.View
 							key={sIdx}
 							className="bg-transparent mb-4"
-							layout={LinearTransition}
+							layout={Platform.OS === "web" ? undefined : LinearTransition}
 						>
 							<View style={{ zIndex: 10, elevation: 10 }}>
 								<TravelSolutionCard
@@ -524,6 +523,7 @@ export default function SelectOfferScreen() {
 											) * passengerCount,
 										serviceClass: currentSelectedClass,
 										offerName: displayOfferName,
+										delay: segment.delay || solution?.delay,
 									}}
 									route={{ from: segment.origin, to: segment.destination }}
 									searchDate={departureDate}
@@ -549,14 +549,14 @@ export default function SelectOfferScreen() {
 									marginTop: -16,
 									overflow: "hidden",
 								}}
-								className="bg-white rounded-b-2xl border-x border-b border-gray-200"
-								layout={LinearTransition}
+								className="bg-white rounded-b-2xl border-x border-b border-neutral-200"
+								layout={Platform.OS === "web" ? undefined : LinearTransition}
 							>
 								<View style={{ height: 16 }} />
 								{isExpanded && (
 									<Animated.View
-										entering={FadeIn.duration(200)}
-										exiting={FadeOut.duration(200)}
+										entering={Platform.OS === "web" ? undefined : FadeIn.duration(200)}
+										exiting={Platform.OS === "web" ? undefined : FadeOut.duration(200)}
 									>
 										<View className="pb-2 pt-2">
 											{realClasses.map((c, cIdx) => {
@@ -579,7 +579,7 @@ export default function SelectOfferScreen() {
 														{/* Class Header */}
 														<View className="flex-row items-center justify-between px-4 pt-1 pb-1">
 															<ThemedText
-																className={`text-[14px] font-google-sans-bold ${selectedClasses[sIdx] === c.id ? "text-gray-800" : "text-gray-500"}`}
+																className={`text-[14px] font-google-sans-bold ${selectedClasses[sIdx] === c.id ? "text-neutral-800" : "text-neutral-500"}`}
 															>
 																{formatClassName(c.name, Infinity)}
 															</ThemedText>
@@ -629,7 +629,7 @@ export default function SelectOfferScreen() {
 																			[sIdx]: false,
 																		}));
 																	}}
-																	className={`flex-row items-center justify-between pr-4 pl-10 py-2 ${isSelected ? "bg-primary-500/5" : "active:bg-gray-50"}`}
+																	className={`flex-row items-center justify-between pr-4 pl-10 py-2 ${isSelected ? "bg-primary-500/5" : "active:bg-neutral-50"}`}
 																>
 																	<View className="flex-row items-center flex-1 relative">
 																		{isSelected && (
@@ -642,13 +642,13 @@ export default function SelectOfferScreen() {
 																			</View>
 																		)}
 																		<ThemedText
-																			className={`text-[15px] ${isSelected ? "font-google-sans-bold !text-primary-500" : "font-google-sans-regular !text-gray-900"}`}
+																			className={`text-[15px] ${isSelected ? "font-google-sans-bold !text-primary-500" : "font-google-sans-regular !text-neutral-900"}`}
 																		>
 																			{o.name}
 																		</ThemedText>
 																	</View>
 																	<ThemedText
-																		className={`text-[15px] ${isSelected ? "font-google-sans-bold !text-primary-500" : "font-google-sans-regular !text-gray-900"}`}
+																		className={`text-[15px] ${isSelected ? "font-google-sans-bold !text-primary-500" : "font-google-sans-regular !text-neutral-900"}`}
 																	>
 																		€ {offerPrice.toFixed(2).replace(".", ",")}
 																	</ThemedText>
@@ -675,6 +675,7 @@ export default function SelectOfferScreen() {
 					getPriceForSelection(selectedClasses, selectedOffers) * passengerCount
 				}
 				basePrice={basePrice}
+				buttonClassName="w-[160px]"
 				onPress={() => {
 					const finalPrice =
 						getPriceForSelection(selectedClasses, selectedOffers) *

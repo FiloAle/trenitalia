@@ -28,7 +28,7 @@ export default function ElectronicCreditScreen() {
 					<View className="w-10" />
 
 					<View className="absolute left-0 right-0 top-0 bottom-0 items-center justify-center pointer-events-none">
-						<ThemedText className="text-[17px] font-google-sans-bold !text-gray-950">
+						<ThemedText className="text-[17px] font-google-sans-bold !text-neutral-950">
 							Crediti elettronici
 						</ThemedText>
 					</View>
@@ -42,19 +42,19 @@ export default function ElectronicCreditScreen() {
 			{/* Empty State */}
 			<View className="flex-1 items-center justify-center px-8 mb-20">
 				<Icon name="crop_free" size={48} color="#9ca3af" className="mb-4" />
-				<ThemedText className="text-[22px] font-google-sans-bold !text-gray-950 text-center mb-2">
+				<ThemedText className="text-[22px] font-google-sans-bold !text-neutral-950 text-center mb-2">
 					Nessun credito disponibile
 				</ThemedText>
-				<ThemedText className="text-[15px] font-google-sans-medium !text-gray-600 text-center leading-tight mb-8">
+				<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-600 text-center leading-tight mb-8">
 					Non ci sono bonus/crediti elettronici o carte regalo nel tuo
 					borsellino.
 				</ThemedText>
 
 				<Pressable
 					onPress={() => setBottomSheetVisible(true)}
-					className="w-full border border-gray-300 rounded-2xl py-4 items-center justify-center bg-white"
+					className="w-full border border-neutral-300 rounded-2xl py-4 items-center justify-center bg-white"
 				>
-					<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
+					<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-950">
 						Usa Crediti, Bonus o Carta Regalo
 					</ThemedText>
 				</Pressable>
@@ -80,23 +80,23 @@ export default function ElectronicCreditScreen() {
 				title="Inserisci bonus credito"
 			>
 				<View className="pt-2">
-					<View className="border border-gray-200 rounded-2xl mb-4 px-4 py-3 h-[56px] justify-center bg-white">
+					<View className="border border-neutral-200 rounded-2xl mb-4 px-4 py-3 h-[56px] justify-center bg-white">
 						<TextInput
 							value={identificativo}
 							onChangeText={setIdentificativo}
 							placeholder="Codice indetificativo"
 							placeholderTextColor="#6b7280"
-							className="text-base font-google-sans-medium text-gray-950 w-full"
+							className="text-base font-google-sans-medium text-neutral-950 w-full"
 						/>
 					</View>
 
-					<View className="border border-gray-200 rounded-2xl mb-6 px-4 py-3 h-[56px] justify-center bg-white">
+					<View className="border border-neutral-200 rounded-2xl mb-6 px-4 py-3 h-[56px] justify-center bg-white">
 						<TextInput
 							value={antifrode}
 							onChangeText={setAntifrode}
 							placeholder="Codice antifrode"
 							placeholderTextColor="#6b7280"
-							className="text-base font-google-sans-medium text-gray-950 w-full"
+							className="text-base font-google-sans-medium text-neutral-950 w-full"
 						/>
 					</View>
 

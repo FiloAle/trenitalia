@@ -27,7 +27,7 @@ export function ServiceCard({
 		<Pressable
 			onPress={() => onSelect(isSelected ? null : service.id)}
 			className={`overflow-hidden rounded-2xl bg-white border flex-row ${
-				isSelected ? "border-primary-600" : "border-gray-200"
+				isSelected ? "border-primary-600" : "border-neutral-200"
 			}`}
 		>
 			{/* Left Image */}
@@ -41,13 +41,13 @@ export function ServiceCard({
 
 			<View className="flex-1 p-4">
 				<View className="flex-row items-start justify-between">
-					<ThemedText className="flex-1 pr-2 text-base font-google-sans-bold !text-gray-950">
+					<ThemedText className="flex-1 pr-2 text-base font-google-sans-bold !text-neutral-950">
 						{service.title}
 					</ThemedText>
 					<Icon name="favorite_border" size={24} color="#1f2937" />
 				</View>
 
-				<ThemedText className="mt-1 text-sm font-google-sans-medium !text-gray-600">
+				<ThemedText className="mt-1 text-sm font-google-sans-medium !text-neutral-600">
 					{service.description}
 				</ThemedText>
 
@@ -59,7 +59,7 @@ export function ServiceCard({
 							</ThemedText>
 						</View>
 					) : (
-						<ThemedText className="text-base font-google-sans-bold !text-gray-950">
+						<ThemedText className="text-base font-google-sans-bold !text-neutral-950">
 							{service.price.toFixed(2).replace(".", ",")} €
 						</ThemedText>
 					)}

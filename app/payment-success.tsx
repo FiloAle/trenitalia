@@ -43,7 +43,7 @@ export default function PaymentSuccessScreen() {
 					: [`${USER_DATA.firstName} ${USER_DATA.lastName}`];
 
 			const enrichedTrains: any[] = [];
-			
+
 			passengersList.forEach((passengerName) => {
 				sol.trains.forEach((train: any) => {
 					const isRegionale =
@@ -129,11 +129,13 @@ export default function PaymentSuccessScreen() {
 			>
 				{/* Notifications Switch */}
 				<View className="flex-row items-center justify-between mb-8 px-2">
-					<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
+					<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-950">
 						Ricevi notifiche sui tuoi viaggi
 					</ThemedText>
 					<View
-						className={Platform.OS === "ios" ? "bg-gray-200 rounded-full" : ""}
+						className={
+							Platform.OS === "ios" ? "bg-neutral-200 rounded-full" : ""
+						}
 					>
 						<Switch
 							value={notificationsEnabled}
@@ -151,9 +153,9 @@ export default function PaymentSuccessScreen() {
 						<Pressable
 							onPress={() => router.dismissAll()}
 							style={{ height: 56 }}
-							className="w-full border border-gray-300 rounded-2xl items-center justify-center"
+							className="w-full border border-neutral-300 rounded-2xl items-center justify-center"
 						>
-							<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
+							<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-950">
 								Torna alla Home
 							</ThemedText>
 						</Pressable>

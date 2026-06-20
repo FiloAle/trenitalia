@@ -36,10 +36,10 @@ export function EmptyState({ activeChip }: EmptyStateProps) {
 	return (
 		<View className="mt-20 items-center justify-center px-10">
 			<Icon name={getIconName()} size={64} color="#d1d5db" />
-			<ThemedText className="mt-6 text-center text-xl font-google-sans-bold !text-gray-950">
+			<ThemedText className="mt-6 text-center text-xl font-google-sans-bold !text-neutral-950">
 				Nessun {itemName} trovato
 			</ThemedText>
-			<ThemedText className="mt-2 text-center font-google-sans-medium !text-gray-500">
+			<ThemedText className="mt-2 text-center font-google-sans-medium !text-neutral-500">
 				Una volta acquistato un {itemName} lo potrai vedere qui
 			</ThemedText>
 		</View>

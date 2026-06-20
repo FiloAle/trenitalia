@@ -118,9 +118,15 @@ export default function PaymentScreen() {
 						preserveAspectRatio="xMinYMid meet"
 					/>
 				);
+			case "credit_card":
+				return (
+					<ThemedText className="text-[15px] font-google-sans-semibold !text-neutral-950">
+						Carta di debito o credito
+					</ThemedText>
+				);
 			default:
 				return (
-					<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-950">
+					<ThemedText className="text-[15px] font-google-sans-semibold !text-neutral-950">
 						Altri metodi di pagamento
 					</ThemedText>
 				);
@@ -153,7 +159,7 @@ export default function PaymentScreen() {
 							<Animated.View
 								key={idx}
 								className="bg-transparent mb-4"
-								layout={LinearTransition}
+								layout={Platform.OS === "web" ? undefined : LinearTransition}
 							>
 								<View style={{ zIndex: 10, elevation: 10 }}>
 									<TravelSolutionCard
@@ -203,23 +209,29 @@ export default function PaymentScreen() {
 										marginTop: -16,
 										overflow: "hidden",
 									}}
-									className="bg-white rounded-b-2xl border-x border-b border-gray-200"
-									layout={LinearTransition}
+									className="bg-white rounded-b-2xl border-x border-b border-neutral-200"
+									layout={Platform.OS === "web" ? undefined : LinearTransition}
 								>
 									<View style={{ height: 16 }} />
 									{isExpanded && (
 										<Animated.View
-											entering={FadeIn.duration(200)}
-											exiting={FadeOut.duration(200)}
+											entering={
+												Platform.OS === "web" ? undefined : FadeIn.duration(200)
+											}
+											exiting={
+												Platform.OS === "web"
+													? undefined
+													: FadeOut.duration(200)
+											}
 										>
 											<View className="px-4 pb-4 pt-3 gap-3">
 												<View className="flex-row items-center justify-between">
-													<ThemedText className="text-[15px] font-google-sans-bold !text-gray-900">
+													<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-900">
 														{passengerCount === 1 ? "Passeggero" : "Passeggeri"}
 													</ThemedText>
-													<ThemedText className="text-[15px] font-google-sans-regular !text-gray-900">
+													<ThemedText className="text-[15px] font-google-sans-regular !text-neutral-900">
 														{passengerCount} x{" "}
-														<ThemedText className="text-[15px] font-google-sans-bold !text-gray-900">
+														<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-900">
 															€ {unitPrice.toFixed(2).replace(".", ",")}
 														</ThemedText>
 													</ThemedText>
@@ -227,12 +239,12 @@ export default function PaymentScreen() {
 
 												{bikeCount > 0 && (
 													<View className="flex-row items-center justify-between">
-														<ThemedText className="text-[15px] font-google-sans-bold !text-gray-900">
+														<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-900">
 															{bikeCount === 1 ? "Bicicletta" : "Biciclette"}
 														</ThemedText>
-														<ThemedText className="text-[15px] font-google-sans-regular !text-gray-900">
+														<ThemedText className="text-[15px] font-google-sans-regular !text-neutral-900">
 															{bikeCount} x{" "}
-															<ThemedText className="text-[15px] font-google-sans-bold !text-gray-900">
+															<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-900">
 																€ 5,00
 															</ThemedText>
 														</ThemedText>
@@ -241,12 +253,12 @@ export default function PaymentScreen() {
 
 												{animalCount > 0 && (
 													<View className="flex-row items-center justify-between">
-														<ThemedText className="text-[15px] font-google-sans-bold !text-gray-900">
+														<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-900">
 															{animalCount === 1 ? "Animale" : "Animali"}
 														</ThemedText>
-														<ThemedText className="text-[15px] font-google-sans-regular !text-gray-900">
+														<ThemedText className="text-[15px] font-google-sans-regular !text-neutral-900">
 															{animalCount} x{" "}
-															<ThemedText className="text-[15px] font-google-sans-bold !text-gray-900">
+															<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-900">
 																€ 5,00
 															</ThemedText>
 														</ThemedText>
@@ -262,7 +274,7 @@ export default function PaymentScreen() {
 				</View>
 
 				<Animated.View
-					layout={LinearTransition}
+					layout={Platform.OS === "web" ? undefined : LinearTransition}
 					className="bg-white flex-1 pt-2"
 				>
 					{/* Pagamento */}
@@ -277,16 +289,29 @@ export default function PaymentScreen() {
 						<View className="gap-2">
 							{/* Card 1: Carte di credito */}
 							<Pressable
-								className={`min-h-[60px] rounded-2xl border p-4 flex-row items-center justify-between ${selectedMethod === "card" ? "border-primary-500 bg-primary-500/10" : "border-gray-200 bg-white/5"}`}
+								className={`min-h-[60px] rounded-2xl border p-4 flex-row items-center justify-between ${selectedMethod === "card" ? "border-primary-500 bg-primary-500/10" : "border-neutral-200 bg-white/5"}`}
 								onPress={() => setSelectedMethod("card")}
 							>
-								<View className="flex-row items-center">
-									<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-950">
-										Carta di debito o credito
-									</ThemedText>
+								<View className="flex-col items-start gap-1">
+									<PaypalLogo
+										width={80}
+										height={24}
+										preserveAspectRatio="xMinYMid meet"
+									/>
+									<View className="flex-row items-center gap-1">
+										<Icon
+											name="info"
+											size={13}
+											weight={500}
+											className="!text-primary-500 -my-[1px]"
+										/>
+										<ThemedText className="text-[12px] font-google-sans-medium !text-primary-500 mt-[1px]">
+											Pagamento veloce
+										</ThemedText>
+									</View>
 								</View>
 								<View
-									className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "card" ? "border-primary-500" : "border-gray-300"}`}
+									className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "card" ? "border-primary-500" : "border-neutral-300"}`}
 								>
 									{selectedMethod === "card" && (
 										<View className="h-2.5 w-2.5 rounded-full bg-primary-500" />
@@ -298,8 +323,8 @@ export default function PaymentScreen() {
 						{/* Card 2: Altri metodi */}
 						<View className="gap-2">
 							<AnimatedPressable
-								layout={LinearTransition}
-								className={`rounded-2xl border p-4 overflow-hidden ${selectedMethod !== "card" ? "border-primary-500" : "border-gray-200"} ${selectedMethod !== "card" && !isOtherMethodsOpen ? "bg-primary-500/10" : "bg-white/5"} transition-colors duration-300`}
+								layout={Platform.OS === "web" ? undefined : LinearTransition}
+								className={`rounded-2xl border p-4 overflow-hidden ${selectedMethod !== "card" ? "border-primary-500" : "border-neutral-200"} ${selectedMethod !== "card" && !isOtherMethodsOpen ? "bg-primary-500/10" : "bg-white/5"} transition-colors duration-300`}
 								onPress={() => setIsOtherMethodsOpen(!isOtherMethodsOpen)}
 							>
 								<View
@@ -315,10 +340,32 @@ export default function PaymentScreen() {
 
 								{isOtherMethodsOpen && (
 									<Animated.View
-										entering={FadeIn}
-										exiting={FadeOut}
-										className="flex-col gap-5 mt-1 pt-4 border-t border-gray-100"
+										entering={Platform.OS === "web" ? undefined : FadeIn}
+										exiting={Platform.OS === "web" ? undefined : FadeOut}
+										className="bg-neutral-50 px-3 py-3 rounded-xl border border-neutral-200"
 									>
+										{/* Carta di debito o credito */}
+										<Pressable
+											className="flex-row items-center justify-between"
+											onPress={() => {
+												setSelectedMethod("credit_card");
+												setIsOtherMethodsOpen(false);
+											}}
+										>
+											<View className="flex-row items-center">
+												<ThemedText className="text-[15px] font-google-sans-semibold !text-neutral-950">
+													Carta di debito o credito
+												</ThemedText>
+											</View>
+											<View
+												className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "credit_card" ? "border-primary-500" : "border-neutral-300"}`}
+											>
+												{selectedMethod === "credit_card" && (
+													<View className="h-2.5 w-2.5 rounded-full bg-primary-500" />
+												)}
+											</View>
+										</Pressable>
+
 										{/* PayPal */}
 										<Pressable
 											className="flex-row items-center justify-between"
@@ -335,7 +382,7 @@ export default function PaymentScreen() {
 												/>
 											</View>
 											<View
-												className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "paypal" ? "border-primary-500" : "border-gray-300"}`}
+												className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "paypal" ? "border-primary-500" : "border-neutral-300"}`}
 											>
 												{selectedMethod === "paypal" && (
 													<View className="h-2.5 w-2.5 rounded-full bg-primary-500" />
@@ -359,7 +406,7 @@ export default function PaymentScreen() {
 												/>
 											</View>
 											<View
-												className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "apple_pay" ? "border-primary-500" : "border-gray-300"}`}
+												className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "apple_pay" ? "border-primary-500" : "border-neutral-300"}`}
 											>
 												{selectedMethod === "apple_pay" && (
 													<View className="h-2.5 w-2.5 rounded-full bg-primary-500" />
@@ -383,7 +430,7 @@ export default function PaymentScreen() {
 												/>
 											</View>
 											<View
-												className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "satispay" ? "border-primary-500" : "border-gray-300"}`}
+												className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "satispay" ? "border-primary-500" : "border-neutral-300"}`}
 											>
 												{selectedMethod === "satispay" && (
 													<View className="h-2.5 w-2.5 rounded-full bg-primary-500" />
@@ -407,7 +454,7 @@ export default function PaymentScreen() {
 												/>
 											</View>
 											<View
-												className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "amazon_pay" ? "border-primary-500" : "border-gray-300"}`}
+												className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "amazon_pay" ? "border-primary-500" : "border-neutral-300"}`}
 											>
 												{selectedMethod === "amazon_pay" && (
 													<View className="h-2.5 w-2.5 rounded-full bg-primary-500" />
@@ -431,7 +478,7 @@ export default function PaymentScreen() {
 												/>
 											</View>
 											<View
-												className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "mybank" ? "border-primary-500" : "border-gray-300"}`}
+												className={`h-5 w-5 rounded-full border-2 items-center justify-center ${selectedMethod === "mybank" ? "border-primary-500" : "border-neutral-300"}`}
 											>
 												{selectedMethod === "mybank" && (
 													<View className="h-2.5 w-2.5 rounded-full bg-primary-500" />
@@ -454,7 +501,7 @@ export default function PaymentScreen() {
 									params: { endTime },
 								})
 							}
-							className="min-h-[60px] rounded-2xl border p-4 border-gray-200 bg-white/5 flex-row items-center justify-center"
+							className="min-h-[60px] rounded-2xl border p-4 border-neutral-200 bg-white/5 flex-row items-center justify-center"
 						>
 							<View className="flex-row items-center">
 								<Icon
@@ -471,18 +518,20 @@ export default function PaymentScreen() {
 						</AnimatedPressable>
 					</View>
 
-					<Animated.View layout={LinearTransition}>
+					<Animated.View
+						layout={Platform.OS === "web" ? undefined : LinearTransition}
+					>
 						{/* Fattura */}
 						<View className="px-5 mt-8 mb-6 flex-row items-center justify-between">
 							<View className="flex-row items-center">
-								<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950 mr-1.5">
+								<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950 mr-1.5">
 									Voglio la fattura
 								</ThemedText>
 								<Icon name="info" size={16} color="#9ca3af" />
 							</View>
 							<View
 								className={
-									Platform.OS === "ios" ? "bg-gray-200 rounded-full" : ""
+									Platform.OS === "ios" ? "bg-neutral-200 rounded-full" : ""
 								}
 							>
 								<Switch
@@ -503,7 +552,7 @@ export default function PaymentScreen() {
 									className={`h-5 w-5 rounded items-center justify-center border mt-0.5 mr-3 ${
 										acceptedTerms
 											? "bg-primary-500 border-primary-500"
-											: "border-gray-400"
+											: "border-neutral-400"
 									}`}
 								>
 									{acceptedTerms && (
@@ -516,31 +565,16 @@ export default function PaymentScreen() {
 										/>
 									)}
 								</Pressable>
-								<ThemedText className="flex-1 text-[13px] font-google-sans-medium !text-gray-600 leading-tight">
+								<ThemedText className="flex-1 text-[13px] font-google-sans-medium !text-neutral-600 leading-tight">
 									Accetto le{" "}
-									<ThemedText className="!text-[#c1152c] underline">
+									<ThemedText className="!text-primary-500 underline">
 										condizioni di trasporto
 									</ThemedText>{" "}
-									del vettore ed ho preso visione dell&apos;informativa per la{" "}
-									<ThemedText className="!text-[#c1152c] underline">
-										protezione dei dati personali
+									ed ho preso visione dell&apos;{""}
+									<ThemedText className="!text-primary-500 underline">
+										informativa privacy
 									</ThemedText>
 									.
-								</ThemedText>
-							</View>
-
-							<View className="ml-8 mb-2">
-								<ThemedText className="text-[13px] font-google-sans-medium !text-gray-600">
-									Stai acquistando un biglietto cumulativo.{"\n"}
-									<ThemedText className="!text-[#c1152c] underline">
-										Maggiori info
-									</ThemedText>
-								</ThemedText>
-							</View>
-
-							<View className="ml-8">
-								<ThemedText className="text-[13px] font-google-sans-medium !text-gray-600">
-									Consulta le modifiche alla circolazione.
 								</ThemedText>
 							</View>
 						</View>
@@ -556,6 +590,7 @@ export default function PaymentScreen() {
 				subtitle="Totale"
 				hideSeatSelection={true}
 				disabled={!acceptedTerms || isProcessing}
+				buttonClassName="w-[160px]"
 				onPress={() => {
 					setIsProcessing(true);
 					setTimeout(() => {
@@ -642,19 +677,19 @@ export default function PaymentScreen() {
 					<ThemedText className="text-[24px] font-google-sans-bold !text-primary-500 mt-6 mb-2 text-center">
 						Acquisto effettuato!
 					</ThemedText>
-					<ThemedText className="text-[16px] font-google-sans-regular !text-gray-600 text-center px-4 mb-8">
+					<ThemedText className="text-[16px] font-google-sans-regular !text-neutral-600 text-center px-4 mb-8">
 						A breve riceverai una mail con il tuo biglietto
 					</ThemedText>
 
 					<View className="flex-row items-center w-full gap-3 mt-4">
 						<Pressable
-							className="flex-1 py-3.5 rounded-xl border border-gray-300 items-center justify-center bg-white"
+							className="flex-1 py-3.5 rounded-xl border border-neutral-300 items-center justify-center bg-white"
 							onPress={() => {
 								setShowSuccessModal(false);
 								router.dismissAll();
 							}}
 						>
-							<ThemedText className="text-[16px] font-google-sans-bold !text-gray-900">
+							<ThemedText className="text-[16px] font-google-sans-bold !text-neutral-900">
 								Vai alla home
 							</ThemedText>
 						</Pressable>

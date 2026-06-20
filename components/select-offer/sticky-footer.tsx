@@ -13,6 +13,7 @@ export interface StickyFooterProps {
 	subtitle?: string;
 	disabled?: boolean;
 	isLoading?: boolean;
+	buttonClassName?: string;
 }
 
 export function StickyFooter({
@@ -23,6 +24,7 @@ export function StickyFooter({
 	subtitle = "Totale",
 	disabled = false,
 	isLoading = false,
+	buttonClassName = "w-auto min-w-[160px]",
 }: StickyFooterProps) {
 	const insets = useSafeAreaInsets();
 
@@ -43,15 +45,15 @@ export function StickyFooter({
 			>
 				<View>
 					<ThemedText
-						className={`text-[13px] font-google-sans-medium mb-0.5 ${subtitle === "Totale" ? "!text-gray-500" : "!text-gray-900"}`}
+						className={`text-[13px] font-google-sans-medium mb-0.5 ${subtitle === "Totale" ? "!text-neutral-500" : "!text-neutral-900"}`}
 					>
 						{subtitle}
 					</ThemedText>
-					<ThemedText className="text-[22px] font-google-sans-bold !text-gray-950">
+					<ThemedText className="text-[22px] font-google-sans-bold !text-neutral-950">
 						{totalPrice.toFixed(2).replace(".", ",")} €
 					</ThemedText>
 				</View>
-				<View className="w-auto min-w-[160px]">
+				<View className={buttonClassName}>
 					<MainButton
 						title={buttonTitle}
 						isLoading={isLoading}

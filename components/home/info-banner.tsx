@@ -11,24 +11,23 @@ interface InfoBannerProps {
 export function InfoBanner({
 	title = "Informazioni sulla circolazione",
 	description,
-	hideIcon = false,
 }: InfoBannerProps) {
 	return (
-		<Pressable className="flex-row items-start rounded-2xl bg-gray-100 px-4 py-3">
+		<Pressable className="flex-row items-start rounded-2xl bg-neutral-100 px-4 py-3">
 			<Icon
 				name="info"
 				size={20}
-				className="-ml-0.5 mr-3 -mt-[2.5px] !text-gray-800"
+				className="-ml-0.5 mr-3 -mt-[2.5px] !text-neutral-800"
 			/>
-			<View className="flex-1 gap-2">
+			<View className="flex-1 gap-1">
 				<ThemedText
-					className={`font-google-sans-semibold text-[14px] !text-gray-800 ${!description ? "leading-snug font-google-sans-medium" : ""}`}
+					className={`font-google-sans-semibold text-[14px] !text-neutral-800 ${!description ? "leading-snug font-google-sans-medium" : ""}`}
 				>
 					{title}
 				</ThemedText>
 				{description && (
-					<View className="flex-row items-start mt-0.5">
-						<ThemedText className="flex-1 mr-1 font-google-sans-regular text-[13px] !text-gray-600 leading-tight">
+					<View className="flex-row items-start">
+						<ThemedText className="flex-1 mr-1 font-google-sans-regular text-[13px] !text-neutral-600 leading-tight">
 							{description}
 						</ThemedText>
 					</View>

@@ -98,27 +98,35 @@ export function BottomSheet({
 						]}
 					/>
 				</TouchableWithoutFeedback>
-					<Animated.View
-						style={{
-							transform: [{ translateY: sheetSlideAnim }],
-							backgroundColor: "white",
-							borderTopLeftRadius: 32,
-							borderTopRightRadius: 32,
-							paddingHorizontal: 20,
-							paddingTop: 20,
-							paddingBottom: contentPaddingBottom !== undefined ? insets.bottom + contentPaddingBottom : insets.bottom,
-							maxHeight: SCREEN_HEIGHT * 0.9,
-							height: heightPercentage ? SCREEN_HEIGHT * heightPercentage : undefined,
-						}}
-					>
+				<Animated.View
+					style={{
+						transform: [{ translateY: sheetSlideAnim }],
+						backgroundColor: "white",
+						borderTopLeftRadius: 32,
+						borderTopRightRadius: 32,
+						paddingHorizontal: 20,
+						paddingTop: 20,
+						paddingBottom:
+							contentPaddingBottom !== undefined
+								? insets.bottom + contentPaddingBottom
+								: insets.bottom,
+						maxHeight: SCREEN_HEIGHT * 0.9,
+						height: heightPercentage
+							? SCREEN_HEIGHT * heightPercentage
+							: undefined,
+					}}
+				>
 					{(title || !hideCloseButton) && (
 						<View className="flex-row items-center justify-center mb-4 relative min-h-[32px]">
 							{!hideCloseButton && (
-								<Pressable onPress={handleClose} className="absolute left-0 z-10 p-1 -ml-1">
+								<Pressable
+									onPress={handleClose}
+									className="absolute left-0 z-10 p-1 -ml-1"
+								>
 									<Icon
 										name="close"
 										size={28}
-										className="!text-gray-800"
+										className="!text-neutral-800"
 										weight={300}
 									/>
 								</Pressable>

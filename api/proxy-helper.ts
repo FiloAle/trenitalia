@@ -28,3 +28,18 @@ export function getViaggiatrenoUrl(path: string) {
   }
   return fullUrl;
 }
+
+export function getGenericUrl(fullUrl: string) {
+  if (Platform.OS === 'web') {
+    if (__DEV__) {
+      const hostUri = Constants.expoConfig?.hostUri;
+      const proxyBase = hostUri ? `http://${hostUri}/api/proxy?url=` : "/api/proxy?url=";
+      return `${proxyBase}${encodeURIComponent(fullUrl)}`;
+    } else {
+      // In production, we assume we either have a generic proxy or we bypass.
+      // Usually next.js rewrite or nginx proxy for specific domains.
+      return `/proxy-generic?url=${encodeURIComponent(fullUrl)}`;
+    }
+  }
+  return fullUrl;
+}

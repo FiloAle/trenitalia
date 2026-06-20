@@ -22,6 +22,7 @@ export interface TrenitRoute {
   l: TrenitLeg[]; // Legs (train changes)
   pr?: string;    // Price string "93,90", might be missing
   tk?: any[];     // Tickets array
+  saleable?: boolean; // Saleable flag
 }
 
 export interface TrenitResponse {
@@ -215,6 +216,7 @@ export async function searchJourneys(from: string, to: string, date: Date = new 
       }
 
       const isSaleable = sol.status === 'SALEABLE' && item.grids && totalCoveredNodes === (sol.nodes || []).length;
+      route.saleable = isSaleable;
 
       if (isSaleable && sol.price && sol.price.amount !== undefined && sol.price.amount !== null) {
         route.pr = sol.price.amount.toFixed(2).replace('.', ',');

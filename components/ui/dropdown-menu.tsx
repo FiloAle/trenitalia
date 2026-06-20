@@ -45,7 +45,7 @@ export function DropdownMenu({
 
 	const innerContent = (
 		<View
-			className="bg-white rounded-2xl border border-gray-200 elevation-3 overflow-hidden"
+			className="bg-white rounded-2xl border border-neutral-200 elevation-3 overflow-hidden"
 			style={{ maxHeight }}
 		>
 			{children}

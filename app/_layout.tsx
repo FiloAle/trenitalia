@@ -23,6 +23,21 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { LogBox, Platform } from "react-native";
+
+if (Platform.OS === "web") {
+	const originalConsoleError = console.error;
+	console.error = (...args: any[]) => {
+		if (typeof args[0] === 'string' && args[0].includes('A text node cannot be a child of a <View>')) {
+			return;
+		}
+		originalConsoleError(...args);
+	};
+}
+
+LogBox.ignoreLogs([
+	"Unexpected text node:",
+]);
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync().catch(() => {

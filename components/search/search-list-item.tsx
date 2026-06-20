@@ -24,18 +24,23 @@ export function SearchListItem({
 		<Pressable
 			onPress={onPress}
 			className={`flex-row items-center py-2.5 px-2 ${
-				showBorder ? "border-b border-gray-100" : ""
+				showBorder ? "border-b border-neutral-100" : ""
 			} ${className}`}
 		>
-			<Icon name={iconName} size={16} className="!text-gray-950" weight={400} />
-			<ThemedText className="ml-2 text-[13px] font-google-sans-medium !text-gray-950">
+			<Icon
+				name={iconName}
+				size={16}
+				className="!text-neutral-950"
+				weight={400}
+			/>
+			<ThemedText className="ml-2 text-[13px] font-google-sans-medium !text-neutral-950">
 				{text}
 			</ThemedText>
 			{secondaryIconName && (
 				<Icon
 					name={secondaryIconName}
 					size={20}
-					className="!text-gray-950 ml-auto -my-4"
+					className="!text-primary-500 ml-auto -my-4"
 					weight={300}
 				/>
 			)}

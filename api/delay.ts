@@ -20,7 +20,12 @@ function parseInfoFromHtml(html: string, trainNumber: string): TrainInfo | null 
 	const delayMatch = rowHtml.match(delayRegex);
 	if (delayMatch) {
 		const val = delayMatch[1].replace(/<[^>]*>?/gm, '').trim();
-		if (val && val.length > 0) delay = val;
+		if (val && val.length > 0) {
+            delay = val;
+        } else {
+            // Se la cella è vuota, significa che il treno è "in orario"
+            delay = "0";
+        }
 	}
 
 	let binario = null;
@@ -77,6 +82,13 @@ export async function getTrainInfo(
 					let delay = null;
 					if (data.compRitardo && data.compRitardo.length > 0) {
 						delay = data.compRitardo[0];
+					}
+
+					// Enforce the boolean flag from Viaggiatreno to avoid false 'non partito' strings
+					if (data.nonPartito === false && delay && delay.toLowerCase().trim() === "non partito") {
+						delay = "in orario";
+					} else if (data.nonPartito === true) {
+						delay = "non partito";
 					}
 
 					let binario = null;
@@ -142,4 +154,87 @@ export async function getTrainDelay(
 ): Promise<string | null> {
 	const info = await getTrainInfo(departureStationName, trainNumber);
 	return info ? info.delay : null;
+}
+
+export async function getBulkStationDelays(
+	stationName: string,
+	date: Date
+): Promise<{ delays: Record<string, string>; lastTrainTime: Date | null }> {
+	try {
+		// 1. Get Viaggiatreno station code
+		const autoUrl = getViaggiatrenoUrl(`/autocompletaStazione/${encodeURIComponent(stationName)}`);
+		const autoResp = await fetch(autoUrl);
+		const autoText = await autoResp.text();
+		
+		if (!autoText || autoText.trim() === "")
+			return { delays: {}, lastTrainTime: null };
+
+		// Get the first line and extract code
+		const firstLine = autoText.trim().split("\n")[0].trim();
+		const parts = firstLine.split("|");
+		if (parts.length < 2) return { delays: {}, lastTrainTime: null };
+		
+		const stationCode = parts[1];
+
+		// 2. Format date (e.g. Thu Jun 20 2026 12:00:00 GMT+0200)
+		const dateStr = date.toString().split(" (")[0];
+
+		// 3. Fetch partenze board
+		const partenzeUrl = getViaggiatrenoUrl(`/partenze/${stationCode}/${encodeURIComponent(dateStr)}`);
+		const partenzeResp = await fetch(partenzeUrl);
+		const partenzeData = await partenzeResp.json();
+
+		let lastTrainTime: Date | null = null;
+		const bulkDelays: Record<string, string> = {};
+
+		if (Array.isArray(partenzeData) && partenzeData.length > 0) {
+			for (const train of partenzeData) {
+				if
+					(train.compNumeroTreno &&
+					train.compRitardo &&
+					train.compRitardo.length > 0)
+				{
+					// extract the numeric part from e.g. " FR 9520" or "REG 1234"
+					const numMatch = train.compNumeroTreno.match(/\d+/);
+					if (numMatch) {
+						let delayStr = train.compRitardo[0];
+
+						// Enforce the boolean flag from Viaggiatreno
+						if (
+							train.nonPartito === false &&
+							delayStr.toLowerCase().trim() === "non partito"
+						) {
+							delayStr = "in orario";
+						} else if (train.nonPartito === true) {
+							delayStr = "non partito";
+						}
+
+						bulkDelays[numMatch[0]] = delayStr;
+					}
+				}
+			}
+
+			// Parse the departure time of the last train
+			const lastTrain = partenzeData[partenzeData.length - 1];
+			if (lastTrain && lastTrain.compOrarioPartenza) {
+				// e.g. "18:45"
+				const timeStr = lastTrain.compOrarioPartenza.replace(/[^0-9:]/g, "");
+				const [h, m] = timeStr.split(":");
+				if (h && m) {
+					const newDate = new Date(date);
+					newDate.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
+					// If the last train is somehow before the requested time, it means we crossed midnight
+					if (newDate < date && parseInt(h, 10) < 4) {
+						newDate.setDate(newDate.getDate() + 1);
+					}
+					lastTrainTime = newDate;
+				}
+			}
+		}
+
+		return { delays: bulkDelays, lastTrainTime };
+	} catch (e) {
+		console.warn("Failed to fetch bulk station delays:", e);
+		return { delays: {}, lastTrainTime: null };
+	}
 }

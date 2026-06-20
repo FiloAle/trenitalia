@@ -79,8 +79,8 @@ export function FollowTrainModal({
 				showsVerticalScrollIndicator={false}
 			>
 				{/* Toggle Switch */}
-				<View className="flex-row items-center justify-between py-4 border-b border-gray-100 mb-4">
-					<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
+				<View className="flex-row items-center justify-between py-4 border-b border-neutral-100 mb-4">
+					<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-950">
 						Voglio ricevere le notifiche
 					</ThemedText>
 					<Switch
@@ -98,7 +98,7 @@ export function FollowTrainModal({
 				>
 					{/* Days Selector */}
 					<View className="mb-6">
-						<ThemedText className="text-xs font-google-sans-bold !text-gray-950 mb-3 bg-gray-100 py-2 -mx-5 px-5">
+						<ThemedText className="text-xs font-google-sans-bold !text-neutral-950 mb-3 bg-neutral-100 py-2 -mx-5 px-5">
 							RICEVI NOTIFICHE NEI GIORNI:
 						</ThemedText>
 						<View className="flex-row justify-between">
@@ -111,12 +111,12 @@ export function FollowTrainModal({
 										className={`h-10 w-10 items-center justify-center rounded-full border ${
 											isSelected
 												? "border-primary-600 bg-primary-600"
-												: "border-gray-200 bg-gray-50"
+												: "border-neutral-200 bg-neutral-50"
 										}`}
 									>
 										<ThemedText
 											className={`text-[15px] font-google-sans-bold ${
-												isSelected ? "!text-white" : "!text-gray-500"
+												isSelected ? "!text-white" : "!text-neutral-500"
 											}`}
 										>
 											{day}
@@ -129,7 +129,7 @@ export function FollowTrainModal({
 
 					{/* Time Selector (Mocked Scroll) */}
 					<View className="mb-8">
-						<ThemedText className="text-xs font-google-sans-bold !text-gray-950 mb-4 bg-gray-100 py-2 -mx-5 px-5">
+						<ThemedText className="text-xs font-google-sans-bold !text-neutral-950 mb-4 bg-neutral-100 py-2 -mx-5 px-5">
 							RICEVI NOTIFICHE A QUEST&apos;ORA:
 						</ThemedText>
 
@@ -152,7 +152,7 @@ export function FollowTrainModal({
 							/>
 
 							<View className="w-[30px] items-center justify-center">
-								<ThemedText className="text-lg font-google-sans-bold !text-gray-950">
+								<ThemedText className="text-lg font-google-sans-bold !text-neutral-950">
 									:
 								</ThemedText>
 							</View>
@@ -168,7 +168,7 @@ export function FollowTrainModal({
 
 					{/* Stations Selector */}
 					<View className="mb-4">
-						<ThemedText className="text-xs font-google-sans-bold !text-gray-950 mb-3 bg-gray-100 py-2 -mx-5 px-5">
+						<ThemedText className="text-xs font-google-sans-bold !text-neutral-950 mb-3 bg-neutral-100 py-2 -mx-5 px-5">
 							RICEVI NOTIFICHE FINO A:
 						</ThemedText>
 
@@ -179,14 +179,14 @@ export function FollowTrainModal({
 									key={idx}
 									onPress={() => setSelectedStation(station)}
 									className={`flex-row items-center justify-between py-4 ${
-										idx !== stations.length ? "border-b border-gray-100" : ""
+										idx !== stations.length ? "border-b border-neutral-100" : ""
 									}`}
 								>
-									<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+									<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
 										{station}
 									</ThemedText>
 									<View
-										className={`w-5 h-5 rounded-full border-2 items-center justify-center ${isSelected ? "border-primary-600" : "border-gray-400"}`}
+										className={`w-5 h-5 rounded-full border-2 items-center justify-center ${isSelected ? "border-primary-600" : "border-neutral-400"}`}
 									>
 										{isSelected && (
 											<View className="w-2.5 h-2.5 rounded-full bg-primary-600" />
@@ -200,12 +200,12 @@ export function FollowTrainModal({
 			</ScrollView>
 
 			{/* Footer Buttons */}
-			<View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-5 py-4 pb-8 flex-row gap-3">
+			<View className="absolute bottom-0 left-0 right-0 bg-white border-t border-neutral-100 px-5 py-4 pb-8 flex-row gap-3">
 				<Pressable
 					onPress={onClose}
-					className="flex-1 items-center justify-center py-3.5 rounded-2xl border border-gray-300 h-14"
+					className="flex-1 items-center justify-center py-3.5 rounded-2xl border border-neutral-300 h-14"
 				>
-					<ThemedText className="text-[15px] font-google-sans-bold !text-gray-950">
+					<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-950">
 						Annulla
 					</ThemedText>
 				</Pressable>

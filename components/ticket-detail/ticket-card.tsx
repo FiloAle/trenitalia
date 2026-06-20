@@ -141,6 +141,7 @@ interface TicketCardProps {
 	offer?: string;
 	price?: number;
 	onOpenDettagli: () => void;
+	isPastTrip?: boolean;
 }
 
 export function TicketCard({
@@ -160,6 +161,7 @@ export function TicketCard({
 	offer = "Super Economy",
 	price = 19.7,
 	onOpenDettagli,
+	isPastTrip,
 }: TicketCardProps) {
 	const calculateDuration = (start: string, end: string) => {
 		const [sh, sm] = start.split(":").map(Number);
@@ -376,7 +378,7 @@ export function TicketCard({
 			}}
 		>
 			{!showSvgBg && (
-				<View className="absolute inset-0 rounded-2xl border border-gray-200 bg-white" />
+				<View className="absolute inset-0 rounded-2xl border border-neutral-200 bg-white" />
 			)}
 			{showSvgBg && (
 				<Svg
@@ -402,14 +404,14 @@ export function TicketCard({
 							contentFit="contain"
 						/>
 					</View>
-					<ThemedText className="ml-2 text-base font-google-sans-bold !text-gray-900">
+					<ThemedText className="ml-2 text-base font-google-sans-bold !text-neutral-900">
 						{logoData.readable}
 					</ThemedText>
-					<ThemedText className="ml-1 text-base font-google-sans-regular !text-gray-900">
+					<ThemedText className="ml-1 text-base font-google-sans-regular !text-neutral-900">
 						{trainNumber}
 					</ThemedText>
 				</View>
-				<ThemedText className="text-base font-google-sans-regular !text-gray-900">
+				<ThemedText className="text-base font-google-sans-regular !text-neutral-900">
 					{dateString}
 				</ThemedText>
 			</View>
@@ -442,11 +444,17 @@ export function TicketCard({
 			<View className="px-5 pb-5 pt-5">
 				<View className="mb-5">
 					{/* Station Names Row */}
-					<View className="flex-row justify-between items-center mb-0.5">
-						<ThemedText className="flex-1 text-base font-google-sans-regular !text-gray-900">
+					<View className="flex-row justify-between items-center mb-0.5 gap-4">
+						<ThemedText
+							className="flex-1 text-base font-google-sans-regular !text-neutral-900"
+							numberOfLines={1}
+						>
 							{origin}
 						</ThemedText>
-						<ThemedText className="flex-1 text-right text-base font-google-sans-regular !text-gray-900">
+						<ThemedText
+							className="flex-1 text-right text-base font-google-sans-regular !text-neutral-900"
+							numberOfLines={1}
+						>
 							{destination}
 						</ThemedText>
 					</View>
@@ -454,19 +462,25 @@ export function TicketCard({
 					{/* Times and Arrow Row */}
 					<View className="flex-row items-start justify-between">
 						{(() => {
-							const delayNum = ticketDelay ? parseInt(ticketDelay, 10) : 0;
-							const hasDelay = !isNaN(delayNum) && delayNum > 0;
+							const getCleanNum = (val: string) =>
+								parseInt(val.replace(/[^0-9]/g, ""), 10);
+							const delayNum = ticketDelay ? getCleanNum(ticketDelay) : 0;
+							const isNegative = ticketDelay
+								? ticketDelay.includes("-")
+								: false;
+							const hasDelay = !isNaN(delayNum) && delayNum > 0 && !isNegative;
+
 							return hasDelay ? (
 								<View className="items-start flex-1">
 									<ThemedText className="text-[26px] font-google-sans-medium !text-neutral-700 line-through">
 										{departureTime}
 									</ThemedText>
-									<ThemedText className="text-[26px] font-google-sans-bold !text-red-500 mt-0.5">
+									<ThemedText className="text-[26px] font-google-sans-bold !text-rose-500 mt-0.5">
 										{addMinutes(departureTime, delayNum)}
 									</ThemedText>
 								</View>
 							) : (
-								<ThemedText className="flex-1 text-[26px] font-google-sans-bold !text-gray-900">
+								<ThemedText className="flex-1 text-[26px] font-google-sans-bold !text-neutral-900">
 									{departureTime}
 								</ThemedText>
 							);
@@ -493,46 +507,68 @@ export function TicketCard({
 							</View>
 							{dateString === "Oggi" &&
 								(() => {
-									const delayNum = ticketDelay ? parseInt(ticketDelay, 10) : 0;
-									const hasDelay = !isNaN(delayNum) && delayNum > 0;
+									if (!ticketDelay) return null;
 
-									if (hasDelay) {
+									const cleanedDelay = ticketDelay.replace(/[^0-9]/g, "");
+									const dNum = parseInt(cleanedDelay, 10);
+									const isNegative = ticketDelay.includes("-");
+
+									if (!isNaN(dNum) && dNum > 0 && !isNegative) {
 										return (
-											<ThemedText className="text-[12px] font-google-sans-bold !text-red-500 absolute -bottom-5">
-												{`+${delayNum} MIN`}
+											<ThemedText className="text-[12px] font-google-sans-bold !text-rose-500 absolute -bottom-5">
+												{`+${dNum} MIN`}
 											</ThemedText>
 										);
-									} else if (ticketDelay === "0") {
+									} else if (
+										ticketDelay === "0" ||
+										isNegative ||
+										ticketDelay.toLowerCase().trim() === "in orario"
+									) {
 										return (
 											<ThemedText className="text-[12px] font-google-sans-bold !text-primary-500 absolute -bottom-5">
 												IN ORARIO
 											</ThemedText>
 										);
-									} else if (ticketDelay === "non partito") {
+									} else if (
+										ticketDelay.toLowerCase().trim() === "non partito"
+									) {
 										return (
 											<ThemedText className="text-[12px] font-google-sans-bold !text-neutral-500 absolute -bottom-5">
 												NON PARTITO
 											</ThemedText>
 										);
 									}
-									return null;
+
+									return (
+										<ThemedText className="text-[12px] font-google-sans-bold !text-rose-500 absolute -bottom-5 uppercase">
+											{ticketDelay.includes("MIN")
+												? ticketDelay
+												: `+${cleanedDelay || ticketDelay} MIN`}
+										</ThemedText>
+									);
 								})()}
 						</View>
 
 						{(() => {
-							const delayNum = ticketDelay ? parseInt(ticketDelay, 10) : 0;
-							const hasDelay = !isNaN(delayNum) && delayNum > 0;
+							const getCleanNum = (val: string) =>
+								parseInt(val.replace(/[^0-9]/g, ""), 10);
+							const delayNum = ticketDelay ? getCleanNum(ticketDelay) : 0;
+							const isNegative = ticketDelay
+								? ticketDelay.includes("-")
+								: false;
+							const hasDelay = !isNaN(delayNum) && delayNum > 0 && !isNegative;
+
 							return hasDelay ? (
 								<View className="items-end flex-1">
 									<ThemedText className="text-[26px] font-google-sans-medium !text-neutral-700 line-through">
 										{arrivalTime}
 									</ThemedText>
-									<ThemedText className="text-[26px] font-google-sans-bold !text-red-500 mt-0.5">
+									<ThemedText className="text-[26px] font-google-sans-bold !text-rose-500 mt-0.5">
 										{addMinutes(arrivalTime, delayNum)}
 									</ThemedText>
 								</View>
 							) : (
-								<ThemedText className="flex-1 text-right text-[26px] font-google-sans-bold !text-gray-900">
+								<ThemedText className="flex-1 text-right text-[26px] font-google-sans-bold !text-neutral-900">
 									{arrivalTime}
 								</ThemedText>
 							);
@@ -544,7 +580,7 @@ export function TicketCard({
 							<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
 								BIN {binPartenza || "--"}
 							</ThemedText>
-							<ThemedText className="text-[16px] font-google-sans-bold !text-gray-300">
+							<ThemedText className="text-[16px] font-google-sans-bold !text-neutral-300">
 								BIN {binArrivo || "--"}
 							</ThemedText>
 						</View>
@@ -586,27 +622,27 @@ export function TicketCard({
 							{carrozza && posto ? (
 								<>
 									<View className="flex-1 max-w-[25%]">
-										<ThemedText className="text-[14px] font-google-sans-regular !text-gray-600 mb-0.5">
+										<ThemedText className="text-[14px] font-google-sans-regular !text-neutral-600 mb-0.5">
 											Carrozza
 										</ThemedText>
-										<ThemedText className="text-[16px] font-google-sans-bold !text-gray-900">
+										<ThemedText className="text-[16px] font-google-sans-bold !text-neutral-900">
 											{carrozza}
 										</ThemedText>
 									</View>
 									<View className="flex-1 max-w-[25%]">
-										<ThemedText className="text-[14px] font-google-sans-regular !text-gray-600 mb-0.5">
+										<ThemedText className="text-[14px] font-google-sans-regular !text-neutral-600 mb-0.5">
 											Posto
 										</ThemedText>
-										<ThemedText className="text-[16px] font-google-sans-bold !text-gray-900">
+										<ThemedText className="text-[16px] font-google-sans-bold !text-neutral-900">
 											{posto.toUpperCase()}
 										</ThemedText>
 									</View>
 									<View className="flex-1 items-end">
-										<ThemedText className="text-[14px] font-google-sans-regular !text-gray-600 mb-0.5 text-right">
+										<ThemedText className="text-[14px] font-google-sans-regular !text-neutral-600 mb-0.5 text-right">
 											Classe
 										</ThemedText>
 										<ThemedText
-											className="text-[16px] font-google-sans-bold !text-gray-900 text-right"
+											className="text-[16px] font-google-sans-bold !text-neutral-900 text-right"
 											numberOfLines={1}
 										>
 											{formatClassName(passengerClass || "")}
@@ -615,11 +651,11 @@ export function TicketCard({
 								</>
 							) : (
 								<View className="flex-1 items-end">
-									<ThemedText className="text-[14px] font-google-sans-regular !text-gray-600 mb-0.5 text-right">
+									<ThemedText className="text-[14px] font-google-sans-regular !text-neutral-600 mb-0.5 text-right">
 										Classe
 									</ThemedText>
 									<ThemedText
-										className="text-[16px] font-google-sans-bold !text-gray-900 text-right"
+										className="text-[16px] font-google-sans-bold !text-neutral-900 text-right"
 										numberOfLines={1}
 										adjustsFontSizeToFit
 									>
@@ -641,10 +677,10 @@ export function TicketCard({
 						<Icon
 							name="person"
 							size={20}
-							className="!text-gray-500 -mt-[1px]"
+							className="!text-neutral-500 -mt-[1px]"
 							weight={400}
 						/>
-						<ThemedText className="text-[18px] font-google-sans-regular !text-gray-500">
+						<ThemedText className="text-[18px] font-google-sans-regular !text-neutral-500">
 							{formatPersonName(
 								passengerName || USER_DATA.firstName + " " + USER_DATA.lastName,
 							)}
@@ -684,28 +720,28 @@ export function TicketCard({
 						exiting={FadeOut.duration(200)}
 					>
 						<View className="flex-row justify-between mb-5 gap-4">
-							<View className="flex-1 rounded-2xl bg-gray-100 p-2">
+							<View className="flex-1 rounded-2xl bg-neutral-100 p-2">
 								<View className="flex-row items-center justify-between mb-0.5">
-									<ThemedText className="text-sm font-google-sans-medium !text-gray-500">
+									<ThemedText className="text-sm font-google-sans-medium !text-neutral-500">
 										PNR
 									</ThemedText>
 									<Icon name="content_copy" size={14} color="#6b7280" />
 								</View>
-								<ThemedText className="text-base font-google-sans-bold !text-gray-900">
+								<ThemedText className="text-base font-google-sans-bold !text-neutral-900">
 									{pnr}
 								</ThemedText>
 							</View>
 							{!isRegionale && (
-								<View className="flex-1 rounded-2xl bg-gray-100 p-2">
+								<View className="flex-1 rounded-2xl bg-neutral-100 p-2">
 									<View className="flex-row items-center justify-between mb-0.5">
-										<ThemedText className="text-sm font-google-sans-medium !text-gray-500">
+										<ThemedText className="text-sm font-google-sans-medium !text-neutral-500">
 											CP
 										</ThemedText>
 										{cp && (
 											<Icon name="content_copy" size={14} color="#6b7280" />
 										)}
 									</View>
-									<ThemedText className="text-base font-google-sans-bold !text-gray-900">
+									<ThemedText className="text-base font-google-sans-bold !text-neutral-900">
 										{cp || "-"}
 									</ThemedText>
 								</View>
@@ -714,18 +750,18 @@ export function TicketCard({
 
 						<View className="flex-row justify-between mb-5 gap-4">
 							<View className="flex-1 px-2">
-								<ThemedText className="text-sm font-google-sans-medium !text-gray-500 mb-0.5">
+								<ThemedText className="text-sm font-google-sans-medium !text-neutral-500 mb-0.5">
 									Prezzo
 								</ThemedText>
-								<ThemedText className="text-base font-google-sans-bold !text-gray-900">
+								<ThemedText className="text-base font-google-sans-bold !text-neutral-900">
 									{price.toFixed(2).replace(".", ",")}€
 								</ThemedText>
 							</View>
 							<View className="flex-1 px-2">
-								<ThemedText className="text-sm font-google-sans-medium !text-gray-500 mb-0.5">
+								<ThemedText className="text-sm font-google-sans-medium !text-neutral-500 mb-0.5">
 									Offerta
 								</ThemedText>
-								<ThemedText className="text-base font-google-sans-bold !text-gray-900">
+								<ThemedText className="text-base font-google-sans-bold !text-neutral-900">
 									{offer}
 								</ThemedText>
 							</View>
@@ -734,18 +770,18 @@ export function TicketCard({
 						{isFreccia && (
 							<View className="flex-row justify-between mb-2 gap-4">
 								<View className="flex-1 px-2">
-									<ThemedText className="text-sm font-google-sans-medium !text-gray-500 mb-0.5">
+									<ThemedText className="text-sm font-google-sans-medium !text-neutral-500 mb-0.5">
 										Punti CartaFreccia
 									</ThemedText>
-									<ThemedText className="text-base font-google-sans-bold !text-gray-900">
+									<ThemedText className="text-base font-google-sans-bold !text-neutral-900">
 										{price.toFixed(2).replace(".", ",")}
 									</ThemedText>
 								</View>
 								<View className="flex-1 px-2">
-									<ThemedText className="text-sm font-google-sans-medium !text-gray-500 mb-0.5">
+									<ThemedText className="text-sm font-google-sans-medium !text-neutral-500 mb-0.5">
 										Numero CartaFreccia
 									</ThemedText>
-									<ThemedText className="text-base font-google-sans-bold !text-gray-900">
+									<ThemedText className="text-base font-google-sans-bold !text-neutral-900">
 										{USER_DATA.loyaltyCode}
 									</ThemedText>
 								</View>
@@ -758,7 +794,7 @@ export function TicketCard({
 			{/* Maggiori Dettagli Toggle */}
 			<Animated.View layout={LinearTransition.duration(200)}>
 				<Pressable
-					className={`items-center justify-center pb-4 active:bg-gray-50 ${dateString === "Oggi" ? "pt-2" : "-mt-4"}`}
+					className={`items-center justify-center pb-4 active:bg-neutral-50 ${dateString === "Oggi" ? "pt-2" : "-mt-4"}`}
 					onPress={() => setIsExpanded(!isExpanded)}
 				>
 					<ThemedText
