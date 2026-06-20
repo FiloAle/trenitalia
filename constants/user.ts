@@ -1,6 +1,6 @@
 export const USER_DATA = {
-	firstName: "MARIO",
-	lastName: "ROSSI",
+	firstName: "Mario",
+	lastName: "Rossi",
 	email: "mario.rossi@gmail.com",
 	phone: "3401234567",
 	loyaltyCode: "123456789",

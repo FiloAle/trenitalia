@@ -5,252 +5,253 @@ import { ThemedText } from "@/components/themed-text";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
+import { PageHeader } from "@/components/ui/page-header";
 import {
-  RECENT_SEARCHES,
-  SAVED_SEARCHES,
-  STATIONS,
+	RECENT_SEARCHES,
+	SAVED_SEARCHES,
+	STATIONS,
 } from "@/constants/stations";
 import { USER_DATA, getInitials } from "@/constants/user";
 import { SelectionItem, setGlobalSelectionList } from "@/utils/selection-store";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Alert,
-  Dimensions,
-  FlatList,
-  Keyboard,
-  KeyboardAvoidingView,
-  LogBox,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  Switch,
-  TextInput,
-  TouchableWithoutFeedback,
-  View,
+	Alert,
+	Dimensions,
+	FlatList,
+	Keyboard,
+	KeyboardAvoidingView,
+	LogBox,
+	Modal,
+	Platform,
+	Pressable,
+	ScrollView,
+	Switch,
+	TextInput,
+	TouchableWithoutFeedback,
+	View,
 } from "react-native";
 import Animated, {
-  SlideInDown,
-  SlideOutDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
+	SlideInDown,
+	SlideOutDown,
+	useAnimatedStyle,
+	useSharedValue,
+	withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 LogBox.ignoreLogs([
-  "VirtualizedLists should never be nested inside plain ScrollViews",
+	"VirtualizedLists should never be nested inside plain ScrollViews",
 ]);
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const SearchOptionCard = ({
-  label,
-  value,
-  onPress,
-  isAdd = false,
-  hasCancel = false,
-  onCancel = () => {},
+	label,
+	value,
+	onPress,
+	isAdd = false,
+	hasCancel = false,
+	onCancel = () => {},
 }: {
-  label: string;
-  value: string;
-  onPress: () => void;
-  isAdd?: boolean;
-  hasCancel?: boolean;
-  onCancel?: () => void;
+	label: string;
+	value: string;
+	onPress: () => void;
+	isAdd?: boolean;
+	hasCancel?: boolean;
+	onCancel?: () => void;
 }) => (
-  <Pressable
-    onPress={onPress}
-    style={{ height: 56 }}
-    className={`w-full rounded-2xl border px-4 py-2 justify-center ${
-      isAdd
-        ? "flex-row items-center justify-center gap-2 bg-[#F0F7F7] border-[#DCEBEB]"
-        : "bg-white border-gray-200"
-    }`}
-  >
-    {isAdd ? (
-      <>
-        <Icon name="add" size={20} className="!text-primary-500" />
-        <ThemedText className="text-[14px] font-google-sans-semibold !text-primary-500">
-          {label}
-        </ThemedText>
-      </>
-    ) : (
-      <View
-        className="flex-row items-center justify-between"
-        style={{ height: "100%" }}
-      >
-        <View className="flex-1 justify-center">
-          <ThemedText
-            className="text-[13px] font-google-sans-medium !text-gray-500"
-            numberOfLines={1}
-          >
-            {label}
-          </ThemedText>
-          <ThemedText
-            className="text-[14px] font-google-sans-semibold !text-gray-950 mt-1"
-            numberOfLines={1}
-          >
-            {value}
-          </ThemedText>
-        </View>
-        {hasCancel && (
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation();
-              onCancel();
-            }}
-            className="pl-2"
-          >
-            <Icon
-              name="delete"
-              size={20}
-              className="!text-rose-600 -mt-6 -mr-2"
-            />
-          </Pressable>
-        )}
-      </View>
-    )}
-  </Pressable>
+	<Pressable
+		onPress={onPress}
+		style={{ height: 56 }}
+		className={`w-full rounded-2xl border px-4 py-2 justify-center ${
+			isAdd
+				? "flex-row items-center justify-center gap-2 bg-[#F0F7F7] border-[#DCEBEB]"
+				: "bg-white border-gray-200"
+		}`}
+	>
+		{isAdd ? (
+			<>
+				<Icon name="add" size={20} className="!text-primary-500" />
+				<ThemedText className="text-[14px] font-google-sans-semibold !text-primary-500">
+					{label}
+				</ThemedText>
+			</>
+		) : (
+			<View
+				className="flex-row items-center justify-between"
+				style={{ height: "100%" }}
+			>
+				<View className="flex-1 justify-center">
+					<ThemedText
+						className="text-[13px] font-google-sans-medium !text-gray-500"
+						numberOfLines={1}
+					>
+						{label}
+					</ThemedText>
+					<ThemedText
+						className="text-[14px] font-google-sans-semibold !text-gray-950 mt-1"
+						numberOfLines={1}
+					>
+						{value}
+					</ThemedText>
+				</View>
+				{hasCancel && (
+					<Pressable
+						onPress={(e) => {
+							e.stopPropagation();
+							onCancel();
+						}}
+						className="pl-2"
+					>
+						<Icon
+							name="delete"
+							size={20}
+							className="!text-rose-600 -mt-6 -mr-2"
+						/>
+					</Pressable>
+				)}
+			</View>
+		)}
+	</Pressable>
 );
 
 const ModalHeader = ({
-  title,
-  onClose,
-  isCentered = true,
+	title,
+	onClose,
+	isCentered = true,
 }: {
-  title: string;
-  onClose: () => void;
-  isCentered?: boolean;
+	title: string;
+	onClose: () => void;
+	isCentered?: boolean;
 }) => (
-  <View className="flex-row items-center justify-between px-5 pt-1 pb-2">
-    {isCentered ? (
-      <>
-        <View className="w-10" />
-        <ThemedText className="flex-1 text-center text-[15px] font-google-sans-bold !text-gray-950">
-          {title}
-        </ThemedText>
-        <Pressable onPress={onClose} className="p-2">
-          <Icon
-            name="close"
-            size={28}
-            className="!text-gray-800"
-            weight={300}
-          />
-        </Pressable>
-      </>
-    ) : (
-      <>
-        <ThemedText className="text-[22px] font-google-sans-bold !text-gray-950">
-          {title}
-        </ThemedText>
-        <Pressable onPress={onClose} className="p-2">
-          <Icon
-            name="close"
-            size={28}
-            className="!text-gray-800"
-            weight={300}
-          />
-        </Pressable>
-      </>
-    )}
-  </View>
+	<View className="flex-row items-center justify-between px-5 pt-1 pb-2">
+		{isCentered ? (
+			<>
+				<View className="w-10" />
+				<ThemedText className="flex-1 text-center text-[15px] font-google-sans-bold !text-gray-950">
+					{title}
+				</ThemedText>
+				<Pressable onPress={onClose} className="p-2">
+					<Icon
+						name="close"
+						size={28}
+						className="!text-gray-800"
+						weight={300}
+					/>
+				</Pressable>
+			</>
+		) : (
+			<>
+				<ThemedText className="text-[22px] font-google-sans-bold !text-gray-950">
+					{title}
+				</ThemedText>
+				<Pressable onPress={onClose} className="p-2">
+					<Icon
+						name="close"
+						size={28}
+						className="!text-gray-800"
+						weight={300}
+					/>
+				</Pressable>
+			</>
+		)}
+	</View>
 );
 
 const PassengerInput = ({
-  label,
-  value,
-  onChangeText,
-  keyboardType = "default",
-  autoCapitalize = "sentences",
-  focusedInputId,
-  setFocusedInputId,
-  inputId,
+	label,
+	value,
+	onChangeText,
+	keyboardType = "default",
+	autoCapitalize = "sentences",
+	focusedInputId,
+	setFocusedInputId,
+	inputId,
 }: {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
-  autoCapitalize?: "none" | "sentences" | "words" | "characters";
-  focusedInputId: string | null;
-  setFocusedInputId: (id: string | null) => void;
-  inputId: string;
+	label: string;
+	value: string;
+	onChangeText: (text: string) => void;
+	keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
+	autoCapitalize?: "none" | "sentences" | "words" | "characters";
+	focusedInputId: string | null;
+	setFocusedInputId: (id: string | null) => void;
+	inputId: string;
 }) => {
-  const isFocused = focusedInputId === inputId;
-  const hasText = value.length > 0;
-  const isActive = isFocused || hasText;
-  const inputRef = useRef<TextInput>(null);
+	const isFocused = focusedInputId === inputId;
+	const hasText = value.length > 0;
+	const isActive = isFocused || hasText;
+	const inputRef = useRef<TextInput>(null);
 
-  return (
-    <View className="flex-1 h-[56px] rounded-2xl border border-gray-200 px-4 bg-white justify-center overflow-visible">
-      <Pressable
-        className="w-full flex-1 justify-center"
-        onPress={() => {
-          setFocusedInputId(inputId);
-          inputRef.current?.focus();
-        }}
-      >
-        {isActive && (
-          <ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
-            {label}
-          </ThemedText>
-        )}
-        <View className={`relative w-full ${isActive ? "mt-0.5" : ""}`}>
-          <TextInput
-            ref={inputRef}
-            value={value}
-            onChangeText={onChangeText}
-            onFocus={() => setFocusedInputId(inputId)}
-            onBlur={() => setFocusedInputId(null)}
-            className={`w-full text-[14px] text-gray-950 p-0 m-0 ${
-              hasText ? "font-google-sans-semibold" : "font-google-sans-medium"
-            } ${!isFocused && hasText ? "opacity-0" : "opacity-100"}`}
-            placeholder={isActive ? "" : label}
-            placeholderTextColor="#6b7280"
-            keyboardType={keyboardType}
-            autoCapitalize={autoCapitalize}
-          />
-          {!isFocused && hasText && (
-            <View
-              pointerEvents="none"
-              className="absolute inset-0 justify-center"
-            >
-              <ThemedText
-                numberOfLines={1}
-                className="text-[14px] font-google-sans-semibold !text-gray-950"
-              >
-                {value}
-              </ThemedText>
-            </View>
-          )}
-        </View>
-      </Pressable>
-    </View>
-  );
+	return (
+		<View className="flex-1 h-[56px] rounded-2xl border border-gray-200 px-4 bg-white justify-center overflow-visible">
+			<Pressable
+				className="w-full flex-1 justify-center"
+				onPress={() => {
+					setFocusedInputId(inputId);
+					inputRef.current?.focus();
+				}}
+			>
+				{isActive && (
+					<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+						{label}
+					</ThemedText>
+				)}
+				<View className={`relative w-full ${isActive ? "mt-0.5" : ""}`}>
+					<TextInput
+						ref={inputRef}
+						value={value}
+						onChangeText={onChangeText}
+						onFocus={() => setFocusedInputId(inputId)}
+						onBlur={() => setFocusedInputId(null)}
+						className={`w-full text-[14px] text-gray-950 p-0 m-0 ${
+							hasText ? "font-google-sans-semibold" : "font-google-sans-medium"
+						} ${!isFocused && hasText ? "opacity-0" : "opacity-100"}`}
+						placeholder={isActive ? "" : label}
+						placeholderTextColor="#6b7280"
+						keyboardType={keyboardType}
+						autoCapitalize={autoCapitalize}
+					/>
+					{!isFocused && hasText && (
+						<View
+							pointerEvents="none"
+							className="absolute inset-0 justify-center"
+						>
+							<ThemedText
+								numberOfLines={1}
+								className="text-[14px] font-google-sans-semibold !text-gray-950"
+							>
+								{value}
+							</ThemedText>
+						</View>
+					)}
+				</View>
+			</Pressable>
+		</View>
+	);
 };
 
 const AnimatedTabLabel = ({
-  label,
-  isActive,
+	label,
+	isActive,
 }: {
-  label: string;
-  isActive: boolean;
+	label: string;
+	isActive: boolean;
 }) => {
-  const animatedStyle = useAnimatedStyle(
-    () => ({
-      color: withTiming(isActive ? "#ffffff" : "#004141", { duration: 250 }),
-    }),
-    [isActive],
-  );
-  return (
-    <Animated.Text
-      className="text-[14px] font-google-sans-semibold"
-      style={animatedStyle}
-    >
-      {label}
-    </Animated.Text>
-  );
+	const animatedStyle = useAnimatedStyle(
+		() => ({
+			color: withTiming(isActive ? "#ffffff" : "#004141", { duration: 250 }),
+		}),
+		[isActive],
+	);
+	return (
+		<Animated.Text
+			className="text-[14px] font-google-sans-semibold"
+			style={animatedStyle}
+		>
+			{label}
+		</Animated.Text>
+	);
 };
 
 export default function SearchScreen() {
@@ -297,7 +298,11 @@ export default function SearchScreen() {
 	const [showPassengers, setShowPassengers] = useState(false);
 	const [showPassengersSheet, setShowPassengersSheet] = useState(false);
 	const [showTravelType, setShowTravelType] = useState(false);
+	const [showFiltersSheet, setShowFiltersSheet] = useState(false);
 	const [travelType, setTravelType] = useState("Tutte");
+	const [sortOrder, setSortOrder] = useState("Orario di partenza");
+	const [pendingSortOrder, setPendingSortOrder] =
+		useState("Orario di partenza");
 	const [isPassengerExpanded, setIsPassengerExpanded] = useState(false);
 	const formatName = (str: string) =>
 		str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -332,6 +337,20 @@ export default function SearchScreen() {
 	const children = passengersList.filter((p) => p.type === "Bambino").length;
 	const bikes = passengersList.filter((p) => p.type === "Bicicletta").length;
 	const animals = passengersList.filter((p) => p.type === "Animale").length;
+	const passengerItems = passengersList.filter(
+		(p) => p.itemType === "passenger",
+	);
+	const totalPassengers = passengerItems.length;
+	const firstPassengerName =
+		passengerItems[0]?.firstName || passengerItems[0]?.lastName
+			? `${passengerItems[0]?.firstName || ""} ${passengerItems[0]?.lastName || ""}`.trim()
+			: "Passeggero 1";
+	const passengerSummary =
+		totalPassengers <= 1
+			? firstPassengerName
+			: `${firstPassengerName} e altri ${totalPassengers - 1}`;
+	const hasBike = bikes > 0;
+	const hasAnimal = animals > 0;
 	const [hasDiscount, setHasDiscount] = useState(false);
 	const [discountCodeText, setDiscountCodeText] = useState("");
 	const [isDiscountFocused, setIsDiscountFocused] = useState(false);
@@ -390,6 +409,12 @@ export default function SearchScreen() {
 
 	const [noChanges, setNoChanges] = useState(false);
 	const [hasReturn, setHasReturn] = useState(false);
+
+	useEffect(() => {
+		if (showFiltersSheet) {
+			setPendingSortOrder(sortOrder);
+		}
+	}, [showFiltersSheet, sortOrder]);
 
 	useEffect(() => {
 		const timeout = setTimeout(() => {
@@ -493,6 +518,13 @@ export default function SearchScreen() {
 			handleCancelCalendar();
 		}
 	};
+
+	const sortOptions = [
+		"Orario di partenza",
+		"Orario di arrivo",
+		"Durata del viaggio",
+		"Prezzo",
+	];
 
 	const useNativeDriver = Platform.OS !== "web";
 
@@ -677,26 +709,11 @@ export default function SearchScreen() {
 			accessible={false}
 		>
 			<View style={{ flex: 1, backgroundColor: "white" }}>
-				{/* ===== Header verde identico a I miei viaggi ===== */}
-				<View
-					className="bg-primary-600 pb-2"
-					style={{ paddingTop: insets.top + 4 }}
-				>
-					{/* Row: chevron + titolo */}
-					<View className="h-14 flex-row items-center px-4">
-						<Pressable onPress={handleClose} className="p-1 mr-1">
-							<Icon
-								name="chevron_left"
-								size={32}
-								className="!text-white"
-								weight={300}
-							/>
-						</Pressable>
-						<ThemedText className="text-3xl font-google-sans-bold !text-white">
-							Acquista
-						</ThemedText>
-					</View>
-				</View>
+				<PageHeader
+					title="Acquista"
+					showBackButton={true}
+					onBack={handleClose}
+				/>
 
 				{/* Selettore — fuori dall'header, nel body bianco, come in I miei viaggi */}
 				<View className="px-5 pt-5 z-50">
@@ -1037,120 +1054,65 @@ export default function SearchScreen() {
 									<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
 										Passeggeri e servizi
 									</ThemedText>
-
-									<SearchOptionCard
-										label="Passeggeri"
-										value={`${adults > 0 ? `${adults} adult${adults > 1 ? "i" : "o"}` : ""}${
-											youths > 0
-												? ` ${youths} ragazz${youths > 1 ? "i" : "o"}`
-												: ""
-										}${
-											children > 0
-												? ` ${children} bambin${children > 1 ? "i" : "o"}`
-												: ""
-										}${
-											bikes > 0
-												? ` ${bikes} biciclett${bikes > 1 ? "e" : "a"}`
-												: ""
-										}${
-											animals > 0
-												? ` ${animals} animal${animals > 1 ? "i" : "e"}`
-												: ""
-										}`.trim()}
+									<Pressable
 										onPress={() => setShowPassengersSheet(true)}
-									/>
-								</View>
-							)}
-
-							{/* Switches Section */}
-							<View className="flex-col gap-2">
-								<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
-									Opzioni di viaggio
-								</ThemedText>
-								{!isSubscriptionOrCarnet && (
-									<View
-										className="rounded-2xl border border-gray-200 bg-white"
-										style={{ zIndex: 100, elevation: 100 }}
+										style={{ minHeight: 68 }}
+										className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 justify-center"
 									>
-										<View style={{ zIndex: 100 }}>
-											<Pressable
-												onPress={() => setShowTravelType(!showTravelType)}
-												className="min-h-[50px] flex-row items-center justify-between p-3 pl-4 relative"
-											>
-												<ThemedText className="text-[14px] font-google-sans-semibold !text-gray-950">
-													Soluzioni
+										<View className="flex-row items-center gap-0.5">
+											<Icon
+												name="person"
+												size={22}
+												className="!text-primary-500 -ml-[2px]"
+											/>
+											<View className="flex-1 flex-row items-center gap-2">
+												<ThemedText className="text-[15px] font-google-sans-semibold !text-primary-500">
+													{totalPassengers}
 												</ThemedText>
-												<View className="flex-row items-center gap-1">
-													<ThemedText className="text-[14px] font-google-sans-medium !text-gray-950">
-														{travelType}
+												<View className="flex-row items-center gap-1 flex-wrap flex-1">
+													<ThemedText
+														numberOfLines={1}
+														className="text-[15px] font-google-sans-semibold !text-gray-950"
+													>
+														{passengerSummary}
 													</ThemedText>
-													<Animated.View style={travelTypeChevronAnimatedStyle}>
-														<Icon
-															name="expand_more"
-															size={20}
-															weight={300}
-															className="!text-gray-950 -mb-0.5"
-														/>
-													</Animated.View>
-												</View>
-											</Pressable>
-											<DropdownMenu
-												isVisible={showTravelType}
-												className="top-[100%] right-2 min-w-[160px]"
-											>
-												<View className="py-2">
-													{["Tutte", "Frecce", "Intercity", "Regionali"].map(
-														(type) => (
-															<Pressable
-																key={type}
-																onPress={() => {
-																	setTravelType(type);
-																	setShowTravelType(false);
-																}}
-																className="flex-row items-center justify-between px-4 py-1"
-															>
-																<ThemedText
-																	className={`text-[15px] ${travelType === type ? "font-google-sans-semibold !text-gray-950" : "font-google-sans-regular !text-gray-500"}`}
-																>
-																	{type}
-																</ThemedText>
+													{(hasAnimal || hasBike) && (
+														<View className="flex-row items-center gap-1">
+															<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-950">
+																+
+															</ThemedText>
+															{hasAnimal && (
 																<Icon
-																	name="check"
-																	size={20}
-																	className={`!text-primary-500 ${travelType === type ? "opacity-100" : "opacity-0"}`}
+																	name="pet_supplies"
+																	size={16}
+																	className="!text-gray-950"
 																/>
-															</Pressable>
-														),
+															)}
+															{hasAnimal && hasBike && (
+																<ThemedText className="text-[15px] font-google-sans-semibold !text-gray-950">
+																	+
+																</ThemedText>
+															)}
+															{hasBike && (
+																<Icon
+																	name="pedal_bike"
+																	size={16}
+																	className="!text-gray-950"
+																/>
+															)}
+														</View>
 													)}
 												</View>
-											</DropdownMenu>
-										</View>
-
-										<View className="h-[1px] bg-gray-100 mx-4" />
-
-										<View className="p-3 pl-4 flex-row items-center justify-between">
-											<ThemedText className="text-[14px] font-google-sans-semibold !text-gray-950">
-												Solo treni diretti
-											</ThemedText>
-											<View
-												className={
-													Platform.OS === "ios"
-														? "bg-gray-200 rounded-full"
-														: ""
-												}
-											>
-												<Switch
-													value={noChanges}
-													onValueChange={setNoChanges}
-													trackColor={{ false: "#e5e7eb", true: "#006666" }}
-													thumbColor={"#ffffff"}
-													//className={Platform.OS === "ios" ? "-mr-0.5" : ""}
-												/>
 											</View>
 										</View>
-									</View>
-								)}
-							</View>
+										<View className="mt-0.5">
+											<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500">
+												Aggiungi passeggeri, animali e biciclette
+											</ThemedText>
+										</View>
+									</Pressable>
+								</View>
+							)}
 						</View>
 
 						{/* Legal Info */}
@@ -1171,39 +1133,58 @@ export default function SearchScreen() {
 					</ScrollView>
 
 					<View className="-mx-5 px-5 py-6 bg-white border-t border-gray-100 mt-auto">
-						<MainButton
-							title="Ricerca viaggio"
-							onPress={() => {
-								Keyboard.dismiss();
-								setActiveInput(null);
-								setGlobalSelectionList(passengersList);
-								setTimeout(() => {
-									router.push({
-										pathname: "/search-results",
-										params: {
-											from: fromText,
-											to: toText,
-											dateStr: departureDate.toISOString(),
-											noChanges: noChanges ? "true" : "false",
-											bike: bikes > 0 ? "true" : "false",
-											travelType: travelType,
-											passengerText:
-												`${adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : ""}${youths > 0 ? ` ${youths} Ragazz${youths > 1 ? "i" : "o"}` : ""}${children > 0 ? ` ${children} Bambin${children > 1 ? "i" : "i"}` : ""}`.trim(),
-											passengerNamesText: passengersList
-												.filter((p) => p.itemType === "passenger")
-												.map((p, idx) =>
-													p.firstName || p.lastName
-														? `${p.firstName || ""} ${p.lastName || ""}`.trim()
-														: `Passeggero ${idx + 1}`,
-												)
-												.join(", "),
-										},
-									});
-								}, 50);
-							}}
-							disabled={!fromText || !toText}
-							style={{ marginBottom: insets.bottom }}
-						/>
+						<View className="flex-row gap-3 items-stretch">
+							<Pressable
+								onPress={() => {
+									Keyboard.dismiss();
+									setActiveInput(null);
+									setShowTravelType(false);
+									setShowFiltersSheet(true);
+								}}
+								className="h-14 w-14 shrink-0 self-stretch items-center justify-center rounded-2xl bg-white border border-gray-200"
+							>
+								<Icon
+									name="page_info"
+									size={22}
+									className="!text-primary-500"
+								/>
+							</Pressable>
+							<MainButton
+								title="Ricerca viaggio"
+								onPress={() => {
+									Keyboard.dismiss();
+									setActiveInput(null);
+									setGlobalSelectionList(passengersList);
+									setTimeout(() => {
+										router.push({
+											pathname: "/search-results",
+											params: {
+												from: fromText,
+												to: toText,
+												dateStr: departureDate.toISOString(),
+												noChanges: noChanges ? "true" : "false",
+												bike: bikes > 0 ? "true" : "false",
+												travelType: travelType,
+												sortOrder,
+												passengerText:
+													`${adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : ""}${youths > 0 ? ` ${youths} Ragazz${youths > 1 ? "i" : "o"}` : ""}${children > 0 ? ` ${children} Bambin${children > 1 ? "i" : "i"}` : ""}`.trim(),
+												passengerNamesText: passengersList
+													.filter((p) => p.itemType === "passenger")
+													.map((p, idx) =>
+														p.firstName || p.lastName
+															? `${p.firstName || ""} ${p.lastName || ""}`.trim()
+															: `Passeggero ${idx + 1}`,
+													)
+													.join(", "),
+											},
+										});
+									}, 50);
+								}}
+								disabled={!fromText || !toText}
+								className="flex-1"
+								style={{ marginBottom: insets.bottom }}
+							/>
+						</View>
 					</View>
 				</View>
 
@@ -1630,6 +1611,133 @@ export default function SearchScreen() {
 								onPress={() => setShowCalendar(false)}
 							/>
 						</View>
+					</View>
+				</BottomSheet>
+
+				<BottomSheet
+					isVisible={showFiltersSheet}
+					onClose={() => {
+						setShowFiltersSheet(false);
+						setShowTravelType(false);
+					}}
+					title="Filtri"
+				>
+					<View className="gap-6">
+						{!isSubscriptionOrCarnet && (
+							<View className="relative overflow-visible gap-0">
+								<Pressable
+									onPress={() => setShowTravelType(!showTravelType)}
+									className="min-h-[50px] flex-row items-center justify-between py-1.5 relative"
+								>
+									<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+										Soluzioni
+									</ThemedText>
+									<View className="flex-row items-center gap-1">
+										<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+											{travelType}
+										</ThemedText>
+										<Animated.View style={travelTypeChevronAnimatedStyle}>
+											<Icon
+												name="expand_more"
+												size={20}
+												className="!text-gray-950 -mb-0.5"
+											/>
+										</Animated.View>
+									</View>
+								</Pressable>
+
+								<DropdownMenu
+									isVisible={showTravelType}
+									className="top-[42px] right-0"
+									style={{ zIndex: 999, width: 180 }}
+								>
+									<View className="py-2">
+										{["Tutte", "Frecce", "Intercity", "Regionali"].map(
+											(type) => (
+												<Pressable
+													key={type}
+													onPress={() => {
+														setTravelType(type);
+														setShowTravelType(false);
+													}}
+													className="flex-row items-center justify-between px-4 py-2"
+												>
+													<ThemedText
+														className={`text-[15px] ${travelType === type ? "font-google-sans-semibold !text-gray-950" : "font-google-sans-regular !text-gray-500"}`}
+													>
+														{type}
+													</ThemedText>
+													<Icon
+														name="check"
+														size={20}
+														className={`!text-primary-500 ${travelType === type ? "opacity-100" : "opacity-0"}`}
+													/>
+												</Pressable>
+											),
+										)}
+									</View>
+								</DropdownMenu>
+
+								<View className="flex-row items-center justify-between py-0.5">
+									<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+										Solo treni diretti
+									</ThemedText>
+									<View
+										className={
+											Platform.OS === "ios" ? "bg-gray-200 rounded-full" : ""
+										}
+									>
+										<Switch
+											value={noChanges}
+											onValueChange={setNoChanges}
+											trackColor={{ false: "#e5e7eb", true: "#006666" }}
+											thumbColor={"#ffffff"}
+										/>
+									</View>
+								</View>
+							</View>
+						)}
+
+						<View className="gap-4 pt-2">
+							<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
+								Ordina per
+							</ThemedText>
+							<View className="gap-1 pl-3">
+								{sortOptions.map((sort) => (
+									<Pressable
+										key={sort}
+										onPress={() => setPendingSortOrder(sort)}
+										className="flex-row items-center justify-between py-2"
+									>
+										<ThemedText
+											className={`text-[15px] ${pendingSortOrder === sort ? "font-google-sans-semibold !text-gray-950" : "font-google-sans-regular !text-gray-500"}`}
+										>
+											{sort}
+										</ThemedText>
+										<View
+											className={`h-6 w-6 rounded-full border-2 items-center justify-center ${
+												pendingSortOrder === sort
+													? "border-primary-600"
+													: "border-gray-200"
+											}`}
+										>
+											{pendingSortOrder === sort && (
+												<View className="h-3 w-3 rounded-full bg-primary-600" />
+											)}
+										</View>
+									</Pressable>
+								))}
+							</View>
+						</View>
+					</View>
+					<View className="pt-8">
+						<MainButton
+							title="Applica"
+							onPress={() => {
+								setSortOrder(pendingSortOrder);
+								setShowFiltersSheet(false);
+							}}
+						/>
 					</View>
 				</BottomSheet>
 

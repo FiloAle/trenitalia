@@ -9,7 +9,7 @@ interface TicketBottomActionsProps {
 
 export function TicketBottomActions({ onGestisci }: TicketBottomActionsProps) {
 	return (
-		<View className="absolute bottom-0 left-0 right-0 bg-white px-5 pb-16 pt-4">
+		<View className="absolute bottom-0 left-0 right-0 bg-white px-5 pb-16">
 			<Pressable className="mb-2 !h-16 flex-row items-center justify-center rounded-2xl bg-[#1c1c1e] active:opacity-80">
 				{/* Wallet Icon approximation using SVG or generic Icon */}
 				<Icon name="wallet" size={24} color="white" className="mr-2" />

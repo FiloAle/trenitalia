@@ -1,12 +1,13 @@
 import { ThemedText } from "@/components/themed-text";
 import { EmptyState } from "@/components/trips/empty-state";
-import { TicketItem } from "@/components/trips/ticket-item";
+import { TravelSolutionCard } from "@/components/search/travel-solution-card";
 import {
 	deletePurchasedTrip,
 	getPurchasedTrips,
 	PurchasedTrip,
 } from "@/utils/trips-store";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, router } from "expo-router";
+import { PageHeader } from "@/components/ui/page-header";
 import { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView, View } from "react-native";
 import Animated, {
@@ -68,12 +69,21 @@ export default function TripsScreen() {
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 
-	const nextTicket = tickets.find((t) => {
+	const futureTickets = tickets.filter((t) => {
 		if (!t.date) return false;
 		const tDate = new Date(t.date);
 		tDate.setHours(0, 0, 0, 0);
 		return tDate.getTime() >= today.getTime();
 	});
+
+	const pastTickets = tickets.filter((t) => {
+		if (!t.date) return false;
+		const tDate = new Date(t.date);
+		tDate.setHours(0, 0, 0, 0);
+		return tDate.getTime() < today.getTime();
+	}).reverse();
+
+	const nextTicket = futureTickets.length > 0 ? futureTickets[0] : undefined;
 
 	const handleLongPress = (id: string) => {
 		Alert.alert(
@@ -95,34 +105,25 @@ export default function TripsScreen() {
 
 	return (
 		<View className="flex-1 bg-white">
-			{/* Header Section */}
-			<View
-				className={`bg-primary-600 ${nextTicket ? "pb-6" : "pb-2"}`}
-				style={{ paddingTop: insets.top + 4 }}
-			>
-				<View
-					className={`h-14 flex-row items-center px-6 mb-2`}
-				>
-					<ThemedText className="text-3xl font-google-sans-bold !text-white">
-						I miei viaggi
-					</ThemedText>
-				</View>
+			<PageHeader title="I miei viaggi" showBackButton={false} />
 
-				{nextTicket && (
-					<View className="px-5 mt-1">
-						<ThemedText className="text-[15px] font-google-sans-medium !text-white/90 mb-3">
-							Il tuo prossimo viaggio
-						</ThemedText>
-						<TicketItem
-							ticket={nextTicket}
-							onLongPress={() => handleLongPress(nextTicket.id)}
-						/>
-					</View>
-				)}
-			</View>
+			{nextTicket && (
+				<View className="bg-primary-600 px-5 pb-6">
+					<ThemedText className="text-[15px] font-google-sans-medium !text-white/90 mb-3">
+						Il tuo prossimo viaggio
+					</ThemedText>
+					<TravelSolutionCard
+						isPurchasedTrip
+						solution={nextTicket as any}
+						route={{ from: nextTicket.trains[0].origin!, to: nextTicket.trains[nextTicket.trains.length - 1].destination! }}
+						onPress={() => router.push({ pathname: "/ticket-detail" as any, params: { tripId: nextTicket.id } })}
+						onLongPress={() => handleLongPress(nextTicket.id)}
+					/>
+				</View>
+			)}
 
 			{/* Tab Selector */}
-			<View className="px-5 pt-5 z-50">
+			<View className="px-5 pt-5 bg-white z-50">
 				<View
 					className="bg-primary-500/10 rounded-xl p-1 flex-row relative"
 					onLayout={(e) => setTabWidth(e.nativeEvent.layout.width - 8)}
@@ -156,14 +157,40 @@ export default function TripsScreen() {
 			>
 				{activeChip === "Biglietti" ? (
 					<>
-						{/* Tickets List */}
-						{[...tickets].reverse().map((ticket) => (
-							<TicketItem
-								key={ticket.id}
-								ticket={ticket}
-								onLongPress={() => handleLongPress(ticket.id)}
-							/>
-						))}
+						{futureTickets.length > 0 && (
+							<>
+								<ThemedText className="text-[18px] font-google-sans-bold !text-primary-500 mb-1 mt-2">
+									Biglietti futuri
+								</ThemedText>
+								{futureTickets.map((ticket) => (
+									<TravelSolutionCard
+										key={ticket.id}
+										isPurchasedTrip
+										solution={ticket as any}
+										route={{ from: ticket.trains[0].origin!, to: ticket.trains[ticket.trains.length - 1].destination! }}
+										onPress={() => router.push({ pathname: "/ticket-detail" as any, params: { tripId: ticket.id } })}
+										onLongPress={() => handleLongPress(ticket.id)}
+									/>
+								))}
+							</>
+						)}
+						{pastTickets.length > 0 && (
+							<>
+								<ThemedText className="text-[18px] font-google-sans-bold !text-primary-500 mb-1 mt-6">
+									Biglietti passati
+								</ThemedText>
+								{pastTickets.map((ticket) => (
+									<TravelSolutionCard
+										key={ticket.id}
+										isPurchasedTrip
+										solution={ticket as any}
+										route={{ from: ticket.trains[0].origin!, to: ticket.trains[ticket.trains.length - 1].destination! }}
+										onPress={() => router.push({ pathname: "/ticket-detail" as any, params: { tripId: ticket.id } })}
+										onLongPress={() => handleLongPress(ticket.id)}
+									/>
+								))}
+							</>
+						)}
 					</>
 				) : (
 					<EmptyState activeChip={activeChip} />

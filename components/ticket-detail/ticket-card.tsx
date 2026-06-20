@@ -1,7 +1,9 @@
+import { getTrainInfo } from "@/api/delay";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { USER_DATA } from "@/constants/user";
 import { generateAztec, getCachedAztec } from "@/utils/aztec";
+import { formatClassName, formatPersonName } from "@/utils/format";
 import Constants, { ExecutionEnvironment } from "expo-constants";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -13,7 +15,114 @@ import Animated, {
 	FadeOut,
 	LinearTransition,
 } from "react-native-reanimated";
-import Svg, { Line, Path } from "react-native-svg";
+import Svg, {
+	Circle,
+	ClipPath,
+	Defs,
+	G,
+	Line,
+	Path,
+	Rect,
+} from "react-native-svg";
+
+const CoachCenter = ({ color }: { color: string }) => (
+	<Svg width="84" height="31" viewBox="0 0 84 31" fill="none">
+		<Rect
+			width="84"
+			height="31"
+			rx="6"
+			transform="matrix(-1 0 0 1 84 0)"
+			fill={color}
+		/>
+		<Rect
+			width="24"
+			height="20"
+			rx="4"
+			transform="matrix(-1 0 0 1 81 3)"
+			fill="#F5F5F5"
+		/>
+		<Rect
+			width="24"
+			height="20"
+			rx="4"
+			transform="matrix(-1 0 0 1 54 3)"
+			fill="#F5F5F5"
+		/>
+		<Rect
+			width="24"
+			height="20"
+			rx="4"
+			transform="matrix(-1 0 0 1 27 3)"
+			fill="#F5F5F5"
+		/>
+	</Svg>
+);
+
+const CoachHead = ({ color }: { color: string }) => (
+	<Svg width="84" height="31" viewBox="0 0 84 31" fill="none">
+		<Path
+			d="M84 18C84 8.05888 75.9411 0 66 0H6C2.68629 0 0 2.68629 0 6V25C0 28.3137 2.68629 31 6 31H78C81.3137 31 84 28.3137 84 25V18Z"
+			fill={color}
+		/>
+		<G clipPath="url(#clip0_698_6719)">
+			<Path
+				d="M81 19.5217C81 10.397 73.603 3 64.4783 3H61C58.7909 3 57 4.79086 57 7V19C57 21.2091 58.7909 23 61 23H77.5217C79.4427 23 81 21.4427 81 19.5217Z"
+				fill="#F5F5F5"
+			/>
+			<Circle
+				cx="3"
+				cy="3"
+				r="3"
+				transform="matrix(-1 0 0 1 67 11)"
+				fill={color}
+			/>
+			<Rect
+				width="6"
+				height="10"
+				rx="3"
+				transform="matrix(-1 0 0 1 67 18)"
+				fill={color}
+			/>
+		</G>
+		<Rect
+			width="24"
+			height="20"
+			rx="4"
+			transform="matrix(-1 0 0 1 54 3)"
+			fill="#F5F5F5"
+		/>
+		<Rect
+			width="24"
+			height="20"
+			rx="4"
+			transform="matrix(-1 0 0 1 27 3)"
+			fill="#F5F5F5"
+		/>
+		<Defs>
+			<ClipPath id="clip0_698_6719">
+				<Path
+					d="M81 19.5217C81 10.397 73.603 3 64.4783 3H61C58.7909 3 57 4.79086 57 7V19C57 21.2091 58.7909 23 61 23H77.5217C79.4427 23 81 21.4427 81 19.5217Z"
+					fill="white"
+				/>
+			</ClipPath>
+		</Defs>
+	</Svg>
+);
+
+const CoachRear = ({ color }: { color: string }) => (
+	<Svg width="84" height="31" viewBox="0 0 84 31" fill="none">
+		<Path
+			d="M0 18C0 8.05888 8.05888 0 18 0H78C81.3137 0 84 2.68629 84 6V25C84 28.3137 81.3137 31 78 31H6C2.68629 31 0 28.3137 0 25V18Z"
+			fill={color}
+		/>
+		<Path
+			d="M3 19.5217C3 10.397 10.397 3 19.5217 3H23C25.2091 3 27 4.79086 27 7V19C27 21.2091 25.2091 23 23 23H6.47826C4.55727 23 3 21.4427 3 19.5217Z"
+			fill="#F5F5F5"
+		/>
+		<Rect x="30" y="3" width="24" height="20" rx="4" fill="#F5F5F5" />
+		<Rect x="57" y="3" width="24" height="20" rx="4" fill="#F5F5F5" />
+	</Svg>
+);
 
 interface TicketCardProps {
 	dateString: string;
@@ -76,7 +185,70 @@ export function TicketCard({
 		typeLowerStr.includes("fr") ||
 		typeLowerStr === "f";
 
+	const coachNum = parseInt(carrozza || "1", 10) || 1;
+	let boardPos = "centro";
+	if (coachNum <= 3) boardPos = "testa";
+	else if (coachNum >= 9) boardPos = "coda";
+
+	const headColor = boardPos === "testa" ? "#006666" : "#A3A3A3";
+	const centerColor = boardPos === "centro" ? "#006666" : "#A3A3A3";
+	const rearColor = boardPos === "coda" ? "#006666" : "#A3A3A3";
+
 	const [isExpanded, setIsExpanded] = useState(false);
+	const [binPartenza, setBinPartenza] = useState<string | null>(null);
+	const [binArrivo, setBinArrivo] = useState<string | null>(null);
+	const [ticketDelay, setTicketDelay] = useState<string | null>(null);
+
+	const addMinutes = (time: string, minutes: number) => {
+		if (!time) return time;
+		const [hStr, mStr] = time.split(":");
+		if (!hStr || !mStr) return time;
+		const date = new Date();
+		date.setHours(parseInt(hStr, 10));
+		date.setMinutes(parseInt(mStr, 10) + minutes);
+		return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+	};
+
+	useEffect(() => {
+		if (dateString === "Oggi" && trainNumber) {
+			const num = trainNumber.replace(/\D/g, "");
+			if (!num) return;
+
+			const fetchInfo = async () => {
+				const num = trainNumber.replace(/\D/g, "");
+				if (!num) return;
+
+				const depInfo = await getTrainInfo(origin, num);
+				if (depInfo) {
+					if (depInfo.binario) setBinPartenza(depInfo.binario);
+
+					const delayStr = depInfo.delay;
+					if (delayStr !== null) {
+						const match = delayStr.match(/\d+/);
+						if (match) {
+							setTicketDelay(match[0]);
+						} else if (
+							delayStr.trim().toLowerCase() === "in orario" ||
+							delayStr.trim().toLowerCase() === "non partito"
+						) {
+							setTicketDelay(
+								delayStr.trim().toLowerCase() === "in orario"
+									? "0"
+									: "non partito",
+							);
+						}
+					}
+				}
+
+				const arrInfo = await getTrainInfo(destination, num);
+				if (arrInfo && arrInfo.binario) {
+					setBinArrivo(arrInfo.binario);
+				}
+			};
+
+			fetchInfo();
+		}
+	}, [dateString, trainNumber, origin, destination]);
 
 	const qrValue =
 		USER_DATA.firstName +
@@ -237,7 +409,7 @@ export function TicketCard({
 						{trainNumber}
 					</ThemedText>
 				</View>
-				<ThemedText className="text-base font-google-sans-bold !text-gray-900">
+				<ThemedText className="text-base font-google-sans-regular !text-gray-900">
 					{dateString}
 				</ThemedText>
 			</View>
@@ -280,79 +452,187 @@ export function TicketCard({
 					</View>
 
 					{/* Times and Arrow Row */}
-					<View className="flex-row items-center justify-between">
-						<ThemedText className="flex-1 text-[26px] font-google-sans-bold !text-gray-900">
-							{departureTime}
-						</ThemedText>
+					<View className="flex-row items-start justify-between">
+						{(() => {
+							const delayNum = ticketDelay ? parseInt(ticketDelay, 10) : 0;
+							const hasDelay = !isNaN(delayNum) && delayNum > 0;
+							return hasDelay ? (
+								<View className="items-start flex-1">
+									<ThemedText className="text-[26px] font-google-sans-medium !text-neutral-700 line-through">
+										{departureTime}
+									</ThemedText>
+									<ThemedText className="text-[26px] font-google-sans-bold !text-red-500 mt-0.5">
+										{addMinutes(departureTime, delayNum)}
+									</ThemedText>
+								</View>
+							) : (
+								<ThemedText className="flex-1 text-[26px] font-google-sans-bold !text-gray-900">
+									{departureTime}
+								</ThemedText>
+							);
+						})()}
 
-						<View className="px-2 items-center justify-center">
+						<View className="px-2 items-center justify-center relative mt-1">
 							<View className="flex-row items-center">
 								<View className="w-10 items-end justify-center">
-									<View className="h-[2px] w-6 bg-gray-300" />
+									<View className="h-[2px] w-6 bg-neutral-300" />
 								</View>
-								<View className="bg-[#E5F2EE] px-2.5 py-1 rounded-full mx-1">
-									<ThemedText
-										className="text-[13px] font-google-sans-bold"
-										style={{ color: "#006666" }}
-									>
+								<View className="bg-neutral-100 px-2.5 py-1 rounded-full mx-1">
+									<ThemedText className="text-[13px] font-google-sans-bold !text-neutral-600">
 										{duration}
 									</ThemedText>
 								</View>
 								<View className="w-10 flex-row items-center justify-start">
-									<View className="h-[2px] w-6 bg-gray-300" />
+									<View className="h-[2px] w-6 bg-neutral-300" />
 									<Icon
 										name="chevron_right"
 										size={24}
-										className="!text-gray-300 -ml-[13px]"
+										className="!text-neutral-300 -ml-[13px]"
 									/>
 								</View>
 							</View>
+							{dateString === "Oggi" &&
+								(() => {
+									const delayNum = ticketDelay ? parseInt(ticketDelay, 10) : 0;
+									const hasDelay = !isNaN(delayNum) && delayNum > 0;
+
+									if (hasDelay) {
+										return (
+											<ThemedText className="text-[12px] font-google-sans-bold !text-red-500 absolute -bottom-5">
+												{`+${delayNum} MIN`}
+											</ThemedText>
+										);
+									} else if (ticketDelay === "0") {
+										return (
+											<ThemedText className="text-[12px] font-google-sans-bold !text-primary-500 absolute -bottom-5">
+												IN ORARIO
+											</ThemedText>
+										);
+									} else if (ticketDelay === "non partito") {
+										return (
+											<ThemedText className="text-[12px] font-google-sans-bold !text-neutral-500 absolute -bottom-5">
+												NON PARTITO
+											</ThemedText>
+										);
+									}
+									return null;
+								})()}
 						</View>
 
-						<ThemedText className="flex-1 text-right text-[26px] font-google-sans-bold !text-gray-900">
-							{arrivalTime}
-						</ThemedText>
+						{(() => {
+							const delayNum = ticketDelay ? parseInt(ticketDelay, 10) : 0;
+							const hasDelay = !isNaN(delayNum) && delayNum > 0;
+							return hasDelay ? (
+								<View className="items-end flex-1">
+									<ThemedText className="text-[26px] font-google-sans-medium !text-neutral-700 line-through">
+										{arrivalTime}
+									</ThemedText>
+									<ThemedText className="text-[26px] font-google-sans-bold !text-red-500 mt-0.5">
+										{addMinutes(arrivalTime, delayNum)}
+									</ThemedText>
+								</View>
+							) : (
+								<ThemedText className="flex-1 text-right text-[26px] font-google-sans-bold !text-gray-900">
+									{arrivalTime}
+								</ThemedText>
+							);
+						})()}
 					</View>
+
+					{dateString === "Oggi" && (
+						<View className="mt-8 -mb-2 flex-row justify-between items-center">
+							<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
+								BIN {binPartenza || "--"}
+							</ThemedText>
+							<ThemedText className="text-[16px] font-google-sans-bold !text-gray-300">
+								BIN {binArrivo || "--"}
+							</ThemedText>
+						</View>
+					)}
 				</View>
 
-				{/* Full-width Carrozza/Posto/Classe band for trains with assigned seats */}
-				{carrozza && posto && (
-					<View className="bg-gray-100 flex-row items-center justify-between -mx-5 px-5 py-3 mb-6">
-						<View className="flex-1">
-							<ThemedText className="text-[14px] font-google-sans-regular !text-gray-600 mb-0.5">
-								Carrozza
-							</ThemedText>
-							<ThemedText className="text-[16px] font-google-sans-bold !text-gray-900">
-								{carrozza}
-							</ThemedText>
-						</View>
-						<View className="flex-1">
-							<ThemedText className="text-[14px] font-google-sans-regular !text-gray-600 mb-0.5">
-								Posto
-							</ThemedText>
-							<ThemedText className="text-[16px] font-google-sans-bold !text-gray-900">
-								{posto.toUpperCase()}
-							</ThemedText>
-						</View>
-						<View className="flex-1 items-end">
-							<ThemedText className="text-[14px] font-google-sans-regular !text-gray-600 mb-0.5 text-right">
-								Classe
-							</ThemedText>
-							<ThemedText
-								className="text-[16px] font-google-sans-bold !text-gray-900 text-right"
-								numberOfLines={1}
-								adjustsFontSizeToFit
-							>
-								{passengerClass
-									? passengerClass.replace(" PRENOTAZIONE", "")
-									: ""}
-							</ThemedText>
+				{/* Full-width Carrozza/Posto/Classe band */}
+				{(carrozza || posto || passengerClass) && (
+					<View className="bg-neutral-100 flex-col -mx-5 px-5 py-3 mb-6">
+						{!isRegionale && dateString === "Oggi" && (
+							<View className="flex-row justify-center gap-1 mb-10 mt-2 relative">
+								<View className="items-center relative w-[84px]">
+									<CoachRear color={rearColor} />
+									{boardPos === "coda" && (
+										<ThemedText className="text-[12px] font-google-sans-bold absolute -bottom-5 !text-primary-500">
+											Sali in coda
+										</ThemedText>
+									)}
+								</View>
+								<View className="items-center relative w-[84px]">
+									<CoachCenter color={centerColor} />
+									{boardPos === "centro" && (
+										<ThemedText className="text-[12px] font-google-sans-bold absolute -bottom-5 !text-primary-500 whitespace-nowrap">
+											Sali al centro
+										</ThemedText>
+									)}
+								</View>
+								<View className="items-center relative w-[84px]">
+									<CoachHead color={headColor} />
+									{boardPos === "testa" && (
+										<ThemedText className="text-[12px] font-google-sans-bold absolute -bottom-5 !text-primary-500 whitespace-nowrap">
+											Sali in testa
+										</ThemedText>
+									)}
+								</View>
+							</View>
+						)}
+						<View className="flex-row items-center justify-between">
+							{carrozza && posto ? (
+								<>
+									<View className="flex-1 max-w-[25%]">
+										<ThemedText className="text-[14px] font-google-sans-regular !text-gray-600 mb-0.5">
+											Carrozza
+										</ThemedText>
+										<ThemedText className="text-[16px] font-google-sans-bold !text-gray-900">
+											{carrozza}
+										</ThemedText>
+									</View>
+									<View className="flex-1 max-w-[25%]">
+										<ThemedText className="text-[14px] font-google-sans-regular !text-gray-600 mb-0.5">
+											Posto
+										</ThemedText>
+										<ThemedText className="text-[16px] font-google-sans-bold !text-gray-900">
+											{posto.toUpperCase()}
+										</ThemedText>
+									</View>
+									<View className="flex-1 items-end">
+										<ThemedText className="text-[14px] font-google-sans-regular !text-gray-600 mb-0.5 text-right">
+											Classe
+										</ThemedText>
+										<ThemedText
+											className="text-[16px] font-google-sans-bold !text-gray-900 text-right"
+											numberOfLines={1}
+										>
+											{formatClassName(passengerClass || "")}
+										</ThemedText>
+									</View>
+								</>
+							) : (
+								<View className="flex-1 items-end">
+									<ThemedText className="text-[14px] font-google-sans-regular !text-gray-600 mb-0.5 text-right">
+										Classe
+									</ThemedText>
+									<ThemedText
+										className="text-[16px] font-google-sans-bold !text-gray-900 text-right"
+										numberOfLines={1}
+										adjustsFontSizeToFit
+									>
+										{formatClassName(passengerClass || "")}
+									</ThemedText>
+								</View>
+							)}
 						</View>
 					</View>
 				)}
 
 				<Pressable
-					className="items-center justify-center pt-2 pb-3 flex-col gap-2"
+					className={`items-center justify-center pt-2 ${dateString === "Oggi" ? "pb-3 gap-2" : "hidden"} flex-col`}
 					onPress={() =>
 						router.push({ pathname: "/qr-code" as any, params: { pnr } })
 					}
@@ -365,41 +645,32 @@ export function TicketCard({
 							weight={400}
 						/>
 						<ThemedText className="text-[18px] font-google-sans-regular !text-gray-500">
-							{(passengerName || USER_DATA.firstName + " " + USER_DATA.lastName)
-								.toLowerCase()
-								.replace(/\b\w/g, (c) => c.toUpperCase())}
+							{formatPersonName(
+								passengerName || USER_DATA.firstName + " " + USER_DATA.lastName,
+							)}
 						</ThemedText>
 					</View>
-					{Platform.OS === "web" ||
-					Constants.executionEnvironment ===
-						ExecutionEnvironment.StoreClient ? (
-						<QRCode
-							value={qrValue}
-							size={160}
-							color="black"
-							backgroundColor="white"
-						/>
-					) : aztecImageUri ? (
-						<Image
-							source={{ uri: aztecImageUri }}
-							style={{ width: 160, height: 160 }}
-							contentFit="contain"
-						/>
-					) : (
-						<ActivityIndicator size="small" color="#004141" />
-					)}
+					{dateString === "Oggi" &&
+						(Platform.OS === "web" ||
+						Constants.executionEnvironment ===
+							ExecutionEnvironment.StoreClient ? (
+							<QRCode
+								value={qrValue}
+								size={160}
+								color="black"
+								backgroundColor="white"
+							/>
+						) : aztecImageUri ? (
+							<Image
+								source={{ uri: aztecImageUri }}
+								style={{ width: 160, height: 160 }}
+								contentFit="contain"
+							/>
+						) : (
+							<ActivityIndicator size="small" color="#004141" />
+						))}
 				</Pressable>
 			</View>
-
-			{/* Ticket Type (only if not displayed in the band above) */}
-			{!(carrozza && posto) && passengerClass && (
-				<View className="flex-row items-center border-t border-gray-100 px-5 py-3">
-					<Icon name="confirmation_number" size={24} color="#000" />
-					<ThemedText className="ml-2 text-base font-google-sans-medium !text-gray-900">
-						{passengerClass.toUpperCase().replace(" PRENOTAZIONE", "")}
-					</ThemedText>
-				</View>
-			)}
 
 			{/* Expanded Details Section */}
 			<Animated.View
@@ -487,14 +758,14 @@ export function TicketCard({
 			{/* Maggiori Dettagli Toggle */}
 			<Animated.View layout={LinearTransition.duration(200)}>
 				<Pressable
-					className="items-center justify-center py-4 active:bg-gray-50 border-t border-gray-100"
+					className={`items-center justify-center pb-4 active:bg-gray-50 ${dateString === "Oggi" ? "pt-2" : "-mt-4"}`}
 					onPress={() => setIsExpanded(!isExpanded)}
 				>
 					<ThemedText
 						className="text-center text-[15px] font-google-sans-bold"
 						style={{ color: "#006666" }}
 					>
-						{isExpanded ? "Mostra meno" : "Maggiori Dettagli"}
+						{isExpanded ? "Mostra meno" : "Mostra dettagli"}
 					</ThemedText>
 					{isExpanded && (
 						<Icon

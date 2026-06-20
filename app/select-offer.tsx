@@ -1,8 +1,9 @@
 import { selectedSolutionCache } from "@/api/search";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { router, useLocalSearchParams } from "expo-router";
+import { formatClassName, formatOfferName } from "@/utils/format";
 import { getGlobalSelectionList } from "@/utils/selection-store";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import Animated, {
@@ -49,9 +50,9 @@ const customExiting = () => {
 	};
 };
 
-import { CheckoutHeader } from "@/components/checkout-header";
 import { TravelSolutionCard } from "@/components/search/travel-solution-card";
 import { StickyFooter } from "@/components/select-offer/sticky-footer";
+import { PageHeader } from "@/components/ui/page-header";
 
 const LOGOS: Record<string, { source: any; ratio: number }> = {
 	Frecciarossa: { source: require("@/assets/logos/small/f.png"), ratio: 1.4 },
@@ -139,7 +140,7 @@ export default function SelectOfferScreen() {
 
 	const dateStr = params.dateStr as string;
 	const departureDate = dateStr ? new Date(dateStr) : new Date();
-	const ddMMyyyy = `${String(departureDate.getDate()).padStart(2, '0')}/${String(departureDate.getMonth() + 1).padStart(2, '0')}/${departureDate.getFullYear()}`;
+	const ddMMyyyy = `${String(departureDate.getDate()).padStart(2, "0")}/${String(departureDate.getMonth() + 1).padStart(2, "0")}/${departureDate.getFullYear()}`;
 
 	const trains = solution?.trains || [];
 	const segments = trains.map((t: any) => ({
@@ -187,11 +188,7 @@ export default function SelectOfferScreen() {
 
 		const classesList = Array.from(uniqueClasses).map((name) => ({
 			id: name,
-			name:
-					name
-						.replace(/ PRENOTAZIONE/i, "")
-						.replace(/[- ]*post[oi]\s+a\s+sedere/ig, "")
-						.trim() || "Standard",
+			name: formatClassName(name, Infinity) || "STANDARD",
 		}));
 		return classesList.length > 0
 			? classesList
@@ -237,28 +234,9 @@ export default function SelectOfferScreen() {
 		});
 
 		const offersList = Array.from(uniqueOffers).map((rawName) => {
-				let cleanName = rawName.replace(/[- ]*post[oi]\s+a\s+sedere/ig, "").trim();
-			let displayName;
-			if (cleanName === "S.ECONOMY") {
-				displayName = "Super Economy";
-			} else if (
-				cleanName.toUpperCase() === "FR.DAYS" ||
-				cleanName.toUpperCase() === "FRECCIADAYS"
-			) {
-				displayName = "FrecciaDAYS";
-			} else if (cleanName.toUpperCase() === "FRECCIAYOUNG") {
-				displayName = "FrecciaYOUNG";
-			} else {
-				displayName = cleanName
-					.toLowerCase()
-					.split(" ")
-					.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-					.join(" ")
-					.trim();
-			}
 			return {
 				id: rawName,
-				name: displayName,
+				name: formatOfferName(rawName),
 				badge:
 					rawName.includes("SUPER") ||
 					rawName.includes("S.ECONOMY") ||
@@ -280,7 +258,7 @@ export default function SelectOfferScreen() {
 		for (const t of tickets) {
 			if (!t) continue;
 			if (t.i && Array.isArray(t.i) && t.i.includes(sIdx)) {
-					if (t.i[0] !== sIdx) return 0;
+				if (t.i[0] !== sIdx) return 0;
 				const classIndex = t.c?.indexOf(className);
 				if (
 					classIndex !== undefined &&
@@ -320,12 +298,18 @@ export default function SelectOfferScreen() {
 					// Fallback: equal split
 					const classIndex = t.c?.indexOf(className);
 					let totalPrice = 0;
-					if (classIndex !== undefined && classIndex >= 0 && t.p && t.p[classIndex]) {
+					if (
+						classIndex !== undefined &&
+						classIndex >= 0 &&
+						t.p &&
+						t.p[classIndex]
+					) {
 						if (t.f && Array.isArray(t.f)) {
 							const offerIndex = t.f.indexOf(offerName);
 							if (offerIndex >= 0) {
 								const priceStr = t.p[classIndex][offerIndex];
-								if (priceStr) totalPrice = parseFloat(priceStr.replace(",", "."));
+								if (priceStr)
+									totalPrice = parseFloat(priceStr.replace(",", "."));
 							}
 						} else if (t.sf === offerName) {
 							const priceStr = t.p[classIndex][0];
@@ -474,11 +458,18 @@ export default function SelectOfferScreen() {
 	};
 
 	const basePrice = solution?.price || 15.0;
-	const extraServicesCost = getGlobalSelectionList().filter((p) => p.itemType === "service" && (p.type === "Animale" || p.type === "Bicicletta")).length * 5.0;
+	const extraServicesCost =
+		getGlobalSelectionList().filter(
+			(p) =>
+				p.itemType === "service" &&
+				(p.type === "Animale" || p.type === "Bicicletta"),
+		).length * 5.0;
+
+
 
 	return (
 		<View className="flex-1 bg-white">
-			<CheckoutHeader title="Andata" />
+			<PageHeader title="Andata" showBackButton={true} />
 
 			<ScrollView
 				className="flex-1 bg-neutral-50 px-4 pt-4"
@@ -522,9 +513,7 @@ export default function SelectOfferScreen() {
 											segment.departureTime ||
 												solution?.departureTime ||
 												"00:00",
-											segment.arrivalTime ||
-												solution?.arrivalTime ||
-												"00:00"
+											segment.arrivalTime || solution?.arrivalTime || "00:00",
 										),
 										trains: [segment],
 										price:
@@ -537,15 +526,14 @@ export default function SelectOfferScreen() {
 										offerName: displayOfferName,
 									}}
 									route={{ from: segment.origin, to: segment.destination }}
+									searchDate={departureDate}
 									isSelectOfferMode={true}
 									selectOfferModeProps={{
 										dateStr: calculateDuration(
 											segment.departureTime ||
 												solution?.departureTime ||
 												"00:00",
-											segment.arrivalTime ||
-												solution?.arrivalTime ||
-												"00:00"
+											segment.arrivalTime || solution?.arrivalTime || "00:00",
 										),
 										isExpanded,
 										passengerName: ddMMyyyy,
@@ -593,9 +581,7 @@ export default function SelectOfferScreen() {
 															<ThemedText
 																className={`text-[14px] font-google-sans-bold ${selectedClasses[sIdx] === c.id ? "text-gray-800" : "text-gray-500"}`}
 															>
-																{c.name
-																	.toUpperCase()
-																	.replace(" PRENOTAZIONE", "")}
+																{formatClassName(c.name, Infinity)}
 															</ThemedText>
 															{CLASS_ICONS[c.name.toUpperCase()] && (
 																<View className="flex-row items-center gap-1.5">
@@ -643,7 +629,7 @@ export default function SelectOfferScreen() {
 																			[sIdx]: false,
 																		}));
 																	}}
-																	className={`flex-row items-center justify-between pr-4 pl-10 py-2 ${isSelected ? "bg-primary-500/10" : "active:bg-gray-50"}`}
+																	className={`flex-row items-center justify-between pr-4 pl-10 py-2 ${isSelected ? "bg-primary-500/5" : "active:bg-gray-50"}`}
 																>
 																	<View className="flex-row items-center flex-1 relative">
 																		{isSelected && (
@@ -651,18 +637,18 @@ export default function SelectOfferScreen() {
 																				<Icon
 																					name="check"
 																					size={18}
-																					className="!text-primary-600"
+																					className="!text-primary-500"
 																				/>
 																			</View>
 																		)}
 																		<ThemedText
-																			className={`text-[15px] !text-gray-900 ${isSelected ? "font-google-sans-bold" : "font-google-sans-regular"}`}
+																			className={`text-[15px] ${isSelected ? "font-google-sans-bold !text-primary-500" : "font-google-sans-regular !text-gray-900"}`}
 																		>
 																			{o.name}
 																		</ThemedText>
 																	</View>
 																	<ThemedText
-																		className={`text-[15px] !text-gray-900 ${isSelected ? "font-google-sans-bold" : "font-google-sans-regular"}`}
+																		className={`text-[15px] ${isSelected ? "font-google-sans-bold !text-primary-500" : "font-google-sans-regular !text-gray-900"}`}
 																	>
 																		€ {offerPrice.toFixed(2).replace(".", ",")}
 																	</ThemedText>
@@ -700,10 +686,17 @@ export default function SelectOfferScreen() {
 							(train: any, idx: number) => {
 								const cName = selectedClasses[idx] || "Standard";
 								const oName = selectedOffers[idx] || "Super Economy";
+
+								const realOffers = getRealOffers(idx, cName);
+								const selectedOfferObj = realOffers.find((o) => o.id === oName);
+								const displayOfferName = selectedOfferObj
+									? selectedOfferObj.name
+									: oName;
+
 								return {
 									...train,
 									selectedClass: cName,
-									selectedOffer: oName,
+									selectedOffer: displayOfferName,
 									price: getPriceForSegment(idx, cName, oName) * passengerCount,
 								};
 							},

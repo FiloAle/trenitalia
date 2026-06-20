@@ -1,6 +1,6 @@
 import { InfoBanner } from "@/components/home/info-banner";
-import { FollowTrainModal } from "@/components/modals/follow-train-modal";
 import { BottomSheet } from "@/components/modals/bottom-sheet";
+import { FollowTrainModal } from "@/components/modals/follow-train-modal";
 import { TopDownModal } from "@/components/modals/top-down-modal";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
@@ -10,11 +10,11 @@ import {
 	getRecentTrains,
 	RecentTrainSearch,
 } from "@/utils/recent-trains-store";
-import { router, useFocusEffect, useLocalSearchParams, useGlobalSearchParams } from "expo-router";
-import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
 	ActivityIndicator,
+	DeviceEventEmitter,
 	Dimensions,
 	FlatList,
 	Image,
@@ -24,9 +24,13 @@ import {
 	ScrollView,
 	TextInput,
 	View,
-	DeviceEventEmitter,
 } from "react-native";
+import Animated, {
+	useAnimatedStyle,
+	withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { PageHeader } from "@/components/ui/page-header";
 
 const CHIPS = ["Stazione", "Da/a", "N. Treno"];
 
@@ -53,10 +57,12 @@ const AnimatedTabLabel = ({
 	);
 };
 
-
 export default function InfoScreen() {
 	const insets = useSafeAreaInsets();
-	const params = useLocalSearchParams<{ followed?: string; openNews?: string }>();
+	const params = useLocalSearchParams<{
+		followed?: string;
+		openNews?: string;
+	}>();
 	const [activeChip, setActiveChip] = useState("Stazione");
 	const [tabWidth, setTabWidth] = useState(0);
 	const [trainNumber, setTrainNumber] = useState("");
@@ -67,12 +73,16 @@ export default function InfoScreen() {
 	const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
 
 	const [isNotizieOpen, setIsNotizieOpen] = useState(false);
-	const [notizie, setNotizie] = useState<{title: string; content: string}[]>([]);
+	const [notizie, setNotizie] = useState<{ title: string; content: string }[]>(
+		[],
+	);
 	const [isLoadingNotizie, setIsLoadingNotizie] = useState(false);
-	const [expandedNewsIndex, setExpandedNewsIndex] = useState<number | null>(null);
+	const [expandedNewsIndex, setExpandedNewsIndex] = useState<number | null>(
+		null,
+	);
 
 	useEffect(() => {
-		const subscription = DeviceEventEmitter.addListener('openInfoNews', () => {
+		const subscription = DeviceEventEmitter.addListener("openInfoNews", () => {
 			fetchNotizie();
 		});
 		return () => subscription.remove();
@@ -83,33 +93,36 @@ export default function InfoScreen() {
 		setExpandedNewsIndex(null);
 		setIsLoadingNotizie(true);
 		try {
-			const response = await fetch("http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/infomobilitaRSS/false");
+			const response = await fetch(
+				"http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/infomobilitaRSS/false",
+			);
 			const html = await response.text();
-			const regex = /<li[^>]*>\s*<a[^>]*>([\s\S]*?)<\/a>\s*<div class="boxAcc"[^>]*>[\s\S]*?<div class="info-text[^"]*">([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/g;
-			
+			const regex =
+				/<li[^>]*>\s*<a[^>]*>([\s\S]*?)<\/a>\s*<div class="boxAcc"[^>]*>[\s\S]*?<div class="info-text[^"]*">([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/g;
+
 			let match;
-			const results: {title: string; content: string}[] = [];
+			const results: { title: string; content: string }[] = [];
 			while ((match = regex.exec(html)) !== null) {
 				const title = match[1].trim();
 				let newsContent = match[2].trim();
-				
+
 				// Strip HTML and fix spacing
 				newsContent = newsContent
-					.replace(/<p[^>]*>/gi, '\n')
-					.replace(/<\/p>/gi, '\n')
-					.replace(/<br\s*\/?>/gi, '\n')
-					.replace(/&nbsp;/gi, ' ')
-					.replace(/<[^>]*>/g, '')
-					.replace(/\r/g, '')
-					.replace(/[ \t]+/g, ' ')
-					.replace(/ \n/g, '\n')
-					.replace(/\n /g, '\n')
-					.replace(/\n{2,}/g, '\n\n')
+					.replace(/<p[^>]*>/gi, "\n")
+					.replace(/<\/p>/gi, "\n")
+					.replace(/<br\s*\/?>/gi, "\n")
+					.replace(/&nbsp;/gi, " ")
+					.replace(/<[^>]*>/g, "")
+					.replace(/\r/g, "")
+					.replace(/[ \t]+/g, " ")
+					.replace(/ \n/g, "\n")
+					.replace(/\n /g, "\n")
+					.replace(/\n{2,}/g, "\n\n")
 					.trim();
-					
+
 				if (title) results.push({ title, content: newsContent });
 			}
-			
+
 			results.sort((a, b) => {
 				const isAUpper = a.title === a.title.toUpperCase();
 				const isBUpper = b.title === b.title.toUpperCase();
@@ -128,7 +141,8 @@ export default function InfoScreen() {
 
 	const [recentTrains, setRecentTrains] = useState<RecentTrainSearch[]>([]);
 
-	const activeChipIndex = CHIPS.indexOf(activeChip) === -1 ? 0 : CHIPS.indexOf(activeChip);
+	const activeChipIndex =
+		CHIPS.indexOf(activeChip) === -1 ? 0 : CHIPS.indexOf(activeChip);
 	const animatedStyle = useAnimatedStyle(() => {
 		return {
 			transform: [
@@ -140,7 +154,6 @@ export default function InfoScreen() {
 			],
 		};
 	}, [activeChipIndex, tabWidth]);
-
 
 	useFocusEffect(
 		useCallback(() => {
@@ -457,22 +470,15 @@ export default function InfoScreen() {
 	return (
 		<View style={{ flex: 1 }}>
 			<View className="flex-1 bg-white">
-				{/* Header Section */}
-				<View
-					className="bg-primary-600 pb-2"
-					style={{ paddingTop: insets.top + 4 }}
-				>
-					<View className="h-14 flex-row items-center justify-between px-6 mb-2">
-						<ThemedText className="text-3xl font-google-sans-bold !text-white">
-							Infomobilità
-						</ThemedText>
-						<View className="flex-row items-center gap-4">
-							<Pressable onPress={fetchNotizie}>
-								<Icon name="release_alert" size={24} color="white" />
-							</Pressable>
-						</View>
-					</View>
-				</View>
+				<PageHeader
+					title="Infomobilità"
+					showBackButton={false}
+					rightElement={
+						<Pressable onPress={fetchNotizie}>
+							<Icon name="release_alert" size={24} color="white" />
+						</Pressable>
+					}
+				/>
 
 				{/* Tab Selector */}
 				<View className="px-5 pt-5 z-50">
@@ -503,18 +509,6 @@ export default function InfoScreen() {
 
 				{/* Main Content Area */}
 				<View className="flex-1">{renderContent()}</View>
-
-				{/* Fixed Banner for Tabellone */}
-				{activeChip === "Stazione" && (
-					<View
-						className="absolute left-0 right-0 px-5 z-10 bottom-6"
-						pointerEvents="box-none"
-					>
-						<View className="bg-white/90 pt-2 rounded-2xl">
-							<InfoBanner />
-						</View>
-					</View>
-				)}
 
 				{/* Search Button & Banner - Moves with keyboard */}
 				{activeChip === "N. Treno" && (
@@ -595,22 +589,22 @@ export default function InfoScreen() {
 					{
 						label: "OK",
 						onPress: () => {
-												setIsSuccessModalVisible(false);
+							setIsSuccessModalVisible(false);
 						},
 					},
 				]}
 			/>
-		
+
 			<BottomSheet
 				isVisible={isNotizieOpen}
 				onClose={() => setIsNotizieOpen(false)}
 				title="Notizie di Infomobilità"
 				contentPaddingBottom={-insets.bottom}
 			>
-				<ScrollView 
+				<ScrollView
 					showsVerticalScrollIndicator={false}
 					contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
-					style={{ height: Dimensions.get('window').height * 0.7 }}
+					style={{ height: Dimensions.get("window").height * 0.7 }}
 				>
 					<View className="py-4">
 						{isLoadingNotizie ? (
@@ -621,20 +615,31 @@ export default function InfoScreen() {
 							<View className="gap-4">
 								{notizie.length > 0 ? (
 									notizie.map((news, index) => (
-										<Pressable 
-											key={index} 
-											onPress={() => setExpandedNewsIndex(expandedNewsIndex === index ? null : index)}
+										<Pressable
+											key={index}
+											onPress={() =>
+												setExpandedNewsIndex(
+													expandedNewsIndex === index ? null : index,
+												)
+											}
 											className="p-4 bg-white rounded-2xl border border-gray-200"
 										>
 											<View className="flex-row justify-between items-center gap-3">
 												<Icon name="info" size={20} color="#eab308" />
-												<ThemedText numberOfLines={2} className="flex-1 text-[15px] font-google-sans-bold !text-gray-900 leading-snug">
+												<ThemedText
+													numberOfLines={2}
+													className="flex-1 text-[15px] font-google-sans-bold !text-gray-900 leading-snug"
+												>
 													{news.title}
 												</ThemedText>
-												<Icon 
-													name={expandedNewsIndex === index ? "expand_less" : "expand_more"} 
-													size={24} 
-													color="#9ca3af" 
+												<Icon
+													name={
+														expandedNewsIndex === index
+															? "expand_less"
+															: "expand_more"
+													}
+													size={24}
+													color="#9ca3af"
 												/>
 											</View>
 											{expandedNewsIndex === index && (
@@ -656,6 +661,6 @@ export default function InfoScreen() {
 					</View>
 				</ScrollView>
 			</BottomSheet>
-</View>
+		</View>
 	);
 }

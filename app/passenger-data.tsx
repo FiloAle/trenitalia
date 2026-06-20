@@ -1,9 +1,9 @@
-import { CheckoutHeader } from "@/components/checkout-header";
 import { InfoBanner } from "@/components/home/info-banner";
 import { StickyFooter } from "@/components/select-offer/sticky-footer";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { USER_DATA, getInitials } from "@/constants/user";
+import { PageHeader } from "@/components/ui/page-header";
+import { getInitials } from "@/constants/user";
 import {
 	getGlobalSelectionList,
 	setGlobalSelectionList,
@@ -105,31 +105,12 @@ export default function PassengerDataScreen() {
 
 	return (
 		<View className="flex-1 bg-white">
-			<CheckoutHeader title="Dati passeggeri" />
+			<PageHeader title="Dati passeggeri" showBackButton={true} />
 
 			<ScrollView
 				className="flex-1 bg-white"
 				contentContainerStyle={{ paddingBottom: 160 }}
 			>
-				{/* Contatti acquirente */}
-				<View className="bg-white px-5 py-4 flex-row items-center border-b border-gray-100">
-					<Icon
-						name="contact_mail"
-						size={24}
-						className="!text-primary-600 mr-4"
-					/>
-					<View>
-						<ThemedText className="text-[14px] font-google-sans-bold !text-gray-950 mb-0.5">
-							Contatti acquirente
-						</ThemedText>
-						<ThemedText className="text-[13px] font-google-sans-medium !text-gray-500 uppercase">
-							{USER_DATA.email}
-							{"  ·  "}
-							{USER_DATA.phone}
-						</ThemedText>
-					</View>
-				</View>
-
 				{/* Pulsante Aggiungi Servizi */}
 				<View className="bg-white px-5 py-6">
 					<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500 mb-2">
@@ -218,14 +199,22 @@ export default function PassengerDataScreen() {
 									</ThemedText>
 								</View>
 							)}
-							{passengersList.filter((p) => p.itemType === "service" && p.type !== "Animale" && p.type !== "Bicicletta").length >
-								0 && (
+							{passengersList.filter(
+								(p) =>
+									p.itemType === "service" &&
+									p.type !== "Animale" &&
+									p.type !== "Bicicletta",
+							).length > 0 && (
 								<View className="flex-row items-center gap-1">
 									<Icon name="scene" size={18} className="!text-gray-600" />
 									<ThemedText className="text-[14px] font-google-sans-bold !text-gray-700">
 										{
-											passengersList.filter((p) => p.itemType === "service" && p.type !== "Animale" && p.type !== "Bicicletta")
-												.length
+											passengersList.filter(
+												(p) =>
+													p.itemType === "service" &&
+													p.type !== "Animale" &&
+													p.type !== "Bicicletta",
+											).length
 										}
 									</ThemedText>
 								</View>
@@ -305,35 +294,35 @@ export default function PassengerDataScreen() {
 											</ThemedText>
 										</View>
 									</View>
-										{item.itemType === "passenger" ? (
-											<Animated.View
-												style={{
-													transform: [{ rotate: isExpanded ? "180deg" : "0deg" }],
-												}}
-											>
-												<Icon
-													name="expand_more"
-													size={24}
-													className="!text-gray-800"
-												/>
-											</Animated.View>
-										) : (
-											<Pressable
-												onPress={(e) => {
-													e.stopPropagation();
-													setPassengersList((prev) =>
-														prev.filter((p) => p.id !== item.id),
-													);
-												}}
-												className="p-2 -mr-2"
-											>
-												<Icon
-													name="delete"
-													size={24}
-													className="!text-[#c1152c]"
-												/>
-											</Pressable>
-										)}
+									{item.itemType === "passenger" ? (
+										<Animated.View
+											style={{
+												transform: [{ rotate: isExpanded ? "180deg" : "0deg" }],
+											}}
+										>
+											<Icon
+												name="expand_more"
+												size={24}
+												className="!text-gray-800"
+											/>
+										</Animated.View>
+									) : (
+										<Pressable
+											onPress={(e) => {
+												e.stopPropagation();
+												setPassengersList((prev) =>
+													prev.filter((p) => p.id !== item.id),
+												);
+											}}
+											className="p-2 -mr-2"
+										>
+											<Icon
+												name="delete"
+												size={24}
+												className="!text-[#c1152c]"
+											/>
+										</Pressable>
+									)}
 								</Pressable>
 								{isExpanded && item.itemType === "passenger" && (
 									<View className="mt-4">

@@ -6,15 +6,17 @@ import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export interface CheckoutHeaderProps {
-	title: string;
+	title: React.ReactNode;
 	onBack?: () => void;
 	showCartBadge?: boolean;
+	rightElement?: React.ReactNode;
 }
 
 export function CheckoutHeader({
 	title,
 	onBack,
 	showCartBadge = true,
+	rightElement,
 }: CheckoutHeaderProps) {
 	const insets = useSafeAreaInsets();
 
@@ -38,15 +40,23 @@ export function CheckoutHeader({
 				</Pressable>
 
 				<View className="absolute left-0 right-0 top-0 bottom-0 items-center justify-center pointer-events-none">
-					<ThemedText className="text-[17px] font-google-sans-bold !text-white">
-						{title}
-					</ThemedText>
+					{typeof title === "string" ? (
+						<ThemedText className="text-[17px] font-google-sans-bold !text-white">
+							{title}
+						</ThemedText>
+					) : (
+						title
+					)}
 				</View>
 
 				<View className="flex-row items-center gap-5 mr-1 z-10">
-					<Pressable onPress={() => router.navigate("/")}>
-						<Icon name="home" size={26} className="!text-white" />
-					</Pressable>
+					{rightElement ? (
+						rightElement
+					) : (
+						<Pressable onPress={() => router.navigate("/")}>
+							<Icon name="home" size={26} className="!text-white" />
+						</Pressable>
+					)}
 				</View>
 			</View>
 		</View>

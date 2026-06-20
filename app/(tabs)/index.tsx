@@ -9,7 +9,7 @@ import { InfoBanner } from "@/components/home/info-banner";
 import { PromoCarousel } from "@/components/home/promo-carousel";
 import { SectionHeader } from "@/components/home/section-header";
 import { ThemedText } from "@/components/themed-text";
-import { TicketItem } from "@/components/trips/ticket-item";
+import { TravelSolutionCard } from "@/components/search/travel-solution-card";
 import { Icon } from "@/components/ui/icon";
 import { USER_DATA } from "@/constants/user";
 import { getPurchasedTrips, PurchasedTrip } from "@/utils/trips-store";
@@ -74,7 +74,12 @@ export default function HomeScreen() {
 					{nextTrip && (
 						<View className="gap-4">
 							<SectionHeader title="Il tuo prossimo viaggio" />
-							<TicketItem ticket={nextTrip} />
+							<TravelSolutionCard 
+								isPurchasedTrip 
+								solution={nextTrip as any} 
+								route={{ from: nextTrip.trains[0].origin!, to: nextTrip.trains[nextTrip.trains.length - 1].destination! }} 
+								onPress={() => router.push({ pathname: "/ticket-detail" as any, params: { tripId: nextTrip.id } })}
+							/>
 						</View>
 					)}
 

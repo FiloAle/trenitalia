@@ -129,7 +129,7 @@ purchasedTrips.sort((a, b) => {
 	return dateA - dateB;
 });
 
-export const getPurchasedTrips = () => purchasedTrips;
+export const getPurchasedTrips = () => [...purchasedTrips];
 
 export let pendingPassengers: string[] = [];
 export const setPendingPassengers = (passengers: string[]) => {

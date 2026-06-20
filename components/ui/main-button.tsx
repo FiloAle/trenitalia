@@ -1,6 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { LinearGradient } from "expo-linear-gradient";
 import { ActivityIndicator, Pressable, View, ViewStyle } from "react-native";
 
 interface MainButtonProps {
@@ -27,35 +26,26 @@ export const MainButton = ({
 		<Pressable
 			onPress={onPress}
 			disabled={isDisabled}
-			className={`h-14 w-full overflow-hidden rounded-2xl ${className} ${
+			className={`h-14 w-full flex-row items-center justify-center px-6 rounded-2xl bg-primary-500 ${className} ${
 				isDisabled ? "opacity-60" : ""
 			}`}
-			style={[style]}
+			style={style}
 		>
-			<LinearGradient
-				colors={["#8a052b", "#f73d3d"]}
-				start={{ x: 0, y: 0 }}
-				end={{ x: 1, y: 0 }}
-				style={{ flex: 1, width: "100%", height: "100%" }}
-			>
-				<View className="flex-1 flex-row items-center justify-center px-6">
-					<View className="flex-row items-center justify-center">
-						{isLoading ? (
-							<ActivityIndicator color="white" size="small" className="mr-2" />
-						) : iconName ? (
-							<Icon
-								name={iconName}
-								size={18}
-								weight={600}
-								className="!text-white mr-2"
-							/>
-						) : null}
-						<ThemedText className="text-[16px] font-google-sans-bold !text-white text-center">
-							{title}
-						</ThemedText>
-					</View>
-				</View>
-			</LinearGradient>
+			<View className="flex-row items-center justify-center">
+				{isLoading ? (
+					<ActivityIndicator color="white" size="small" className="mr-2" />
+				) : iconName ? (
+					<Icon
+						name={iconName}
+						size={18}
+						weight={600}
+						className="!text-white mr-2"
+					/>
+				) : null}
+				<ThemedText className="text-[16px] font-google-sans-bold !text-white text-center">
+					{title}
+				</ThemedText>
+			</View>
 		</Pressable>
 	);
 };

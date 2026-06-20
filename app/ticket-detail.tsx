@@ -6,11 +6,12 @@ import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import { USER_DATA } from "@/constants/user";
 import { getPurchasedTrips } from "@/utils/trips-store";
-import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { CheckoutHeader } from "@/components/checkout-header";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default function TicketDetailScreen() {
 	const params = useLocalSearchParams();
@@ -46,39 +47,15 @@ export default function TicketDetailScreen() {
 
 	return (
 		<View className="flex-1 bg-white">
-			{/* Gradient Header Background */}
-			<View className="absolute left-0 right-0 top-0 h-64">
-				<LinearGradient
-					colors={["#8a052b", "#f73d3d"]}
-					start={{ x: 0, y: 0 }}
-					end={{ x: 1, y: 0 }}
-					style={{ flex: 1 }}
-				/>
-			</View>
-
-			{/* Header Nav */}
-			<View
-				className="flex-row items-center justify-between px-5 pb-4"
-				style={{ paddingTop: insets.top + 4 }}
-			>
-				<Pressable className="p-2">
-					<Icon name="ios_share" size={28} color="white" />
-				</Pressable>
-				<View className="items-center">
-					<ThemedText className="text-[15px] font-google-sans-bold !text-white uppercase">
-						{USER_DATA.firstName} {USER_DATA.lastName}
-					</ThemedText>
-					<ThemedText className="text-sm font-google-sans-medium !text-white">
-						Adulto
-					</ThemedText>
-				</View>
-				<Pressable className="p-2" onPress={() => router.back()}>
-					<Icon name="close" size={28} color="white" />
-				</Pressable>
-			</View>
+			<PageHeader
+				title="Biglietto"
+				showBackButton={true}
+				showShareButton={true}
+				onShare={() => {}}
+			/>
 
 			<ScrollView
-				className="flex-1 px-5"
+				className="flex-1 px-5 pt-4"
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{ paddingBottom: 220, gap: 16 }}
 			>

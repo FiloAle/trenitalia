@@ -1,45 +1,60 @@
 import { searchJourneys, setSelectedSolutionCache } from "@/api/search";
 import { BottomSheet } from "@/components/modals/bottom-sheet";
-import { SectionHeader } from "@/components/search/section-header";
 import {
-  TravelSolution,
-  TravelSolutionCard,
+	TravelSolution,
+	TravelSolutionCard,
 } from "@/components/search/travel-solution-card";
 import { ThemedText } from "@/components/themed-text";
 import { TimelineEventRow } from "@/components/train-details/timeline-event-row";
+import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
+import { PageHeader } from "@/components/ui/page-header";
 import { STATIONS } from "@/constants/stations";
 import { TimelineStation } from "@/constants/train-details-mock";
 import { getGlobalSelectionList } from "@/utils/selection-store";
+import { formatClassName, formatOfferName } from "@/utils/format";
 import { getTrainStopsCount } from "@/utils/viaggiatreno";
 import Constants from "expo-constants";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
-  Image,
-  InteractionManager,
-  Platform,
-  Pressable,
-  ScrollView,
-  View,
+	ActivityIndicator,
+	Dimensions,
+	FlatList,
+	Image,
+	InteractionManager,
+	Platform,
+	Pressable,
+	ScrollView,
+	Switch,
+	View,
 } from "react-native";
+import Animated, {
+	useAnimatedStyle,
+	useSharedValue,
+	withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+const sortOptions = [
+	"Orario di partenza",
+	"Orario di arrivo",
+	"Durata",
+	"Prezzo",
+];
+
 const LOGOS: Record<string, any> = {
-  Frecciarossa: require("@/assets/logos/frecciarossa.png"),
-  Intercity: require("@/assets/logos/intercity.png"),
-  InterCity: require("@/assets/logos/intercity.png"),
-  Regionale: require("@/assets/logos/regionale.png"),
-  FrRossa: require("@/assets/logos/frecciarossa.png"),
-  ICnotte: require("@/assets/logos/intercity.png"),
-  Regv: require("@/assets/logos/regionale.png"),
-  Reg: require("@/assets/logos/regionale.png"),
-  "Reg Tper": require("@/assets/logos/tper.png"),
-  "Regv Tper": require("@/assets/logos/tper.png"),
+	Frecciarossa: require("@/assets/logos/frecciarossa.png"),
+	Intercity: require("@/assets/logos/intercity.png"),
+	InterCity: require("@/assets/logos/intercity.png"),
+	Regionale: require("@/assets/logos/regionale.png"),
+	FrRossa: require("@/assets/logos/frecciarossa.png"),
+	ICnotte: require("@/assets/logos/intercity.png"),
+	Regv: require("@/assets/logos/regionale.png"),
+	Reg: require("@/assets/logos/regionale.png"),
+	"Reg Tper": require("@/assets/logos/tper.png"),
+	"Regv Tper": require("@/assets/logos/tper.png"),
 };
 
 // MOCK_SOLUTIONS removed in favor of live API
@@ -48,193 +63,193 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const DATE_ITEM_WIDTH = 80;
 
 const InfomobilityTrainBlock = ({
-  train,
-  LOGOS,
-  isToday,
+	train,
+	LOGOS,
+	isToday,
 }: {
-  train: any;
-  LOGOS: any;
-  isToday: boolean;
+	train: any;
+	LOGOS: any;
+	isToday: boolean;
 }) => {
-  const [showPrev, setShowPrev] = useState(false);
-  const [showNext, setShowNext] = useState(false);
+	const [showPrev, setShowPrev] = useState(false);
+	const [showNext, setShowNext] = useState(false);
 
-  const normalizedType = train.trainInfo.type.trim().toLowerCase();
-  const logoKey = Object.keys(LOGOS).find(
-    (k) => k.toLowerCase() === normalizedType,
-  );
-  const logoSource = logoKey ? LOGOS[logoKey] : undefined;
+	const normalizedType = train.trainInfo.type.trim().toLowerCase();
+	const logoKey = Object.keys(LOGOS).find(
+		(k) => k.toLowerCase() === normalizedType,
+	);
+	const logoSource = logoKey ? LOGOS[logoKey] : undefined;
 
-  const passengerOrigin = train.trainInfo.origin;
-  const passengerDest = train.trainInfo.destination;
+	const passengerOrigin = train.trainInfo.origin;
+	const passengerDest = train.trainInfo.destination;
 
-  const normalizeStationName = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/c\.le/g, "centrale")
-      .replace(/\/av/g, "")
-      .replace(/\(av\)/g, "")
-      .replace(/p\. ?ga.*/g, "porta garibaldi")
-      .replace(/p\.ta/g, "porta")
-      .replace(/ - /g, " ")
-      .replace(/-/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  };
+	const normalizeStationName = (name: string) => {
+		return name
+			.toLowerCase()
+			.replace(/c\.le/g, "centrale")
+			.replace(/\/av/g, "")
+			.replace(/\(av\)/g, "")
+			.replace(/p\. ?ga.*/g, "porta garibaldi")
+			.replace(/p\.ta/g, "porta")
+			.replace(/ - /g, " ")
+			.replace(/-/g, " ")
+			.replace(/\s+/g, " ")
+			.trim();
+	};
 
-  const matchStation = (target: string) => {
-    const normTarget = normalizeStationName(target);
+	const matchStation = (target: string) => {
+		const normTarget = normalizeStationName(target);
 
-    let idx = train.timeline.findIndex(
-      (s: any) => normalizeStationName(s.name) === normTarget,
-    );
-    if (idx !== -1) return idx;
+		let idx = train.timeline.findIndex(
+			(s: any) => normalizeStationName(s.name) === normTarget,
+		);
+		if (idx !== -1) return idx;
 
-    idx = train.timeline.findIndex((s: any) => {
-      const normS = normalizeStationName(s.name);
-      return normS.includes(normTarget) || normTarget.includes(normS);
-    });
-    return idx;
-  };
+		idx = train.timeline.findIndex((s: any) => {
+			const normS = normalizeStationName(s.name);
+			return normS.includes(normTarget) || normTarget.includes(normS);
+		});
+		return idx;
+	};
 
-  let startIndex = matchStation(passengerOrigin);
-  let endIndex = matchStation(passengerDest);
+	let startIndex = matchStation(passengerOrigin);
+	let endIndex = matchStation(passengerDest);
 
-  if (startIndex === -1) startIndex = 0;
-  if (endIndex === -1 || endIndex < startIndex)
-    endIndex = train.timeline.length - 1;
+	if (startIndex === -1) startIndex = 0;
+	if (endIndex === -1 || endIndex < startIndex)
+		endIndex = train.timeline.length - 1;
 
-  const hasPrev = startIndex > 0;
-  const hasNext = endIndex < train.timeline.length - 1;
+	const hasPrev = startIndex > 0;
+	const hasNext = endIndex < train.timeline.length - 1;
 
-  const visibleStations = train.timeline.filter((_: any, idx: number) => {
-    if (showPrev && showNext) return true;
-    if (showPrev && !showNext) return idx <= endIndex;
-    if (!showPrev && showNext) return idx >= startIndex;
-    return idx >= startIndex && idx <= endIndex;
-  });
+	const visibleStations = train.timeline.filter((_: any, idx: number) => {
+		if (showPrev && showNext) return true;
+		if (showPrev && !showNext) return idx <= endIndex;
+		if (!showPrev && showNext) return idx >= startIndex;
+		return idx >= startIndex && idx <= endIndex;
+	});
 
-  return (
-    <View className="mb-10">
-      {/* Train Header */}
-      <View className="flex-row items-center justify-between mb-4 border-b border-gray-100 pb-3">
-        <View className="flex-row items-center gap-3">
-          {logoSource ? (
-            <Image
-              source={logoSource}
-              style={{
-                height: 16,
-                width:
-                  normalizedType.includes("freccia") ||
-                  normalizedType === "frrossa"
-                    ? 85
-                    : 65,
-              }}
-              resizeMode="contain"
-            />
-          ) : (
-            <View className="bg-gray-100 px-2 py-1 rounded border border-gray-200">
-              <ThemedText className="text-[13px] font-google-sans-bold !text-gray-700 capitalize">
-                {train.trainInfo.type}
-              </ThemedText>
-            </View>
-          )}
-          <ThemedText className="text-[16px] font-google-sans-bold !text-gray-900">
-            {train.trainInfo.number}
-          </ThemedText>
-        </View>
+	return (
+		<View className="mb-10">
+			{/* Train Header */}
+			<View className="flex-row items-center justify-between mb-4 border-b border-gray-100 pb-3">
+				<View className="flex-row items-center gap-3">
+					{logoSource ? (
+						<Image
+							source={logoSource}
+							style={{
+								height: 16,
+								width:
+									normalizedType.includes("freccia") ||
+									normalizedType === "frrossa"
+										? 85
+										: 65,
+							}}
+							resizeMode="contain"
+						/>
+					) : (
+						<View className="bg-gray-100 px-2 py-1 rounded border border-gray-200">
+							<ThemedText className="text-[13px] font-google-sans-bold !text-gray-700 capitalize">
+								{train.trainInfo.type}
+							</ThemedText>
+						</View>
+					)}
+					<ThemedText className="text-[16px] font-google-sans-bold !text-gray-900">
+						{train.trainInfo.number}
+					</ThemedText>
+				</View>
 
-        {/* Status Tag */}
-        {isToday && train.data.compRitardo && train.data.compRitardo[0] && (
-          <View
-            className="rounded-md px-2 py-1 border"
-            style={{
-              backgroundColor:
-                train.data.compRitardo[0] === "in orario" ||
-                train.data.compRitardo[0] === "non partito"
-                  ? "#f0fdf4"
-                  : "#ffe4e6",
-              borderColor:
-                train.data.compRitardo[0] === "in orario" ||
-                train.data.compRitardo[0] === "non partito"
-                  ? "#bbf7d0"
-                  : "#fecdd3",
-            }}
-          >
-            <ThemedText
-              className="text-[12px] font-google-sans-bold"
-              style={{
-                color:
-                  train.data.compRitardo[0] === "in orario" ||
-                  train.data.compRitardo[0] === "non partito"
-                    ? "#166534"
-                    : "#e11d48",
-                textTransform:
-                  train.data.compRitardo[0] === "in orario" ||
-                  train.data.compRitardo[0] === "non partito"
-                    ? "capitalize"
-                    : "uppercase",
-              }}
-            >
-              {train.data.compRitardo[0] === "in orario" ||
-              train.data.compRitardo[0] === "non partito"
-                ? train.data.compRitardo[0]
-                : `+${train.data.compRitardo[0].replace(/[^0-9]/g, "")} MIN`}
-            </ThemedText>
-          </View>
-        )}
-      </View>
+				{/* Status Tag */}
+				{isToday && train.data.compRitardo && train.data.compRitardo[0] && (
+					<View
+						className="rounded-md px-2 py-1 border"
+						style={{
+							backgroundColor:
+								train.data.compRitardo[0] === "in orario" ||
+								train.data.compRitardo[0] === "non partito"
+									? "#f0fdf4"
+									: "#fee2e2",
+							borderColor:
+								train.data.compRitardo[0] === "in orario" ||
+								train.data.compRitardo[0] === "non partito"
+									? "#bbf7d0"
+									: "#fecaca",
+						}}
+					>
+						<ThemedText
+							className="text-[12px] font-google-sans-bold"
+							style={{
+								color:
+									train.data.compRitardo[0] === "in orario" ||
+									train.data.compRitardo[0] === "non partito"
+										? "#166534"
+										: "#ef4444",
+								textTransform:
+									train.data.compRitardo[0] === "in orario" ||
+									train.data.compRitardo[0] === "non partito"
+										? "capitalize"
+										: "uppercase",
+							}}
+						>
+							{train.data.compRitardo[0] === "in orario" ||
+							train.data.compRitardo[0] === "non partito"
+								? train.data.compRitardo[0]
+								: `+${train.data.compRitardo[0].replace(/[^0-9]/g, "")} MIN`}
+						</ThemedText>
+					</View>
+				)}
+			</View>
 
-      {/* Timeline */}
-      <View>
-        {hasPrev && (
-          <Pressable
-            onPress={() => setShowPrev(!showPrev)}
-            className="items-center py-3 bg-gray-50 rounded-2xl mb-8"
-          >
-            <ThemedText className="text-[13px] font-google-sans-bold text-primary-600">
-              {showPrev
-                ? "Nascondi fermate precedenti"
-                : "Mostra fermate precedenti"}
-            </ThemedText>
-          </Pressable>
-        )}
+			{/* Timeline */}
+			<View>
+				{hasPrev && (
+					<Pressable
+						onPress={() => setShowPrev(!showPrev)}
+						className="items-center py-3 bg-gray-50 rounded-2xl mb-8"
+					>
+						<ThemedText className="text-[13px] font-google-sans-bold text-primary-600">
+							{showPrev
+								? "Nascondi fermate precedenti"
+								: "Mostra fermate precedenti"}
+						</ThemedText>
+					</Pressable>
+				)}
 
-        {visibleStations.map((station: TimelineStation, idx: number) => {
-          return (
-            <TimelineEventRow
-              key={station.id}
-              station={station}
-              nextStation={
-                idx < visibleStations.length - 1
-                  ? visibleStations[idx + 1]
-                  : undefined
-              }
-              isFirst={idx === 0}
-              isLast={idx === visibleStations.length - 1}
-              isTruncatedTop={idx === 0 && hasPrev && !showPrev}
-              isTruncatedBottom={
-                idx === visibleStations.length - 1 && hasNext && !showNext
-              }
-            />
-          );
-        })}
+				{visibleStations.map((station: TimelineStation, idx: number) => {
+					return (
+						<TimelineEventRow
+							key={station.id}
+							station={station}
+							nextStation={
+								idx < visibleStations.length - 1
+									? visibleStations[idx + 1]
+									: undefined
+							}
+							isFirst={idx === 0}
+							isLast={idx === visibleStations.length - 1}
+							isTruncatedTop={idx === 0 && hasPrev && !showPrev}
+							isTruncatedBottom={
+								idx === visibleStations.length - 1 && hasNext && !showNext
+							}
+						/>
+					);
+				})}
 
-        {hasNext && (
-          <Pressable
-            onPress={() => setShowNext(!showNext)}
-            className="items-center py-3 bg-gray-50 rounded-2xl mt-8"
-          >
-            <ThemedText className="text-[13px] font-google-sans-bold text-primary-600">
-              {showNext
-                ? "Nascondi fermate successive"
-                : "Mostra fermate successive"}
-            </ThemedText>
-          </Pressable>
-        )}
-      </View>
-    </View>
-  );
+				{hasNext && (
+					<Pressable
+						onPress={() => setShowNext(!showNext)}
+						className="items-center py-3 bg-gray-50 rounded-2xl mt-8"
+					>
+						<ThemedText className="text-[13px] font-google-sans-bold text-primary-600">
+							{showNext
+								? "Nascondi fermate successive"
+								: "Mostra fermate successive"}
+						</ThemedText>
+					</Pressable>
+				)}
+			</View>
+		</View>
+	);
 };
 
 export default function SearchResultsScreen() {
@@ -254,6 +269,25 @@ export default function SearchResultsScreen() {
 	);
 	const [noChanges, setNoChanges] = useState(params.noChanges === "true");
 	const [bike, setBike] = useState(params.bike === "true");
+	const [sortOrder, setSortOrder] = useState(
+		(params.sortOrder as string) || "Orario di partenza",
+	);
+	const [pendingSortOrder, setPendingSortOrder] =
+		useState("Orario di partenza");
+
+	const [showTravelType, setShowTravelType] = useState(false);
+	const travelTypeChevronRotation = useSharedValue(0);
+	useEffect(() => {
+		travelTypeChevronRotation.value = withTiming(showTravelType ? -180 : 0, {
+			duration: 250,
+		});
+	}, [showTravelType]);
+
+	const travelTypeChevronAnimatedStyle = useAnimatedStyle(() => {
+		return {
+			transform: [{ rotate: `${travelTypeChevronRotation.value}deg` }],
+		};
+	});
 
 	const [localFrom, setLocalFrom] = useState(route.from);
 	const [localTo, setLocalTo] = useState(route.to);
@@ -266,6 +300,12 @@ export default function SearchResultsScreen() {
 	const [solutions, setSolutions] = useState<TravelSolution[]>([]);
 
 	const globalList = getGlobalSelectionList();
+	const animalCount = globalList.filter(
+		(item) => item.itemType === "service" && item.type === "Animale",
+	).length;
+	const bikeCount = globalList.filter(
+		(item) => item.itemType === "service" && item.type === "Bicicletta",
+	).length;
 	const extraServicesCost =
 		globalList.filter(
 			(p) =>
@@ -289,17 +329,18 @@ export default function SearchResultsScreen() {
 		{ trainInfo: any; timeline: TimelineStation[]; data: any }[] | null
 	>(null);
 
-		useEffect(() => {
+	useEffect(() => {
 		if (!solutions || solutions.length === 0) return;
 
 		let mounted = true;
 
 		const calculateRegionalPrices = async () => {
-			const targetSols = solutions.filter(sol => {
+			const targetSols = solutions.filter((sol) => {
 				if (sol.price <= 0 || sol.trains.length <= 1) return false;
-				const isOnlyRegional = sol.trains.every((t: any) =>
-					t.type.toLowerCase().includes("regionale") ||
-					t.type.toLowerCase().includes("reg")
+				const isOnlyRegional = sol.trains.every(
+					(t: any) =>
+						t.type.toLowerCase().includes("regionale") ||
+						t.type.toLowerCase().includes("reg"),
 				);
 				if (!isOnlyRegional) return false;
 				if (sol.trains[0].calculatedPrice !== undefined) return false;
@@ -313,33 +354,44 @@ export default function SearchResultsScreen() {
 				if (!mounted) break;
 				try {
 					const stopsCounts = await Promise.all(
-						sol.trains.map((t: any) => getTrainStopsCount(t.number, t.origin, t.destination))
+						sol.trains.map((t: any) =>
+							getTrainStopsCount(t.number, t.origin, t.destination),
+						),
 					);
 					if (!mounted) break;
 
-					const totalStops: number = stopsCounts.reduce((acc: number, curr) => acc + (curr || 1), 0);
+					const totalStops: number = stopsCounts.reduce(
+						(acc: number, curr) => acc + (curr || 1),
+						0,
+					);
 
-					setSolutions(prev => prev.map(p => {
-						if (p.id === sol.id) {
-							let remainingPrice = p.price;
-							return {
-								...p,
-								trains: p.trains.map((t: any, idx: number) => {
-									if (idx === p.trains.length - 1) {
-										return { ...t, calculatedPrice: Number(remainingPrice.toFixed(2)) };
-									}
-									const exactPrice = (p.price / totalStops) * (stopsCounts[idx] || 1);
-									const roundedPrice = Math.round(exactPrice / 0.05) * 0.05;
-									remainingPrice -= roundedPrice;
-									return {
-										...t,
-										calculatedPrice: Number(roundedPrice.toFixed(2))
-									};
-								})
-							};
-						}
-						return p;
-					}));
+					setSolutions((prev) =>
+						prev.map((p) => {
+							if (p.id === sol.id) {
+								let remainingPrice = p.price;
+								return {
+									...p,
+									trains: p.trains.map((t: any, idx: number) => {
+										if (idx === p.trains.length - 1) {
+											return {
+												...t,
+												calculatedPrice: Number(remainingPrice.toFixed(2)),
+											};
+										}
+										const exactPrice =
+											(p.price / totalStops) * (stopsCounts[idx] || 1);
+										const roundedPrice = Math.round(exactPrice / 0.05) * 0.05;
+										remainingPrice -= roundedPrice;
+										return {
+											...t,
+											calculatedPrice: Number(roundedPrice.toFixed(2)),
+										};
+									}),
+								};
+							}
+							return p;
+						}),
+					);
 				} catch (e) {
 					console.warn(e);
 				}
@@ -562,38 +614,8 @@ export default function SearchResultsScreen() {
 					arrivalTime: r.at,
 					duration: r.dur.replace("'", "min").replace("h", "h "),
 					price: isNaN(parsedPrice) ? 0 : parsedPrice,
-					offerName: (() => {
-						const offerRaw = r.tk?.[0]?.sf || "Ordinaria";
-
-						const formatName = (rawName: string) => {
-							let name = rawName.replace(/[- ]*post[oi]\s+a\s+sedere/ig, "").trim();
-							if (name === "S.ECONOMY") return "Super Economy";
-							if (
-								name.toUpperCase() === "FR.DAYS" ||
-								name.toUpperCase() === "FRECCIADAYS"
-							)
-								return "FrecciaDAYS";
-							if (name.toUpperCase() === "FRECCIAYOUNG") return "FrecciaYOUNG";
-							return name
-								.toLowerCase()
-								.split(" ")
-								.map(
-									(word: string) =>
-										word.charAt(0).toUpperCase() + word.slice(1),
-								)
-								.join(" ")
-								.trim();
-						};
-
-						return formatName(offerRaw);
-					})(),
-					serviceClass: (() => {
-						const classRaw = r.tk?.[0]?.sc || r.tk?.[0]?.c?.[0] || "Standard";
-						return classRaw
-							.replace(/ PRENOTAZIONE/i, "")
-							.replace(/posto a sedere/i, "")
-							.trim();
-					})(),
+					offerName: formatOfferName(r.tk?.[0]?.sf || "Ordinaria"),
+					serviceClass: formatClassName(r.tk?.[0]?.sc || r.tk?.[0]?.c?.[0] || "Standard"),
 					tickets: r.tk || [],
 				};
 			});
@@ -967,6 +989,20 @@ export default function SearchResultsScreen() {
 		return total;
 	};
 
+	const parseTimeToMinutes = (time: string) => {
+		const [hours, minutes] = time.split(":").map((part) => parseInt(part, 10));
+		if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+			return Number.POSITIVE_INFINITY;
+		}
+		return hours * 60 + minutes;
+	};
+
+	useEffect(() => {
+		if (showFilters) {
+			setPendingSortOrder(sortOrder);
+		}
+	}, [showFilters, sortOrder]);
+
 	filteredSolutions.forEach((s) => {
 		if (s.price > 0) {
 			if (s.price < minPrice) minPrice = s.price;
@@ -977,78 +1013,157 @@ export default function SearchResultsScreen() {
 		}
 	});
 
+	const sortedSolutions = [...filteredSolutions].sort((a, b) => {
+		if (sortOrder === "Orario di partenza") {
+			return (
+				parseTimeToMinutes(a.departureTime) -
+				parseTimeToMinutes(b.departureTime)
+			);
+		}
+		if (sortOrder === "Orario di arrivo") {
+			const getEffectiveArrival = (arr: string, dep: string) => {
+				const arrMins = parseTimeToMinutes(arr);
+				const depMins = parseTimeToMinutes(dep);
+				return arrMins < depMins ? arrMins + 1440 : arrMins;
+			};
+			return (
+				getEffectiveArrival(a.arrivalTime, a.departureTime) -
+				getEffectiveArrival(b.arrivalTime, b.departureTime)
+			);
+		}
+		if (sortOrder === "Durata") {
+			return parseDuration(a.duration) - parseDuration(b.duration);
+		}
+		if (sortOrder === "Prezzo") {
+			return a.price - b.price;
+		}
+		return 0;
+	});
+
 	return (
 		<View className="flex-1 bg-white">
 			{/* Top Green Header */}
-			<View className="bg-primary-600 px-5" style={{ paddingTop: insets.top }}>
-				{/* Navigation Row */}
-				<View className="flex-row items-center justify-between relative">
-					<Pressable onPress={() => router.back()} className="p-2 -ml-2 z-10">
-						<Icon name="arrow_back" size={26} className="!text-white" />
-					</Pressable>
-
-					<View className="absolute left-0 right-0 top-0 bottom-0 items-center justify-center">
-						<ThemedText className="text-[17px] font-google-sans-bold !text-white">
-							Andata
-						</ThemedText>
-					</View>
-
-					<View className="flex-row items-center gap-5 mr-1 z-10">
-						<Pressable onPress={() => router.navigate("/")}>
-							<Icon name="home" size={26} className="!text-white" />
-						</Pressable>
-					</View>
-				</View>
+			<View className="bg-primary-600">
+				<PageHeader
+					title="Andata"
+					showBackButton={true}
+					showShareButton={false}
+				/>
 
 				{/* Stations Card */}
-				<View className="bg-white/10 rounded-2xl px-4 mt-3 flex-row items-center h-[56px]">
-					<ThemedText
-						numberOfLines={1}
-						className="flex-1 text-[14px] font-google-sans-semibold !text-white"
-					>
-						{localFrom}
-					</ThemedText>
+				<View className="px-5">
+					<View className="bg-white/10 rounded-2xl px-4 mt-1 flex-row items-center h-[56px]">
+						<ThemedText
+							numberOfLines={1}
+							className="flex-1 text-[14px] font-google-sans-semibold !text-white"
+						>
+							{localFrom}
+						</ThemedText>
 
-					<Pressable
-						onPress={handleSwitch}
-						className="h-10 w-10 bg-white rounded-full items-center justify-center mx-4"
-					>
-						<Icon name="swap_horiz" size={24} className="!text-primary-600" />
-					</Pressable>
+						<Pressable
+							onPress={handleSwitch}
+							className="h-10 w-10 bg-white rounded-full items-center justify-center mx-4"
+						>
+							<Icon name="swap_horiz" size={24} className="!text-primary-600" />
+						</Pressable>
 
-					<ThemedText
-						numberOfLines={1}
-						className="flex-1 text-[14px] font-google-sans-semibold !text-white"
-					>
-						{localTo}
-					</ThemedText>
+						<ThemedText
+							numberOfLines={1}
+							className="flex-1 text-[14px] font-google-sans-semibold !text-white"
+						>
+							{localTo}
+						</ThemedText>
+					</View>
 				</View>
 
 				{/* Info Row */}
-				<View className="flex-row gap-3 mt-3">
-					<View className="flex-1 bg-white/10 rounded-2xl p-3.5 h-[56px] justify-center">
-						<ThemedText className="text-[12px] font-google-sans-medium !text-white/60 mb-0.5">
-							Andata
-						</ThemedText>
-						<ThemedText className="text-[15px] font-google-sans-bold !text-white">
-							{formatDisplayDate(currentSelectedDate)}
-						</ThemedText>
+				<View className="flex-row gap-2 mt-3 px-5">
+					<View className="flex-[1.5] bg-white/10 rounded-2xl px-3.5 h-[56px] justify-center">
+						<View className="flex-row items-center gap-2">
+							<Icon
+								name="calendar_today"
+								size={18}
+								className="!text-white"
+								weight={500}
+								style={{ marginTop: -2 }}
+							/>
+							<ThemedText
+								className="text-[15px] font-google-sans-bold !text-white"
+								numberOfLines={1}
+								adjustsFontSizeToFit
+							>
+								{formatDisplayDate(currentSelectedDate)}
+							</ThemedText>
+						</View>
 					</View>
-					<View className="flex-1 bg-white/10 rounded-2xl p-3.5 h-[56px] justify-center">
-						<ThemedText className="text-[12px] font-google-sans-medium !text-white/60 mb-0.5">
-							Passeggeri
-						</ThemedText>
-						<ThemedText
-							numberOfLines={1}
-							className="text-[15px] font-google-sans-bold !text-white"
-						>
-							{passengerText}
-						</ThemedText>
+					<View className="flex-1 bg-white/10 rounded-2xl px-3.5 h-[56px] justify-center">
+						<View className="flex-row items-center gap-1 justify-start">
+							<Icon
+								name="person"
+								size={18}
+								className="!text-white"
+								weight={500}
+								style={{ marginTop: -2 }}
+							/>
+							<ThemedText
+								className="text-[15px] font-google-sans-bold !text-white flex-1"
+								numberOfLines={1}
+								adjustsFontSizeToFit
+							>
+								{animalCount === 0 && bikeCount === 0
+									? passengerText.toLowerCase()
+									: passengerCount}
+							</ThemedText>
+							{(animalCount > 0 || bikeCount > 0) && (
+								<View className="flex-row items-center gap-3 ml-2 shrink-0">
+									{animalCount > 0 && (
+										<View className="flex-row items-center gap-1">
+											<Icon
+												name="pet_supplies"
+												size={16}
+												className="!text-white"
+												weight={500}
+												style={{ marginTop: -2 }}
+											/>
+											<ThemedText className="text-[15px] font-google-sans-bold !text-white">
+												{animalCount}
+											</ThemedText>
+										</View>
+									)}
+									{bikeCount > 0 && (
+										<View className="flex-row items-center gap-1">
+											<Icon
+												name="pedal_bike"
+												size={16}
+												className="!text-white"
+												weight={500}
+												style={{ marginTop: -2 }}
+											/>
+											<ThemedText className="text-[15px] font-google-sans-bold !text-white">
+												{bikeCount}
+											</ThemedText>
+										</View>
+									)}
+								</View>
+							)}
+						</View>
 					</View>
+					<Pressable
+						onPress={() => setShowFilters(true)}
+						className="w-[56px] h-[56px] rounded-2xl bg-white/10 items-center justify-center shrink-0"
+					>
+						<Icon
+							name="page_info"
+							size={22}
+							className="!text-white"
+							weight={500}
+							style={{ marginTop: 1 }}
+						/>
+					</Pressable>
 				</View>
 
 				{/* Date Selector Strip */}
-				<View className="mt-4 -mx-5">
+				<View className="mt-4">
 					<FlatList
 						ref={dateScrollRef}
 						data={dates}
@@ -1138,7 +1253,7 @@ export default function SearchResultsScreen() {
 						</View>
 					) : (
 						<>
-							{filteredSolutions.map((solution) => (
+							{sortedSolutions.map((solution) => (
 								<TravelSolutionCard
 									key={solution.id}
 									solution={{
@@ -1172,7 +1287,7 @@ export default function SearchResultsScreen() {
 									}}
 								/>
 							))}
-							{filteredSolutions.length === 0 && !isFetchingMore && (
+							{sortedSolutions.length === 0 && !isFetchingMore && (
 								<View className="items-center py-10">
 									<ThemedText className="text-gray-500 font-google-sans-medium">
 										Nessuna soluzione trovata per questa tipologia.
@@ -1189,156 +1304,126 @@ export default function SearchResultsScreen() {
 				</View>
 			</ScrollView>
 
-			{/* Filters Floating Button */}
-			<View className="absolute bottom-12 left-1/2 -ml-16">
-				<Pressable
-					onPress={() => setShowFilters(true)}
-					className="h-12 w-32 flex-row items-center justify-center rounded-full bg-red-600"
-				>
-					<Icon name="tune" size={20} className="!text-white" />
-					<ThemedText className="ml-2 text-[15px] font-google-sans-bold !text-white">
-						Filtri
-					</ThemedText>
-				</Pressable>
-			</View>
-
 			{/* Filters Bottom Sheet */}
 			<BottomSheet
 				isVisible={showFilters}
-				onClose={() => setShowFilters(false)}
-				title="Filtra e ordina"
+				onClose={() => {
+					setShowFilters(false);
+					setShowTravelType(false);
+				}}
+				title="Filtri"
 			>
-				<ScrollView className="max-h-[80%] -mx-6">
-					<View className="px-6 pb-6 gap-8">
-						{/* Section 1: Train Type */}
-						<View className="gap-5">
-							<SectionHeader title="FILTRA PER TIPOLOGIA TRENO" />
-							<View className="gap-2">
-								{[
-									"Principali Soluzioni",
-									"Frecce",
-									"Intercity",
-									"Regionali",
-								].map((type) => (
+				<View className="gap-6">
+					<View className="relative overflow-visible gap-0">
+						<Pressable
+							onPress={() => setShowTravelType(!showTravelType)}
+							className="min-h-[50px] flex-row items-center justify-between py-1.5 relative"
+						>
+							<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+								Soluzioni
+							</ThemedText>
+							<View className="flex-row items-center gap-1">
+								<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+									{activeTravelType}
+								</ThemedText>
+								<Animated.View style={travelTypeChevronAnimatedStyle}>
+									<Icon
+										name="expand_more"
+										size={20}
+										className="!text-gray-950 -mb-0.5"
+									/>
+								</Animated.View>
+							</View>
+						</Pressable>
+
+						<DropdownMenu
+							isVisible={showTravelType}
+							className="top-[42px] right-0"
+							style={{ zIndex: 999, width: 180 }}
+						>
+							<View className="py-2">
+								{["Tutte", "Frecce", "Intercity", "Regionali"].map((type) => (
 									<Pressable
 										key={type}
-										onPress={() => setActiveTravelType(type)}
-										className="flex-row items-center justify-between py-3.5"
+										onPress={() => {
+											setActiveTravelType(type);
+											setShowTravelType(false);
+										}}
+										className="flex-row items-center justify-between px-4 py-2"
 									>
-										<View className="flex-row items-center">
-											<ThemedText className="text-[16px] font-google-sans-bold !text-gray-800">
-												{type}
-											</ThemedText>
-											{type === "Principali Soluzioni" && (
-												<Icon
-													name="info"
-													size={16}
-													className="ml-2 !text-gray-600"
-												/>
-											)}
-										</View>
-										<View
-											className={`h-6 w-6 rounded-full border-2 items-center justify-center ${
-												activeTravelType === type
-													? "border-primary-600"
-													: "border-gray-200"
-											}`}
+										<ThemedText
+											className={`text-[15px] ${activeTravelType === type ? "font-google-sans-semibold !text-gray-950" : "font-google-sans-regular !text-gray-500"}`}
 										>
-											{activeTravelType === type && (
-												<View className="h-3 w-3 rounded-full bg-primary-600" />
-											)}
-										</View>
-									</Pressable>
-								))}
-							</View>
-						</View>
-
-						{/* Section 2: Journey Preferences */}
-						<View className="gap-5">
-							<SectionHeader title="PREFERENZE VIAGGIO" />
-							<View className="gap-5">
-								<Pressable
-									onPress={() => setNoChanges(!noChanges)}
-									className="flex-row items-center justify-between py-1"
-								>
-									<ThemedText className="text-[16px] font-google-sans-bold !text-gray-800">
-										Soluzioni senza cambi
-									</ThemedText>
-									<View
-										className={`h-6 w-11 rounded-full p-1 ${
-											noChanges
-												? "bg-primary-600 items-end"
-												: "bg-gray-100 items-start"
-										}`}
-									>
-										<View className="h-4 w-4 rounded-full bg-white" />
-									</View>
-								</Pressable>
-								<Pressable
-									onPress={() => setBike(!bike)}
-									className="flex-row items-center justify-between py-1"
-								>
-									<ThemedText className="text-[16px] font-google-sans-bold !text-gray-800">
-										Viaggia con la tua bici
-									</ThemedText>
-									<View
-										className={`h-6 w-11 rounded-full p-1 ${
-											bike
-												? "bg-primary-600 items-end"
-												: "bg-gray-100 items-start"
-										}`}
-									>
-										<View className="h-4 w-4 rounded-full bg-white" />
-									</View>
-								</Pressable>
-							</View>
-						</View>
-
-						{/* Section 3: Sort */}
-						<View className="gap-5">
-							<SectionHeader title="ORDINA PER" />
-							<View className="gap-2">
-								{[
-									"Orario di partenza",
-									"Orario di arrivo",
-									"Durata del viaggio",
-									"Prezzo",
-								].map((sort) => (
-									<Pressable
-										key={sort}
-										className="flex-row items-center justify-between py-3.5"
-									>
-										<ThemedText className="text-[16px] font-google-sans-bold !text-gray-800">
-											{sort}
+											{type}
 										</ThemedText>
-										<View
-											className={`h-6 w-6 rounded-full border-2 items-center justify-center ${
-												sort === "Orario di partenza"
-													? "border-primary-600"
-													: "border-gray-200"
-											}`}
-										>
-											{sort === "Orario di partenza" && (
-												<View className="h-3 w-3 rounded-full bg-primary-600" />
-											)}
-										</View>
+										<Icon
+											name="check"
+											size={20}
+											className={`!text-primary-500 ${activeTravelType === type ? "opacity-100" : "opacity-0"}`}
+										/>
 									</Pressable>
 								))}
+							</View>
+						</DropdownMenu>
+
+						<View className="flex-row items-center justify-between py-0.5">
+							<ThemedText className="text-[15px] font-google-sans-medium !text-gray-950">
+								Solo treni diretti
+							</ThemedText>
+							<View
+								className={
+									Platform.OS === "ios" ? "bg-gray-200 rounded-full" : ""
+								}
+							>
+								<Switch
+									value={noChanges}
+									onValueChange={setNoChanges}
+									trackColor={{ false: "#e5e7eb", true: "#006666" }}
+									thumbColor={"#ffffff"}
+								/>
 							</View>
 						</View>
 					</View>
-				</ScrollView>
 
-				<View className="flex-row gap-4 mt-6">
-					<Pressable className="flex-1 h-14 items-center justify-center rounded-2xl border border-gray-300">
-						<ThemedText className="text-[16px] font-google-sans-bold !text-gray-800 uppercase">
-							Reset
+					<View className="gap-4 pt-2">
+						<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
+							Ordina per
 						</ThemedText>
-					</Pressable>
+						<View className="gap-1 pl-3">
+							{sortOptions.map((sort) => (
+								<Pressable
+									key={sort}
+									onPress={() => setPendingSortOrder(sort)}
+									className="flex-row items-center justify-between py-2"
+								>
+									<ThemedText
+										className={`text-[15px] ${pendingSortOrder === sort ? "font-google-sans-semibold !text-gray-950" : "font-google-sans-regular !text-gray-500"}`}
+									>
+										{sort}
+									</ThemedText>
+									<View
+										className={`h-6 w-6 rounded-full border-2 items-center justify-center ${
+											pendingSortOrder === sort
+												? "border-primary-600"
+												: "border-gray-200"
+										}`}
+									>
+										{pendingSortOrder === sort && (
+											<View className="h-3 w-3 rounded-full bg-primary-600" />
+										)}
+									</View>
+								</Pressable>
+							))}
+						</View>
+					</View>
+				</View>
+				<View className="pt-8">
 					<MainButton
-						title="Conferma"
-						onPress={() => setShowFilters(false)}
-						className="flex-[1.5]"
+						title="Applica"
+						onPress={() => {
+							setSortOrder(pendingSortOrder);
+							setShowFilters(false);
+						}}
 					/>
 				</View>
 			</BottomSheet>

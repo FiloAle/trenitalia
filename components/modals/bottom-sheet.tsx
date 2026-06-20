@@ -124,7 +124,7 @@ export function BottomSheet({
 								</Pressable>
 							)}
 							{title ? (
-								<ThemedText className="text-[18px] font-google-sans-bold !text-gray-950 text-center px-10">
+								<ThemedText className="text-[18px] font-google-sans-bold !text-primary-500 text-center px-10">
 									{title}
 								</ThemedText>
 							) : null}
