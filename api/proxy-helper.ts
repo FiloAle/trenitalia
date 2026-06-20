@@ -23,7 +23,7 @@ export function getViaggiatrenoUrl(path: string) {
       const proxyBase = hostUri ? `http://${hostUri}/api/proxy?url=` : "/api/proxy?url=";
       return `${proxyBase}${encodeURIComponent(fullUrl)}`;
     } else {
-      return `/proxy-viaggiatreno${path}`;
+      return `https://corsproxy.io/?url=${encodeURIComponent(fullUrl)}`;
     }
   }
   return fullUrl;
