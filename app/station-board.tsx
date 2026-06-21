@@ -7,7 +7,7 @@ import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { PageHeader } from "@/components/ui/page-header";
 import { TabSelector } from "@/components/ui/tab-selector";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -67,7 +67,7 @@ export default function StationBoardScreen() {
 			</View>
 
 			{/* Tabs */}
-			<View className="px-5 pt-5 z-50">
+			<View className="px-5 py-5 z-50">
 				<TabSelector
 					tabs={["Partenze", "Arrivi"]}
 					activeTab={activeTab}
@@ -109,7 +109,16 @@ export default function StationBoardScreen() {
 					</View>
 				) : (
 					displayTrains.map((train, index) => (
-						<StationBoardTrainRow key={index} train={train} />
+						<StationBoardTrainRow
+							key={index}
+							train={train}
+							onPress={() => {
+								router.navigate({
+									pathname: "/train-details",
+									params: { trainNumber: train.trainName },
+								});
+							}}
+						/>
 					))
 				)}
 			</ScrollView>

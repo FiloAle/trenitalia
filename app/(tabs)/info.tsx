@@ -31,6 +31,7 @@ import {
 	Pressable,
 	ScrollView,
 	TextInput,
+	TouchableWithoutFeedback,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -206,27 +207,29 @@ export default function InfoScreen() {
 		switch (activeChip) {
 			case "N. Treno":
 				return (
-					<ScrollView
-						className="flex-1"
-						showsVerticalScrollIndicator={false}
-						contentContainerStyle={{ paddingBottom: 200 }}
-						keyboardShouldPersistTaps="handled"
-					>
-						<View className="px-5 pt-6">
+					<View className="flex-1">
+						<View className="px-5 pt-6 z-50">
 							{/* Search Box */}
-							<View className="rounded-2xl border border-neutral-200 bg-white px-4 py-1 mb-6">
+							<View className="rounded-2xl border border-neutral-200 bg-white px-4 h-[56px] justify-center">
 								<TextInput
-									className="font-google-sans-medium text-neutral-900 h-12"
+									className={`w-full text-[14px] text-neutral-950 p-0 m-0 ${trainNumber.length > 0 ? "font-google-sans-semibold" : "font-google-sans-medium"}`}
 									placeholder="N. Treno"
-									placeholderTextColor="#9ca3af"
+									placeholderTextColor="#6b7280"
 									keyboardType="numeric"
-									maxLength={4}
+									maxLength={5}
 									value={trainNumber}
 									onChangeText={setTrainNumber}
 								/>
 							</View>
-
-							{/* Recent Searches */}
+						</View>
+						<ScrollView
+							className="flex-1"
+							showsVerticalScrollIndicator={false}
+							contentContainerStyle={{ paddingBottom: 200, paddingTop: 16 }}
+							keyboardShouldPersistTaps="handled"
+						>
+							<View className="px-5">
+								{/* Recent Searches */}
 							{recentTrains.length > 0 && (
 								<View>
 									<SectionHeader title="ULTIME RICERCHE" />
@@ -246,8 +249,9 @@ export default function InfoScreen() {
 									))}
 								</View>
 							)}
-						</View>
-					</ScrollView>
+							</View>
+						</ScrollView>
+					</View>
 				);
 			case "Stazione": {
 				const isSearching = stationSearch.length > 0;
@@ -258,9 +262,22 @@ export default function InfoScreen() {
 					: RECENT_STATIONS;
 
 				return (
+					<View className="flex-1">
+						<View className="px-5 pt-6 z-50">
+							{/* Search Box */}
+							<View className="rounded-2xl border border-neutral-200 bg-white px-4 h-[56px] justify-center">
+								<TextInput
+									className={`w-full text-[14px] text-neutral-950 p-0 m-0 ${stationSearch.length > 0 ? "font-google-sans-semibold" : "font-google-sans-medium"}`}
+									placeholder="Ricerca stazione"
+									placeholderTextColor="#6b7280"
+									value={stationSearch}
+									onChangeText={setStationSearch}
+								/>
+							</View>
+						</View>
 					<FlatList
-						className="flex-1 px-5 pt-6"
-						contentContainerStyle={{ paddingBottom: 200 }}
+						className="flex-1 px-5"
+						contentContainerStyle={{ paddingBottom: 200, paddingTop: 16 }}
 						showsVerticalScrollIndicator={false}
 						keyboardShouldPersistTaps="handled"
 						data={filteredStations}
@@ -270,17 +287,6 @@ export default function InfoScreen() {
 						windowSize={5}
 						ListHeaderComponent={
 							<View className="pb-2">
-								{/* Search Box */}
-								<View className="rounded-2xl border border-neutral-200 bg-white px-4 py-1 mb-6">
-									<TextInput
-										className="font-google-sans-medium text-neutral-900 h-12"
-										placeholder="Ricerca stazione"
-										placeholderTextColor="#9ca3af"
-										value={stationSearch}
-										onChangeText={setStationSearch}
-									/>
-								</View>
-
 								{/* Current Station */}
 								{!isSearching && (
 									<View className="mb-4 -mt-2.5">
@@ -318,6 +324,7 @@ export default function InfoScreen() {
 							/>
 						)}
 					/>
+					</View>
 				);
 			}
 			case "Da/a":
@@ -502,9 +509,10 @@ export default function InfoScreen() {
 	};
 
 	return (
-		<View style={{ flex: 1 }}>
-			<View className="flex-1 bg-white">
-				<PageHeader
+		<TouchableWithoutFeedback onPress={() => { Keyboard.dismiss(); setActiveInput(null); }}>
+			<View style={{ flex: 1 }}>
+				<View className="flex-1 bg-white">
+					<PageHeader
 					title="Infomobilità"
 					showBackButton={false}
 					rightElement={
@@ -675,5 +683,6 @@ export default function InfoScreen() {
 				</ScrollView>
 			</BottomSheet>
 		</View>
+		</TouchableWithoutFeedback>
 	);
 }

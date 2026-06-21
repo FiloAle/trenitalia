@@ -1,0 +1,501 @@
+1549:				{/* Passengers Full Screen Modal */}
+1550-				<Modal
+1551-					visible={showPassengersSheet}
+1552-					animationType="slide"
+1553-					presentationStyle="fullScreen"
+1554-					onRequestClose={() => setShowPassengersSheet(false)}
+1555-				>
+1556-					<View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+1557-						{/* Header */}
+1558-						<View className="bg-white px-4 pb-3 pt-2 flex-row items-center justify-between">
+1559-							<View className="flex-1 items-start justify-center">
+1560-								<Pressable
+1561-									onPress={() => setShowPassengersSheet(false)}
+1562-									className="p-1 -ml-1"
+1563-								>
+1564-									<Icon name="close" size={26} className="!text-neutral-900" />
+1565-								</Pressable>
+1566-							</View>
+1567-							<View className="flex-[2] items-center justify-center">
+1568-								<ThemedText className="text-[18px] font-google-sans-bold !text-primary-500 text-center">
+1569-									Passeggeri
+1570-								</ThemedText>
+1571-							</View>
+1572-							<View className="flex-1" />
+1573-						</View>
+1574-
+1575-						<KeyboardAvoidingView
+1576-							className="flex-1 bg-white"
+1577-							behavior={Platform.OS === "ios" ? "padding" : undefined}
+1578-							keyboardVerticalOffset={0} /* force reload */
+1579-						>
+1580-							<ScrollView
+1581-								className="flex-1"
+1582-								contentContainerStyle={{ padding: 20, paddingBottom: 140 }}
+1583-							>
+1584-								{/* Aggiungi */}
+1585-								<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500 mb-2">
+1586-									Aggiungi
+1587-								</ThemedText>
+1588-
+1589-								<Pressable
+1590-									onPress={addPassenger}
+1591-									className="flex-col bg-[#F0F7F7] border border-[#DCEBEB] rounded-xl p-4 mb-3 active:opacity-70"
+1592-								>
+1593-									<View className="flex-row items-start justify-between">
+1594-										<Icon
+1595-											name="person_outline"
+1596-											size={24}
+1597-											className="!text-primary-500 -ml-0.5"
+1598-										/>
+1599-										<Icon name="add" size={24} className="!text-primary-500" />
+1600-									</View>
+1601-									<ThemedText className="text-[16px] font-google-sans-semibold !text-primary-500">
+1602-										Persona
+1603-									</ThemedText>
+1604-								</Pressable>
+1605-
+1606-								<View className="flex-row gap-3 mb-8">
+1607-									<Pressable
+1608-										onPress={addBike}
+1609-										className="flex-1 flex-col bg-[#F0F7F7] border border-[#DCEBEB] rounded-xl p-4 active:opacity-70"
+1610-									>
+1611-										<View className="flex-row items-start justify-between">
+1612-											<Icon
+1613-												name="pedal_bike"
+1614-												size={24}
+1615-												className="!text-primary-500 ml-0.5"
+1616-											/>
+1617-											<Icon
+1618-												name="add"
+1619-												size={24}
+1620-												className="!text-primary-500"
+1621-											/>
+1622-										</View>
+1623-										<ThemedText className="text-[16px] font-google-sans-semibold !text-primary-500">
+1624-											Bicicletta
+1625-										</ThemedText>
+1626-									</Pressable>
+1627-									<Pressable
+1628-										onPress={addAnimal}
+1629-										className="flex-1 flex-col bg-[#F0F7F7] border border-[#DCEBEB] rounded-xl p-4 active:opacity-70"
+1630-									>
+1631-										<View className="flex-row items-start justify-between">
+1632-											<Icon
+1633-												name="pet_supplies"
+1634-												size={24}
+1635-												className="!text-primary-500"
+1636-											/>
+1637-											<Icon
+1638-												name="add"
+1639-												size={24}
+1640-												className="!text-primary-500"
+1641-											/>
+1642-										</View>
+1643-										<ThemedText className="text-[16px] font-google-sans-semibold !text-primary-500">
+1644-											Animale
+1645-										</ThemedText>
+1646-									</Pressable>
+1647-								</View>
+1648-
+1649-								{/* Riepilogo */}
+1650-								<View className="flex-row items-center justify-between mb-2 mt-4">
+1651-									<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500">
+1652-										Riepilogo
+1653-									</ThemedText>
+1654-									<View className="flex-row items-center gap-3">
+1655-										{passengersList.filter((p) => p.itemType === "passenger")
+1656-											.length > 0 && (
+1657-											<View className="flex-row items-center gap-1">
+1658-												<Icon
+1659-													name="person_outline"
+1660-													size={18}
+1661-													className="!text-neutral-600"
+1662-												/>
+1663-												<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-700">
+1664-													{
+1665-														passengersList.filter(
+1666-															(p) => p.itemType === "passenger",
+1667-														).length
+1668-													}
+1669-												</ThemedText>
+1670-											</View>
+1671-										)}
+1672-										{passengersList.filter((p) => p.type === "Bicicletta")
+1673-											.length > 0 && (
+1674-											<View className="flex-row items-center gap-1">
+1675-												<Icon
+1676-													name="pedal_bike"
+1677-													size={18}
+1678-													className="!text-neutral-600"
+1679-												/>
+1680-												<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-700">
+1681-													{
+1682-														passengersList.filter(
+1683-															(p) => p.type === "Bicicletta",
+1684-														).length
+1685-													}
+1686-												</ThemedText>
+1687-											</View>
+1688-										)}
+1689-										{passengersList.filter((p) => p.type === "Animale").length >
+1690-											0 && (
+1691-											<View className="flex-row items-center gap-1">
+1692-												<Icon
+1693-													name="pet_supplies"
+1694-													size={18}
+1695-													className="!text-neutral-600"
+1696-												/>
+1697-												<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-700">
+1698-													{
+1699-														passengersList.filter((p) => p.type === "Animale")
+1700-															.length
+1701-													}
+1702-												</ThemedText>
+1703-											</View>
+1704-										)}
+1705-									</View>
+1706-								</View>
+1707-
+1708-								{passengersList.map((item, idx) => {
+1709-									const isExpanded = expandedPassengerId === item.id;
+1710-									const hasName = !!(item.firstName || item.lastName);
+1711-									const passengerIndex =
+1712-										passengersList
+1713-											.filter((p) => p.itemType === "passenger")
+1714-											.findIndex((p) => p.id === item.id) + 1;
+1715-
+1716-									return (
+1717-										<View
+1718-											key={item.id}
+1719-											className="flex-col py-4 border-b border-neutral-100"
+1720-										>
+1721-											<Pressable
+1722-												className="flex-row items-center justify-between"
+1723-												onPress={() =>
+1724-													setExpandedPassengerId(isExpanded ? null : item.id)
+1725-												}
+1726-											>
+1727-												<View className="flex-row items-center flex-1">
+1728-													{item.itemType === "passenger" ? (
+1729-														item.isMock && hasName ? (
+1730-															<View className="h-12 w-12 rounded-full bg-[#008888] items-center justify-center mr-4">
+1731-																<ThemedText className="!text-white font-google-sans-bold text-[16px]">
+1732-																	{getInitials(
+1733-																		item.firstName || "",
+1734-																		item.lastName || "",
+1735-																	)}
+1736-																</ThemedText>
+1737-															</View>
+1738-														) : (
+1739-															<View className="h-12 w-12 rounded-full bg-[#008888] items-center justify-center mr-4">
+1740-																<Icon
+1741-																	name="person_outline"
+1742-																	size={24}
+1743-																	className="!text-white"
+1744-																/>
+1745-															</View>
+1746-														)
+1747-													) : (
+1748-														<View className="h-12 w-12 rounded-full border border-[#008888] items-center justify-center mr-4 bg-white">
+1749-															<Icon
+1750-																name={
+1751-																	item.type === "Bicicletta"
+1752-																		? "pedal_bike"
+1753-																		: "pet_supplies"
+1754-																}
+1755-																size={24}
+1756-																className="!text-[#008888]"
+1757-															/>
+1758-														</View>
+1759-													)}
+1760-													<View>
+1761-														<ThemedText className="text-[16px] font-google-sans-bold !text-neutral-950">
+1762-															{hasName
+1763-																? `${item.firstName || ""} ${item.lastName || ""}`.trim()
+1764-																: item.itemType === "passenger"
+1765-																	? `Passeggero ${passengerIndex}`
+1766-																	: item.name}
+1767-														</ThemedText>
+1768-														<ThemedText className="text-[13px] font-google-sans-regular !text-neutral-500">
+1769-															{item.itemType === "service"
+1770-																? "Servizio aggiuntivo"
+1771-																: item.type}
+1772-														</ThemedText>
+1773-													</View>
+1774-												</View>
+1775-												{item.itemType === "passenger" ? (
+1776-													<Animated.View
+1777-														style={{
+1778-															transform: [
+1779-																{ rotate: isExpanded ? "180deg" : "0deg" },
+1780-															],
+1781-														}}
+1782-													>
+1783-														<Icon
+1784-															name="expand_more"
+1785-															size={24}
+1786-															className="!text-neutral-800"
+1787-														/>
+1788-													</Animated.View>
+1789-												) : (
+1790-													<Pressable
+1791-														onPress={(e) => {
+1792-															e.stopPropagation();
+1793-															setPassengersList((prev) =>
+1794-																prev.filter((p) => p.id !== item.id),
+1795-															);
+1796-														}}
+1797-														className="p-2 -mr-2"
+1798-													>
+1799-														<Icon
+1800-															name="delete"
+1801-															size={24}
+1802-															className="!text-[#c1152c]"
+1803-														/>
+1804-													</Pressable>
+1805-												)}
+1806-											</Pressable>
+1807-											{isExpanded && (
+1808-												<View className="mt-4">
+1809-													{item.itemType === "passenger" && (
+1810-														<>
+1811-															<ThemedText className="text-[14px] font-google-sans-bold !text-neutral-950 mb-3">
+1812-																Dettagli passeggero
+1813-															</ThemedText>
+1814-															<View className="flex-row gap-2 mb-2">
+1815-																<PassengerInput
+1816-																	label="Nome"
+1817-																	value={item.firstName || ""}
+1818-																	onChangeText={(text) =>
+1819-																		setPassengersList((prev) =>
+1820-																			prev.map((p) =>
+1821-																				p.id === item.id
+1822-																					? { ...p, firstName: text }
+1823-																					: p,
+1824-																			),
+1825-																		)
+1826-																	}
+1827-																	focusedInputId={focusedPassengerInputId}
+1828-																	setFocusedInputId={setFocusedPassengerInputId}
+1829-																	inputId={`${item.id}-firstName`}
+1830-																	autoCapitalize="words"
+1831-																/>
+1832-																<PassengerInput
+1833-																	label="Cognome"
+1834-																	value={item.lastName || ""}
+1835-																	onChangeText={(text) =>
+1836-																		setPassengersList((prev) =>
+1837-																			prev.map((p) =>
+1838-																				p.id === item.id
+1839-																					? { ...p, lastName: text }
+1840-																					: p,
+1841-																			),
+1842-																		)
+1843-																	}
+1844-																	focusedInputId={focusedPassengerInputId}
+1845-																	setFocusedInputId={setFocusedPassengerInputId}
+1846-																	inputId={`${item.id}-lastName`}
+1847-																	autoCapitalize="words"
+1848-																/>
+1849-															</View>
+1850-
+1851-															<View className="flex-row gap-2 mb-2">
+1852-																<PassengerInput
+1853-																	label="Data di nascita"
+1854-																	value={item.birthDate || ""}
+1855-																	onChangeText={(text) =>
+1856-																		setPassengersList((prev) =>
+1857-																			prev.map((p) =>
+1858-																				p.id === item.id
+1859-																					? { ...p, birthDate: text }
+1860-																					: p,
+1861-																			),
+1862-																		)
+1863-																	}
+1864-																	focusedInputId={focusedPassengerInputId}
+1865-																	setFocusedInputId={setFocusedPassengerInputId}
+1866-																	inputId={`${item.id}-birthDate`}
+1867-																/>
+1868-																<PassengerInput
+1869-																	label="CartaFRECCIA"
+1870-																	value={item.loyaltyCode || ""}
+1871-																	onChangeText={(text) =>
+1872-																		setPassengersList((prev) =>
+1873-																			prev.map((p) =>
+1874-																				p.id === item.id
+1875-																					? { ...p, loyaltyCode: text }
+1876-																					: p,
+1877-																			),
+1878-																		)
+1879-																	}
+1880-																	focusedInputId={focusedPassengerInputId}
+1881-																	setFocusedInputId={setFocusedPassengerInputId}
+1882-																	inputId={`${item.id}-loyaltyCode`}
+1883-																	keyboardType="numeric"
+1884-																/>
+1885-															</View>
+1886-
+1887-															<View className="flex-row gap-2 mb-4">
+1888-																<PassengerInput
+1889-																	label="Numero di telefono"
+1890-																	value={item.phone || ""}
+1891-																	onChangeText={(text) =>
+1892-																		setPassengersList((prev) =>
+1893-																			prev.map((p) =>
+1894-																				p.id === item.id
+1895-																					? { ...p, phone: text }
+1896-																					: p,
+1897-																			),
+1898-																		)
+1899-																	}
+1900-																	focusedInputId={focusedPassengerInputId}
+1901-																	setFocusedInputId={setFocusedPassengerInputId}
+1902-																	inputId={`${item.id}-phone`}
+1903-																	keyboardType="phone-pad"
+1904-																/>
+1905-																<PassengerInput
+1906-																	label="Email"
+1907-																	value={item.email || ""}
+1908-																	onChangeText={(text) =>
+1909-																		setPassengersList((prev) =>
+1910-																			prev.map((p) =>
+1911-																				p.id === item.id
+1912-																					? { ...p, email: text }
+1913-																					: p,
+1914-																			),
+1915-																		)
+1916-																	}
+1917-																	focusedInputId={focusedPassengerInputId}
+1918-																	setFocusedInputId={setFocusedPassengerInputId}
+1919-																	inputId={`${item.id}-email`}
+1920-																	keyboardType="email-address"
+1921-																	autoCapitalize="none"
+1922-																/>
+1923-															</View>
+1924-														</>
+1925-													)}
+1926-
+1927-													<View
+1928-														className={`flex-row justify-end items-center gap-2`}
+1929-													>
+1930-														{!item.isMock && (
+1931-															<Pressable
+1932-																className="flex-row items-center bg-rose-50 px-3 py-2 rounded-lg"
+1933-																onPress={() => {
+1934-																	setPassengersList((prev) =>
+1935-																		prev.filter((p) => p.id !== item.id),
+1936-																	);
+1937-																	setExpandedPassengerId(null);
+1938-																}}
+1939-															>
+1940-																<Icon
+1941-																	name="delete"
+1942-																	size={18}
+1943-																	className="!text-rose-500 mr-1"
+1944-																/>
+1945-																<ThemedText className="text-[14px] font-google-sans-medium !text-rose-500">
+1946-																	Rimuovi
+1947-																</ThemedText>
+1948-															</Pressable>
+1949-														)}
+1950-														{item.itemType === "passenger" && (
+1951-															<Pressable
+1952-																className="flex-row items-center bg-neutral-100 px-3 py-2 rounded-lg"
+1953-																onPress={() => {
+1954-																	setPassengersList((prev) =>
+1955-																		prev.map((p) =>
+1956-																			p.id === item.id
+1957-																				? {
+1958-																						...p,
+1959-																						firstName: "",
+1960-																						lastName: "",
+1961-																						birthDate: "",
+1962-																						loyaltyCode: "",
+1963-																						phone: "",
+1964-																						email: "",
+1965-																					}
+1966-																				: p,
+1967-																		),
+1968-																	);
+1969-																}}
+1970-															>
+1971-																<Icon
+1972-																	name="clear_all"
+1973-																	size={18}
+1974-																	className="!text-neutral-700 mr-1"
+1975-																/>
+1976-																<ThemedText className="text-[14px] font-google-sans-medium !text-neutral-700">
+1977-																	Svuota
+1978-																</ThemedText>
+1979-															</Pressable>
+1980-														)}
+1981-														{item.itemType === "passenger" && (
+1982-															<Pressable
+1983-																className="flex-row items-center bg-[#E0F2F1] px-4 py-2 rounded-lg"
+1984-																onPress={() => setExpandedPassengerId(null)}
+1985-															>
+1986-																<Icon
+1987-																	name="bookmark"
+1988-																	size={18}
+1989-																	className="!text-primary-600 mr-1"
+1990-																/>
+1991-																<ThemedText className="text-[14px] font-google-sans-medium !text-primary-600">
+1992-																	Salva
+1993-																</ThemedText>
+1994-															</Pressable>
+1995-														)}
+1996-													</View>
+1997-												</View>
+1998-											)}
+1999-										</View>
+2000-									);
+2001-								})}
+2002-							</ScrollView>
+2003-						</KeyboardAvoidingView>
+2004-
+2005-						<View className="absolute bottom-0 left-0 right-0 p-5 bg-white border-t border-neutral-100 pb-10">
+2006-							<MainButton
+2007-								title="Conferma"
+2008-								onPress={() => setShowPassengersSheet(false)}
+2009-							/>
+2010-						</View>
+2011-					</View>
+2012-					<BottomSheet
+2013-						isVisible={showAddPassengerSheet}
+2014-						onClose={() => setShowAddPassengerSheet(false)}
+2015-						title="Passeggeri"
+2016-					>
+2017-						{/* Passengers Rows */}
+2018-						<View className="mb-8">
+2019-							<View className="flex-row items-center justify-between py-7 border-b border-neutral-100">
+2020-								<ThemedText className="text-[16px] font-google-sans-medium !text-neutral-950">
+2021-									Adulti
+2022-								</ThemedText>
+2023-								<View className="flex-row items-center gap-4">
+2024-									<Pressable
+2025-										onPress={() => setNewAdults(Math.max(0, newAdults - 1))}
+2026-										className={`h-10 w-10 items-center justify-center rounded-full ${
+2027-											newAdults <= 0 ? "bg-neutral-200" : "bg-primary-500"
+2028-										}`}
+2029-									>
+2030-										<Icon name="remove" size={24} className="!text-white" />
+2031-									</Pressable>
+2032-									<ThemedText className="text-[16px] font-google-sans-bold w-4 text-center">
+2033-										{newAdults}
+2034-									</ThemedText>
+2035-									<Pressable
+2036-										onPress={() => setNewAdults(newAdults + 1)}
+2037-										className="h-10 w-10 items-center justify-center rounded-full bg-primary-500"
+2038-									>
+2039-										<Icon name="add" size={24} className="!text-white" />
+2040-									</Pressable>
+2041-								</View>
+2042-							</View>
+2043-
+2044-							<View className="flex-row items-center justify-between py-7 border-b border-neutral-100">
+2045-								<ThemedText className="text-[16px] font-google-sans-medium !text-neutral-950">
+2046-									Ragazzi
+2047-								</ThemedText>
+2048-								<View className="flex-row items-center gap-4">
+2049-									<Pressable

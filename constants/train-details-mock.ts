@@ -2,6 +2,8 @@ export interface TimelineEvent {
 	label: string;
 	time: string;
 	isActual?: boolean;
+	updatedTime?: string;
+	isDelayed?: boolean;
 }
 
 export interface TimelineStation {
@@ -9,6 +11,7 @@ export interface TimelineStation {
 	name: string;
 	bin: string;
 	events: TimelineEvent[];
+	isCurrent?: boolean;
 }
 
 export const TIMELINE_STATIONS: TimelineStation[] = [

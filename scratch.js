@@ -6,8 +6,6 @@ import {
 	TravelSolution,
 	TravelSolutionCard,
 } from "@/components/search/travel-solution-card";
-import { CalendarPanel } from "@/components/search/calendar-panel";
-import { PassengersPanel } from "@/components/search/passengers-panel";
 import { ThemedText } from "@/components/themed-text";
 import { TimelineEventRow } from "@/components/train-details/timeline-event-row";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
@@ -17,7 +15,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { STATIONS } from "@/constants/stations";
 import { TimelineStation } from "@/constants/train-details-mock";
 import { formatClassName, formatOfferName } from "@/utils/format";
-import { SelectionItem, getGlobalSelectionList, setGlobalSelectionList } from "@/utils/selection-store";
+import { getGlobalSelectionList } from "@/utils/selection-store";
 import { getTrainStopsCount } from "@/utils/viaggiatreno";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -264,23 +262,6 @@ export default function SearchResultsScreen() {
 
 	const departureDate = dateStr ? new Date(dateStr) : new Date();
 
-	const [showCalendar, setShowCalendar] = useState(false);
-	const [showPassengersSheet, setShowPassengersSheet] = useState(false);
-	const [activeCalendarTab, setActiveCalendarTab] = useState<"andata" | "ritorno">("andata");
-	const [hasReturn, setHasReturn] = useState(false);
-	const [returnDate, setReturnDate] = useState(() => {
-		const d = new Date(departureDate);
-		d.setHours(d.getHours() + 1);
-		return d;
-	});
-	const [passengersList, setPassengersList] = useState<SelectionItem[]>(() =>
-		getGlobalSelectionList(),
-	);
-
-	useEffect(() => {
-		setGlobalSelectionList(passengersList);
-	}, [passengersList]);
-
 	const insets = useSafeAreaInsets();
 	const [showFilters, setShowFilters] = useState(false);
 	const [activeTravelType, setActiveTravelType] = useState(
@@ -320,37 +301,23 @@ export default function SearchResultsScreen() {
 		currentSelectedDate.getFullYear() === new Date().getFullYear();
 	const [solutions, setSolutions] = useState<TravelSolution[]>([]);
 
-	const animalCount = passengersList.filter(
+	const globalList = getGlobalSelectionList();
+	const animalCount = globalList.filter(
 		(item) => item.itemType === "service" && item.type === "Animale",
 	).length;
-	const bikeCount = passengersList.filter(
+	const bikeCount = globalList.filter(
 		(item) => item.itemType === "service" && item.type === "Bicicletta",
 	).length;
-	const hasBothServices = animalCount > 0 && bikeCount > 0;
 	const extraServicesCost =
-		passengersList.filter(
+		globalList.filter(
 			(p) =>
 				p.itemType === "service" &&
 				(p.type === "Animale" || p.type === "Bicicletta"),
 		).length * 5.0;
-	const passengerCount = passengersList.filter(
-		(p) => p.itemType === "passenger",
-	).length;
-
-	const adults = passengersList.filter((p) => p.type === "Adulto").length;
-	const youths = passengersList.filter((p) => p.type === "Ragazzo").length;
-	const children = passengersList.filter((p) => p.type === "Bambino").length;
-
-	const dynamicPassengerText = `${adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : ""}${youths > 0 ? ` ${youths} Ragazz${youths > 1 ? "i" : "o"}` : ""}${children > 0 ? ` ${children} Bambin${children > 1 ? "i" : "i"}` : ""}`.trim() || "1 Adulto";
-
-	const dynamicPassengerNamesText = passengersList
-		.filter((p) => p.itemType === "passenger")
-		.map((p, idx) =>
-			p.firstName || p.lastName
-				? `${p.firstName || ""} ${p.lastName || ""}`.trim()
-				: `Passeggero ${idx + 1}`,
-		)
-		.join(", ");
+	const passengerCount = (passengerText || "1 Adulto")
+		.split(",")
+		.map((p: string) => parseInt(p.trim().split(" ")[0] || "0", 10))
+		.reduce((a: number, b: number) => a + b, 0);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isFetchingMore, setIsFetchingMore] = useState(false);
 	const [isFetchingPrevious, setIsFetchingPrevious] = useState(false);
@@ -1177,92 +1144,76 @@ export default function SearchResultsScreen() {
 
 				{/* Info Row */}
 				<View className="flex-row gap-2 mt-3 px-5">
-					<View className="flex-1 flex-row gap-2">
-						<Pressable
-							onPress={() => {
-								setActiveCalendarTab("andata");
-								setShowCalendar(true);
-							}}
-							className="bg-white/10 rounded-2xl px-3.5 h-[56px] justify-center active:opacity-70"
-							style={{ flex: 11 }}
-						>
-							<View className="flex-row items-center gap-2">
-								<Icon
-									name="calendar_today"
-									size={18}
-									className="!text-white"
-									weight={500}
-									style={{ marginTop: -2 }}
-								/>
-								<ThemedText
-									className="text-[15px] font-google-sans-bold !text-white"
-									numberOfLines={1}
-									adjustsFontSizeToFit
-								>
-									{formatDisplayDate(currentSelectedDate)}
-								</ThemedText>
-							</View>
-						</Pressable>
-						<Pressable
-							onPress={() => setShowPassengersSheet(true)}
-							className="bg-white/10 rounded-2xl px-3.5 h-[56px] justify-center active:opacity-70"
-							style={{ flex: 9 }}
-						>
-							<View
-								className={`flex-row items-center ${
-									hasBothServices ? "justify-between" : "justify-start gap-3"
-								}`}
+					<View className="flex-[1.5] bg-white/10 rounded-2xl px-3.5 h-[56px] justify-center">
+						<View className="flex-row items-center gap-2">
+							<Icon
+								name="calendar_today"
+								size={18}
+								className="!text-white"
+								weight={500}
+								style={{ marginTop: -2 }}
+							/>
+							<ThemedText
+								className="text-[15px] font-google-sans-bold !text-white"
+								numberOfLines={1}
+								adjustsFontSizeToFit
 							>
-								<View className="flex-row items-center gap-1">
-									<Icon
-										name="person"
-										size={18}
-										className="!text-white"
-										weight={500}
-										style={{ marginTop: -2 }}
-									/>
-									<ThemedText
-										className="text-[15px] font-google-sans-bold !text-white shrink"
-										numberOfLines={1}
-										adjustsFontSizeToFit
-									>
-										{animalCount === 0 && bikeCount === 0
-											? dynamicPassengerText.toLowerCase()
-											: passengerCount}
-									</ThemedText>
-								</View>
-								{animalCount > 0 && (
-									<View className="flex-row items-center gap-1">
-										<Icon
-											name="pet_supplies"
-											size={16}
-											className="!text-white"
-											weight={500}
-											style={{ marginTop: -2 }}
-										/>
-										<ThemedText className="text-[15px] font-google-sans-bold !text-white">
-											{animalCount}
-										</ThemedText>
-									</View>
-								)}
-								{bikeCount > 0 && (
-									<View className="flex-row items-center gap-1">
-										<Icon
-											name="pedal_bike"
-											size={16}
-											className="!text-white"
-											weight={500}
-											style={{ marginTop: -2 }}
-										/>
-										<ThemedText className="text-[15px] font-google-sans-bold !text-white">
-											{bikeCount}
-										</ThemedText>
-									</View>
-								)}
-							</View>
-						</Pressable>
+								{formatDisplayDate(currentSelectedDate)}
+							</ThemedText>
+						</View>
 					</View>
-
+					<View className="flex-1 bg-white/10 rounded-2xl px-3.5 h-[56px] justify-center">
+						<View className="flex-row items-center gap-1 justify-start">
+							<Icon
+								name="person"
+								size={18}
+								className="!text-white"
+								weight={500}
+								style={{ marginTop: -2 }}
+							/>
+							<ThemedText
+								className="text-[15px] font-google-sans-bold !text-white flex-1"
+								numberOfLines={1}
+								adjustsFontSizeToFit
+							>
+								{animalCount === 0 && bikeCount === 0
+									? passengerText.toLowerCase()
+									: passengerCount}
+							</ThemedText>
+							{(animalCount > 0 || bikeCount > 0) && (
+								<View className="flex-row items-center gap-3 ml-2 shrink-0">
+									{animalCount > 0 && (
+										<View className="flex-row items-center gap-1">
+											<Icon
+												name="pet_supplies"
+												size={16}
+												className="!text-white"
+												weight={500}
+												style={{ marginTop: -2 }}
+											/>
+											<ThemedText className="text-[15px] font-google-sans-bold !text-white">
+												{animalCount}
+											</ThemedText>
+										</View>
+									)}
+									{bikeCount > 0 && (
+										<View className="flex-row items-center gap-1">
+											<Icon
+												name="pedal_bike"
+												size={16}
+												className="!text-white"
+												weight={500}
+												style={{ marginTop: -2 }}
+											/>
+											<ThemedText className="text-[15px] font-google-sans-bold !text-white">
+												{bikeCount}
+											</ThemedText>
+										</View>
+									)}
+								</View>
+							)}
+						</View>
+					</View>
 					<Pressable
 						onPress={() => setShowFilters(true)}
 						className="w-[56px] h-[56px] rounded-2xl bg-white/10 items-center justify-center shrink-0"
@@ -1407,8 +1358,8 @@ export default function SearchResultsScreen() {
 											params: {
 												routeStr: `${route.from} - ${route.to}`,
 												dateStr: currentSelectedDate.toISOString(),
-												passengerText: dynamicPassengerText,
-												passengerNamesText: dynamicPassengerNamesText,
+												passengerText: passengerText,
+												passengerNamesText: params.passengerNamesText,
 											},
 										});
 									}}
@@ -1603,25 +1554,6 @@ export default function SearchResultsScreen() {
 					</View>
 				)}
 			</BottomSheet>
-
-			<CalendarPanel
-				isVisible={showCalendar}
-				onClose={() => setShowCalendar(false)}
-				departureDate={currentSelectedDate}
-				setDepartureDate={setCurrentSelectedDate}
-				returnDate={returnDate}
-				setReturnDate={setReturnDate}
-				hasReturn={hasReturn}
-				setHasReturn={setHasReturn}
-				initialTab={activeCalendarTab}
-			/>
-
-			<PassengersPanel
-				isVisible={showPassengersSheet}
-				onClose={() => setShowPassengersSheet(false)}
-				passengersList={passengersList}
-				setPassengersList={setPassengersList}
-			/>
 		</View>
 	);
 }

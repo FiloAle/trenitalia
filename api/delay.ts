@@ -67,7 +67,14 @@ export async function getTrainInfo(
 		const autoText = await autoResp.text();
 		
 		if (autoText && autoText.trim() !== "") {
-			const lines = autoText.trim().split("\n");
+			const lines = autoText.trim().split("\n").filter(l => l.trim().length > 0);
+			lines.sort((a, b) => {
+				const aIsAltro = a.toLowerCase().includes("trenord") || a.toLowerCase().includes("italo");
+				const bIsAltro = b.toLowerCase().includes("trenord") || b.toLowerCase().includes("italo");
+				if (aIsAltro && !bIsAltro) return 1;
+				if (!aIsAltro && bIsAltro) return -1;
+				return 0;
+			});
 			const firstLine = lines[0].trim();
 			const parts = firstLine.split("|");
 			

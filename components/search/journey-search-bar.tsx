@@ -4,8 +4,8 @@ import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { RECENT_SEARCHES, SAVED_SEARCHES, STATIONS } from "@/constants/stations";
-import React, { useRef, useState, useMemo } from "react";
-import { FlatList, Pressable, TextInput, View, Platform } from "react-native";
+import React, { useRef, useState, useMemo, useEffect } from "react";
+import { FlatList, Pressable, TextInput, View, Platform, Keyboard } from "react-native";
 
 export interface JourneySearchBarProps {
 	fromText: string;
@@ -15,6 +15,7 @@ export interface JourneySearchBarProps {
 	activeInput: "from" | "to" | null;
 	setActiveInput: (input: "from" | "to" | null) => void;
 	onSearchComplete?: (from: string, to: string) => void;
+	autoFocusFrom?: boolean;
 }
 
 export function JourneySearchBar({
@@ -25,10 +26,28 @@ export function JourneySearchBar({
 	activeInput,
 	setActiveInput,
 	onSearchComplete,
+	autoFocusFrom = false,
 }: JourneySearchBarProps) {
 	const [lastActiveInput, setLastActiveInput] = useState<"from" | "to">("from");
 	const fromInputRef = useRef<TextInput>(null);
 	const toInputRef = useRef<TextInput>(null);
+
+	useEffect(() => {
+		if (autoFocusFrom) {
+			const timeout = setTimeout(() => {
+				setActiveInput("from");
+			}, 300);
+			return () => clearTimeout(timeout);
+		}
+	}, [autoFocusFrom, setActiveInput]);
+
+	useEffect(() => {
+		if (activeInput === "from") {
+			fromInputRef.current?.focus();
+		} else if (activeInput === "to") {
+			toInputRef.current?.focus();
+		}
+	}, [activeInput]);
 
 	const handleStationSelect = (stationName: string) => {
 		if (activeInput === "from") {
@@ -38,6 +57,7 @@ export function JourneySearchBar({
 		} else if (activeInput === "to") {
 			setToText(stationName);
 			setActiveInput(null);
+			Keyboard.dismiss();
 			if (fromText && stationName && onSearchComplete) {
 				onSearchComplete(fromText, stationName);
 			}
@@ -46,11 +66,13 @@ export function JourneySearchBar({
 			if (onSearchComplete && stationName && toText) {
 				onSearchComplete(stationName, toText);
 			}
+			Keyboard.dismiss();
 		} else {
 			setToText(stationName);
 			if (onSearchComplete && fromText && stationName) {
 				onSearchComplete(fromText, stationName);
 			}
+			Keyboard.dismiss();
 		}
 	};
 
@@ -58,6 +80,7 @@ export function JourneySearchBar({
 		setFromText(from);
 		setToText(to);
 		setActiveInput(null);
+		Keyboard.dismiss();
 		if (onSearchComplete) {
 			onSearchComplete(from, to);
 		}
@@ -307,7 +330,6 @@ export function JourneySearchBar({
 											<SearchListItem
 												key={index}
 												iconName="schedule"
-												secondaryIconName="arrow_forward"
 												text={route}
 												weight={300}
 												onPress={() => handleRouteSelect(item.from, item.to)}

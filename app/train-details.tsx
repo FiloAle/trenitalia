@@ -1,8 +1,10 @@
+import { getStationBoardApi } from "@/api/station-board";
 import { FollowTrainModal } from "@/components/modals/follow-train-modal";
 import { TopDownModal } from "@/components/modals/top-down-modal";
 import { ThemedText } from "@/components/themed-text";
 import { TimelineEventRow } from "@/components/train-details/timeline-event-row";
 import { Icon } from "@/components/ui/icon";
+import { PageHeader } from "@/components/ui/page-header";
 import { STATIONS } from "@/constants/stations";
 import { TimelineEvent, TimelineStation } from "@/constants/train-details-mock";
 import { addRecentTrain } from "@/utils/recent-trains-store";
@@ -47,6 +49,8 @@ interface ViaggiaTrenoResponse {
 	compOraUltimoRilevamento: string;
 	origine: string;
 	destinazione: string;
+	idOrigine: string;
+	idDestinazione: string;
 }
 
 function formatTime(timestamp: number | null) {
@@ -80,8 +84,13 @@ export default function TrainDetailsScreen() {
 	const [loading, setLoading] = useState(true);
 	const [trainData, setTrainData] = useState<ViaggiaTrenoResponse | null>(null);
 	const [timeline, setTimeline] = useState<TimelineStation[]>([]);
+	const [stationBoardCategory, setStationBoardCategory] = useState<
+		string | null
+	>(null);
 
 	useEffect(() => {
+		let isMounted = true;
+
 		if (!trainNumber) {
 			Alert.alert("Errore", "Nessun numero di treno specificato", [
 				{ text: "OK", onPress: () => router.back() },
@@ -115,7 +124,15 @@ export default function TrainDetailsScreen() {
 					return;
 				}
 
-				const firstLine = autoText.split("\n")[0];
+				const lines = autoText.split("\n").filter(l => l.trim().length > 0);
+				lines.sort((a, b) => {
+					const aIsAltro = a.toLowerCase().includes("trenord") || a.toLowerCase().includes("italo");
+					const bIsAltro = b.toLowerCase().includes("trenord") || b.toLowerCase().includes("italo");
+					if (aIsAltro && !bIsAltro) return 1;
+					if (!aIsAltro && bIsAltro) return -1;
+					return 0;
+				});
+				const firstLine = lines[0];
 				if (!firstLine || !firstLine.includes("|")) {
 					Alert.alert(
 						"Treno non trovato",
@@ -149,7 +166,54 @@ export default function TrainDetailsScreen() {
 					formatStationName(data.destinazione),
 				);
 
+				// Fetch category from station board
+				if (data.stazioneUltimoRilevamento) {
+					const currentStation = formatStationName(
+						data.stazioneUltimoRilevamento,
+					);
+					const isArrival =
+						data.stazioneUltimoRilevamento.toLowerCase() ===
+						data.destinazione.toLowerCase();
+
+					try {
+						const boardData = await getStationBoardApi(
+							currentStation,
+							isArrival,
+						);
+						let foundTrain = boardData.trains.find(
+							(t) => t.trainName === trainNumber.replace(/\D/g, ""),
+						);
+
+						if (!foundTrain && !isArrival) {
+							const boardDataArr = await getStationBoardApi(
+								currentStation,
+								true,
+							);
+							foundTrain = boardDataArr.trains.find(
+								(t) => t.trainName === trainNumber.replace(/\D/g, ""),
+							);
+						}
+
+						if (foundTrain && foundTrain.category) {
+							if (isMounted) setStationBoardCategory(foundTrain.category);
+						}
+					} catch (e) {
+						console.warn("Failed to fetch station board for category", e);
+					}
+				}
+
 				// 3. Map to Timeline format
+				let globalDelay = 0;
+				if (data.compRitardo && data.compRitardo.length > 0) {
+					const comp = data.compRitardo[0].toLowerCase();
+					if (comp.includes("ritardo")) {
+						const match = comp.match(/\d+/);
+						if (match) {
+							globalDelay = parseInt(match[0], 10);
+						}
+					}
+				}
+
 				const mappedStations: TimelineStation[] = data.fermate.map((f) => {
 					const events: TimelineEvent[] = [];
 
@@ -159,17 +223,25 @@ export default function TrainDetailsScreen() {
 						f.arrivoReale !== null ||
 						f.tipoFermata === "A"
 					) {
-						events.push({
-							label: "Arrivo Programmato",
-							time: formatTime(f.arrivo_teorico || f.programmata),
-						});
-						if (f.arrivoReale || f.effettiva) {
-							events.push({
-								label: "Arrivo Effettivo",
-								time: formatTime(f.arrivoReale || f.effettiva),
-								isActual: true,
-							});
+						const scheduledTs = f.arrivo_teorico || f.programmata;
+						let actualTs = f.arrivoReale || f.effettiva;
+						if (!actualTs && scheduledTs) {
+							const delay = f.ritardoArrivo || f.ritardo || globalDelay;
+							if (delay > 0) {
+								actualTs = scheduledTs + delay * 60000;
+							}
 						}
+						const scheduledStr = formatTime(scheduledTs);
+						const actualStr = actualTs ? formatTime(actualTs) : null;
+						const isDelayed = actualTs && scheduledTs && actualTs > scheduledTs && actualStr !== scheduledStr;
+						
+						events.push({
+							label: "Arrivo",
+							time: scheduledStr,
+							updatedTime: isDelayed ? actualStr! : undefined,
+							isDelayed: !!isDelayed,
+							isActual: !!(f.arrivoReale || f.effettiva),
+						});
 					}
 
 					// Departure
@@ -178,17 +250,25 @@ export default function TrainDetailsScreen() {
 						f.partenzaReale !== null ||
 						f.tipoFermata === "P"
 					) {
-						events.push({
-							label: "Partenza Programmata",
-							time: formatTime(f.partenza_teorica || f.programmata),
-						});
-						if (f.partenzaReale || f.effettiva) {
-							events.push({
-								label: "Partenza Effettiva",
-								time: formatTime(f.partenzaReale || f.effettiva),
-								isActual: true,
-							});
+						const scheduledTs = f.partenza_teorica || f.programmata;
+						let actualTs = f.partenzaReale || f.effettiva;
+						if (!actualTs && scheduledTs) {
+							const delay = f.ritardoPartenza || f.ritardo || globalDelay;
+							if (delay > 0) {
+								actualTs = scheduledTs + delay * 60000;
+							}
 						}
+						const scheduledStr = formatTime(scheduledTs);
+						const actualStr = actualTs ? formatTime(actualTs) : null;
+						const isDelayed = actualTs && scheduledTs && actualTs > scheduledTs && actualStr !== scheduledStr;
+						
+						events.push({
+							label: "Partenza",
+							time: scheduledStr,
+							updatedTime: isDelayed ? actualStr! : undefined,
+							isDelayed: !!isDelayed,
+							isActual: !!(f.partenzaReale || f.effettiva),
+						});
 					}
 
 					const bin =
@@ -203,8 +283,20 @@ export default function TrainDetailsScreen() {
 						name: formatStationName(f.stazione),
 						bin: bin,
 						events: events,
+						isCurrent: false,
 					};
 				});
+
+				let currentIdx = 0;
+				for (let i = mappedStations.length - 1; i >= 0; i--) {
+					if (mappedStations[i].events.some(e => e.isActual)) {
+						currentIdx = i;
+						break;
+					}
+				}
+				if (mappedStations.length > 0) {
+					mappedStations[currentIdx].isCurrent = true;
+				}
 
 				setTimeline(mappedStations);
 			} catch (err: any) {
@@ -212,11 +304,17 @@ export default function TrainDetailsScreen() {
 					{ text: "OK", onPress: () => router.back() },
 				]);
 			} finally {
-				setLoading(false);
+				if (isMounted) {
+					setLoading(false);
+				}
 			}
 		}
 
 		fetchTrainDetails();
+
+		return () => {
+			isMounted = false;
+		};
 	}, [trainNumber]);
 
 	if (loading || !trainData) {
@@ -242,14 +340,71 @@ export default function TrainDetailsScreen() {
 		}
 	}
 
-	let logoSource = null;
-	if (trainPrefix === "FR") {
-		logoSource = require("../assets/logos/frecciarossa.png");
-	} else if (trainPrefix === "REG" || trainPrefix === "RV") {
-		logoSource = require("../assets/logos/regionale.png");
-	} else if (trainPrefix === "IC" || trainPrefix === "ICN") {
-		logoSource = require("../assets/logos/intercity.png");
-	}
+	const getTrainLogoData = () => {
+		if (!trainData) return null;
+
+		const trainPrefix = trainData.compNumeroTreno.split(" ")[0];
+		const typeLower = (
+			stationBoardCategory ||
+			trainData.categoriaDescrizione ||
+			trainPrefix ||
+			""
+		).toLowerCase();
+
+		let isTper = typeLower.includes("tper");
+
+		// Viaggiatreno does not specify the TPER carrier for regional trains,
+		// so we infer it from the train's origin/destination region (S05 = Emilia-Romagna)
+		if (!isTper && (typeLower.includes("reg") || typeLower === "rv")) {
+			if (
+				trainData.idOrigine?.startsWith("S05") ||
+				trainData.idDestinazione?.startsWith("S05")
+			) {
+				isTper = true;
+			}
+		}
+
+		if (isTper) {
+			return {
+				source: require("@/assets/logos/small/rtper.png"),
+				ratio: 2.13,
+				readable: "Trenitalia TPER",
+			};
+		}
+		if (typeLower.includes("reg") || typeLower === "rv" || typeLower === "re") {
+			return {
+				source: require("@/assets/logos/small/r.png"),
+				ratio: 2.03,
+				readable: "Regionale",
+			};
+		}
+		if (
+			typeLower.includes("ic") ||
+			typeLower.includes("intercity") ||
+			typeLower === "ni"
+		) {
+			return {
+				source: require("@/assets/logos/small/ic.png"),
+				ratio: 0.89,
+				readable: "InterCity",
+			};
+		}
+		if (typeLower === "ec" || typeLower.includes("eurocity")) {
+			return {
+				source: require("@/assets/logos/small/ec.png"),
+				ratio: 1.1,
+				readable: "EuroCity",
+			};
+		}
+		// Default to Frecciarossa
+		return {
+			source: require("@/assets/logos/small/f.png"),
+			ratio: 1.4,
+			readable: "FRECCIAROSSA",
+		};
+	};
+
+	const logoData = getTrainLogoData();
 
 	let delayText =
 		trainData.compRitardo && trainData.compRitardo.length > 0
@@ -268,123 +423,147 @@ export default function TrainDetailsScreen() {
 		delayText = delayText.charAt(0).toUpperCase() + delayText.slice(1);
 	}
 
-	const delayBgColor = isDelay
-		? "bg-rose-50 border-rose-200"
-		: "bg-primary-600/10 border-primary-600/20";
-	const delayTextColor = isDelay ? "!text-rose-500" : "!text-primary-600";
+	const delayBgColor = isDelay ? "bg-rose-200" : "bg-rose-50/20"; // If no delay, subtle white
+	const delayTextColor = isDelay ? "!text-rose-800" : "!text-white";
 
-	const lastDetection =
-		trainData.stazioneUltimoRilevamento !== "--"
-			? formatStationName(trainData.stazioneUltimoRilevamento)
-			: "Nessun rilevamento";
-	const lastDetectionTime =
+	let lastUpdateText = "";
+	if (
+		trainData.compOraUltimoRilevamento &&
 		trainData.compOraUltimoRilevamento !== "--"
-			? ` - ${trainData.compOraUltimoRilevamento}`
-			: "";
+	) {
+		const [hoursStr, minutesStr] =
+			trainData.compOraUltimoRilevamento.split(":");
+		if (hoursStr && minutesStr) {
+			const updateDate = new Date();
+			updateDate.setHours(
+				parseInt(hoursStr, 10),
+				parseInt(minutesStr, 10),
+				0,
+				0,
+			);
+			const now = new Date();
+			let diffMs = now.getTime() - updateDate.getTime();
+			// Handle crossing midnight
+			if (diffMs < -43200000) {
+				diffMs += 86400000;
+			}
+			const diffMins = Math.floor(diffMs / 60000);
+
+			if (diffMins <= 0) {
+				lastUpdateText = "Aggiornato ora";
+			} else if (diffMins === 1) {
+				lastUpdateText = "Aggiornato 1 minuto fa";
+			} else {
+				lastUpdateText = `Aggiornato ${diffMins} minuti fa`;
+			}
+		}
+	}
+	if (!lastUpdateText) {
+		lastUpdateText = "Nessun rilevamento";
+	}
 
 	let formattedDate = trainData.dataPartenzaTrenoAsDate || "Oggi";
 	if (formattedDate.includes("-")) {
 		formattedDate = formattedDate.split("-").reverse().join("/");
 	}
 
+	const trainPrefixStr = trainData.compNumeroTreno ? trainData.compNumeroTreno.split(" ")[0] : "";
+	const typeLowerStr = (
+		stationBoardCategory ||
+		trainData.categoriaDescrizione ||
+		trainPrefixStr ||
+		""
+	).toLowerCase();
+	const tp = trainPrefix.toLowerCase();
+
+	const isFreccia =
+		typeLowerStr.includes("freccia") ||
+		typeLowerStr.startsWith("fr") ||
+		typeLowerStr.startsWith("fa") ||
+		typeLowerStr.startsWith("fb") ||
+		tp.includes("freccia") ||
+		tp.startsWith("fr") ||
+		tp.startsWith("fa") ||
+		tp.startsWith("fb");
+
 	return (
 		<View className="flex-1 bg-white">
-			{/* Top Bar */}
-			<View
-				className="flex-row items-center justify-between px-5 pt-1 pb-2 bg-white"
-				style={{ paddingTop: insets.top + 16 }}
-			>
-				<View className="w-10" />
-				<ThemedText className="flex-1 text-center text-[15px] font-google-sans-bold !text-neutral-950">
-					Infomobilità
-				</ThemedText>
-				<Pressable onPress={() => router.back()} className="p-2 -mr-2">
+			{/* Header */}
+			<PageHeader
+				title="N. Treno"
+				rightElement={
+					<Pressable
+						onPress={() => setIsFollowModalVisible(true)}
+						className="p-2 -mr-2"
+					>
+						<Icon name="notifications_none" size={28} className="!text-white" />
+					</Pressable>
+				}
+			/>
+
+			{/* Train Info Panel */}
+			<View className="bg-primary-600 px-5 pb-6 pt-2">
+				<View className="flex-row items-center mb-1.5">
+					{logoData && (
+						<Image
+							source={logoData.source}
+							style={{
+								height: 16,
+								width: 16 * logoData.ratio,
+								marginRight: 6,
+								marginTop: -3,
+								tintColor: "white",
+							}}
+							resizeMode="contain"
+						/>
+					)}
+					<ThemedText className="text-[18px] font-google-sans-bold !text-white flex-shrink">
+						{logoData?.readable || "TRENO"}{" "}
+						<ThemedText className="text-[18px] font-google-sans-regular !text-white">
+							{trainNumOnly}
+						</ThemedText>
+					</ThemedText>
+				</View>
+
+				{/* Full Route */}
+				<View className="flex-row items-center">
+					<ThemedText className="text-[16px] font-google-sans-regular !text-white">
+						{formatStationName(trainData.origine)}
+					</ThemedText>
 					<Icon
-						name="close"
-						size={28}
-						className="!text-neutral-800"
+						name="arrow_right_alt"
+						size={20}
 						weight={300}
+						color="white"
+						className="mx-1 mt-0.5"
 					/>
-				</Pressable>
+					<ThemedText
+						className="text-[16px] font-google-sans-regular !text-white flex-shrink"
+						numberOfLines={1}
+					>
+						{formatStationName(trainData.destinazione)}
+					</ThemedText>
+				</View>
+
+				{/* Last Update & Delay */}
+				<View className="flex-row items-end justify-between mt-4">
+					<ThemedText className="text-[13px] font-google-sans-regular !text-white/80">
+						{lastUpdateText}
+					</ThemedText>
+
+					{delayText && (
+						<View className={`px-2.5 py-1 rounded-full ${delayBgColor}`}>
+							<ThemedText
+								className={`text-[13px] font-google-sans-bold ${delayTextColor}`}
+							>
+								{delayText}
+							</ThemedText>
+						</View>
+					)}
+				</View>
 			</View>
 
 			<ScrollView className="flex-1 px-5 pt-4 pb-20">
-				{/* Header Info */}
-				<View className="flex-row items-center justify-between mb-6">
-					<View>
-						<View className="flex-row items-center mb-1">
-							{logoSource ? (
-								<Image
-									source={logoSource}
-									style={{ width: 80, height: 12 }}
-									resizeMode="contain"
-								/>
-							) : (
-								<ThemedText className="text-sm font-google-sans-bold !text-neutral-900 mr-1">
-									{trainPrefix}
-								</ThemedText>
-							)}
-							<ThemedText className="ml-2 text-sm font-google-sans-bold !text-neutral-900">
-								{trainNumOnly}
-							</ThemedText>
-						</View>
-						<View className="flex-row items-center mt-1">
-							<Icon
-								name="calendar_today"
-								size={14}
-								color="#4b5563"
-								className="mr-1"
-							/>
-							<ThemedText className="text-sm font-google-sans-medium !text-neutral-700">
-								{formattedDate}
-							</ThemedText>
-						</View>
-					</View>
-
-					<Pressable
-						className="bg-[#f3f4f6] flex-row items-center px-4 py-2 rounded-2xl"
-						onPress={() => setIsFollowModalVisible(true)}
-					>
-						<Icon
-							name="notifications_none"
-							size={20}
-							color="#004141"
-							className="mr-2"
-						/>
-						<ThemedText className="font-google-sans-bold !text-primary-600">
-							Attiva notifiche
-						</ThemedText>
-					</Pressable>
-				</View>
-
-				{/* Delay Card */}
-				<View className="border border-neutral-200 rounded-2xl p-4 mb-8">
-					<View className="flex-row items-center justify-between">
-						<View className="flex-1 mr-4">
-							<ThemedText
-								className={`font-google-sans-bold !text-neutral-950 ${lastDetection !== "Nessun rilevamento" ? "mb-1" : ""}`}
-							>
-								{lastDetection}
-							</ThemedText>
-							{lastDetection !== "Nessun rilevamento" && (
-								<ThemedText className="text-xs font-google-sans-medium !text-neutral-500">
-									Ultimo rilevamento: {formattedDate}
-									{lastDetectionTime}
-								</ThemedText>
-							)}
-						</View>
-						<View className="flex-row items-center">
-							<View className={`px-2 py-1 rounded border ${delayBgColor}`}>
-								<ThemedText
-									className={`text-sm font-google-sans-bold ${delayTextColor}`}
-								>
-									{delayText}
-								</ThemedText>
-							</View>
-						</View>
-					</View>
-				</View>
-
 				{/* Timeline */}
 				<View className="pl-4">
 					{timeline.map((station, index) => (
@@ -394,6 +573,7 @@ export default function TrainDetailsScreen() {
 							nextStation={timeline[index + 1]}
 							isFirst={index === 0}
 							isLast={index === timeline.length - 1}
+							isFreccia={isFreccia}
 						/>
 					))}
 				</View>

@@ -1,5 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
-import { Image, View } from "react-native";
+import { Image, View, Pressable } from "react-native";
 
 export interface TrainData {
 	time: string;
@@ -14,6 +14,7 @@ export interface TrainData {
 
 interface StationBoardTrainRowProps {
 	train: TrainData;
+	onPress?: () => void;
 }
 
 const getTrainLogoData = (category: string) => {
@@ -46,11 +47,13 @@ const getTrainLogoData = (category: string) => {
 	return null;
 };
 
-export function StationBoardTrainRow({ train }: StationBoardTrainRowProps) {
+export function StationBoardTrainRow({ train, onPress }: StationBoardTrainRowProps) {
 	const logoData = getTrainLogoData(train.category);
+	const catUpper = train.category ? train.category.toUpperCase() : "";
+	const isTrenitalia = !catUpper.includes("ITALO") && !catUpper.includes("TRENORD");
 
 	return (
-		<View className="flex-row items-center py-4 border-b border-neutral-100">
+		<Pressable onPress={isTrenitalia ? onPress : undefined} className="flex-row items-center py-4 border-b border-neutral-100">
 			<View className="w-[18%]">
 				<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
 					{train.time}
@@ -120,6 +123,6 @@ export function StationBoardTrainRow({ train }: StationBoardTrainRowProps) {
 					</ThemedText>
 				)}
 			</View>
-		</View>
+		</Pressable>
 	);
 }
