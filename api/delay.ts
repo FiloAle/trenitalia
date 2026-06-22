@@ -69,11 +69,35 @@ export async function getTrainInfo(
 		
 		if (autoText && autoText.trim() !== "") {
 			const lines = autoText.trim().split("\n").filter(l => l.trim().length > 0);
+			const now = Date.now();
+			const today = new Date();
+			const isToday = (time: number) => {
+				const d = new Date(time);
+				return d.getDate() === today.getDate() && 
+				       d.getMonth() === today.getMonth() && 
+				       d.getFullYear() === today.getFullYear();
+			};
+
 			lines.sort((a, b) => {
 				const aIsAltro = a.toLowerCase().includes("trenord") || a.toLowerCase().includes("italo");
 				const bIsAltro = b.toLowerCase().includes("trenord") || b.toLowerCase().includes("italo");
 				if (aIsAltro && !bIsAltro) return 1;
 				if (!aIsAltro && bIsAltro) return -1;
+
+				const aParts = a.split("|")[1]?.split("-");
+				const bParts = b.split("|")[1]?.split("-");
+
+				const aTime = aParts && aParts.length >= 3 ? parseInt(aParts[2], 10) : 0;
+				const bTime = bParts && bParts.length >= 3 ? parseInt(bParts[2], 10) : 0;
+
+				if (aTime && bTime) {
+					const aToday = isToday(aTime);
+					const bToday = isToday(bTime);
+					if (aToday && !bToday) return -1;
+					if (!aToday && bToday) return 1;
+
+					return Math.abs(aTime - now) - Math.abs(bTime - now);
+				}
 				return 0;
 			});
 			const firstLine = lines[0].trim();
