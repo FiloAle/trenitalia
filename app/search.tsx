@@ -1,44 +1,31 @@
 import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { CalendarPanel } from "@/components/search/calendar-panel";
-import { PassengersPanel } from "@/components/search/passengers-panel";
 import { JourneySearchBar } from "@/components/search/journey-search-bar";
-import { SearchListItem } from "@/components/search/search-list-item";
-import { SectionHeader } from "@/components/search/section-header";
+import { PassengersPanel } from "@/components/search/passengers-panel";
+import { StickyFooter } from "@/components/select-offer/sticky-footer";
 import { ThemedText } from "@/components/themed-text";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { TabSelector } from "@/components/ui/tab-selector";
-import {
-	RECENT_SEARCHES,
-	SAVED_SEARCHES,
-	STATIONS,
-} from "@/constants/stations";
-import { USER_DATA, getInitials } from "@/constants/user";
-import { StickyFooter } from "@/components/select-offer/sticky-footer";
+import { STATIONS } from "@/constants/stations";
+import { USER_DATA } from "@/constants/user";
 import { SelectionItem, setGlobalSelectionList } from "@/utils/selection-store";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-	Alert,
 	Dimensions,
-	FlatList,
 	Keyboard,
-	KeyboardAvoidingView,
 	LogBox,
-	Modal,
 	Platform,
 	Pressable,
-	ScrollView,
 	Switch,
 	TextInput,
 	TouchableWithoutFeedback,
 	View,
 } from "react-native";
 import Animated, {
-	SlideInDown,
-	SlideOutDown,
 	useAnimatedStyle,
 	useSharedValue,
 	withTiming,
@@ -300,8 +287,6 @@ export default function SearchScreen() {
 		},
 	]);
 
-
-
 	const adults = passengersList.filter((p) => p.type === "Adulto").length;
 	const youths = passengersList.filter((p) => p.type === "Ragazzo").length;
 	const children = passengersList.filter((p) => p.type === "Bambino").length;
@@ -425,10 +410,6 @@ export default function SearchScreen() {
 			.padStart(2, "0")}`;
 	};
 
-
-
-
-
 	const handleClose = () => {
 		router.back();
 	};
@@ -497,15 +478,7 @@ export default function SearchScreen() {
 				{/* ===== Fine header ===== */}
 
 				<View style={{ flex: 1 }} className="px-5">
-					<ScrollView
-						className="pt-4 flex-1 -mx-5 px-5"
-						showsVerticalScrollIndicator={false}
-						keyboardShouldPersistTaps="handled"
-						onScrollBeginDrag={() => {
-							setShowTravelType(false);
-							Keyboard.dismiss();
-						}}
-					>
+					<View className="pt-4 flex-1 -mx-5 px-5 justify-between">
 						<View
 							className="flex-col gap-10"
 							style={{ zIndex: 200, elevation: 200 }}
@@ -631,7 +604,7 @@ export default function SearchScreen() {
 							)}
 						</View>
 
-						<View className="mt-8 flex-row gap-2 pb-8">
+						<View className="mt-8 flex-row gap-2 pb-[140px]">
 							<Icon
 								name="info"
 								size={18}
@@ -645,7 +618,7 @@ export default function SearchScreen() {
 								</ThemedText>
 							</ThemedText>
 						</View>
-					</ScrollView>
+					</View>
 
 					<StickyFooter
 						buttonTitle="Ricerca viaggio"
@@ -690,7 +663,11 @@ export default function SearchScreen() {
 								}}
 								className="h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white border border-neutral-200 mr-3"
 							>
-								<Icon name="page_info" size={22} className="!text-primary-500" />
+								<Icon
+									name="page_info"
+									size={22}
+									className="!text-primary-500"
+								/>
 							</Pressable>
 						}
 					/>
@@ -774,7 +751,7 @@ export default function SearchScreen() {
 
 								<View className="flex-row items-center justify-between py-0.5">
 									<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
-										Solo treni diretti
+										Soluzioni senza cambi
 									</ThemedText>
 									<View
 										className={

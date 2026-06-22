@@ -63,3 +63,53 @@ export function formatPersonName(name: string): string {
 
 /** @deprecated Use `formatClassName` instead */
 export const clampClassName = formatClassName;
+
+// ─── Train name ──────────────────────────────────────────────────────
+
+/**
+ * Formats a train type name for display (e.g. "frrossa" -> "Frecciarossa").
+ */
+export function formatTrainName(type: string): string {
+	if (!type) return "";
+	const normalizedType = type.trim().toLowerCase();
+	if (
+		normalizedType.includes("frecciarossa") ||
+		normalizedType === "frrossa"
+	) {
+		return "FRECCIAROSSA";
+	} else if (
+		normalizedType.includes("frecciargento") ||
+		normalizedType === "frargento"
+	) {
+		return "FRECCIARGENTO";
+	} else if (
+		normalizedType.includes("frecciabianca") ||
+		normalizedType === "frbianca"
+	) {
+		return "FRECCIABIANCA";
+	} else if (
+		normalizedType.includes("intercity") ||
+		normalizedType === "icnotte" ||
+		normalizedType === "ic" ||
+		normalizedType === "ni"
+	) {
+		return "InterCity";
+	} else if (normalizedType.includes("tper")) {
+		return "Trenitalia TPER";
+	} else if (
+		normalizedType.includes("reg") ||
+		normalizedType === "rv" ||
+		normalizedType === "re"
+	) {
+		return "Regionale";
+	} else if (normalizedType.includes("eurocity") || normalizedType === "ec") {
+		return "EuroCity";
+	}
+	return type
+		.toLowerCase()
+		.split(" ")
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(" ")
+		.trim();
+}
+

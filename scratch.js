@@ -1446,7 +1446,7 @@ export default function SearchResultsScreen() {
 
 						<View className="flex-row items-center justify-between py-0.5">
 							<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
-								Solo treni diretti
+								Soluzioni senza cambi
 							</ThemedText>
 							<View
 								className={

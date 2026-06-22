@@ -20,7 +20,7 @@ const AnimatedTabLabel = ({
 }) => {
 	const animatedStyle = useAnimatedStyle(() => {
 		return {
-			color: withTiming(isActive ? "#ffffff" : "#004141", { duration: 250 }),
+			color: withTiming(isActive ? "#ffffff" : "#006666", { duration: 250 }),
 		};
 	}, [isActive]);
 
@@ -59,7 +59,7 @@ export function TabSelector({
 		return (
 			<View className="bg-primary-500/10 rounded-xl p-1 flex-row relative w-full">
 				<View
-					className="absolute top-1 bottom-1 bg-primary-600 rounded-lg transition-all duration-300"
+					className="absolute top-1 bottom-1 bg-primary-500 rounded-lg transition-all duration-300"
 					style={{
 						left: `calc(4px + ${activeTabIndex} * ((100% - 8px) / ${tabs.length}))` as any,
 						width: `calc((100% - 8px) / ${tabs.length})` as any,
@@ -76,7 +76,7 @@ export function TabSelector({
 						>
 							<Text
 								className={`text-[14px] font-google-sans-semibold transition-colors duration-300 ${
-									isActive ? "text-white" : "text-[#004141]"
+									isActive ? "text-white" : "text-[#006666]"
 								}`}
 							>
 								{tab}
@@ -95,7 +95,7 @@ export function TabSelector({
 		>
 			{tabWidth > 0 && (
 				<Animated.View
-					className="absolute top-1 bottom-1 bg-primary-600 rounded-lg"
+					className="absolute top-1 bottom-1 bg-primary-500 rounded-lg"
 					style={[
 						{ left: 4, width: tabWidth / tabs.length },
 						animatedStyle,

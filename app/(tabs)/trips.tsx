@@ -8,6 +8,8 @@ import {
 	getPurchasedTrips,
 	PurchasedTrip,
 } from "@/utils/trips-store";
+import { RouteInfomobilityContent } from "@/components/train-details/route-infomobility-content";
+import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
@@ -19,6 +21,7 @@ export default function TripsScreen() {
 	const insets = useSafeAreaInsets();
 	const [activeChip, setActiveChip] = useState("Biglietti");
 	const [tickets, setTickets] = useState<PurchasedTrip[]>([]);
+	const [selectedInfomobilityTripId, setSelectedInfomobilityTripId] = useState<string | null>(null);
 
 	useFocusEffect(
 		useCallback(() => {
@@ -46,6 +49,15 @@ export default function TripsScreen() {
 		.reverse();
 
 	const nextTicket = futureTickets.length > 0 ? futureTickets[0] : undefined;
+
+	const isToday = (ticket: PurchasedTrip) => {
+		if (!ticket.date) return false;
+		const d = new Date(ticket.date);
+		const now = new Date();
+		return d.getDate() === now.getDate() &&
+			d.getMonth() === now.getMonth() &&
+			d.getFullYear() === now.getFullYear();
+	};
 
 	const handleLongPress = (id: string) => {
 		Alert.alert(
@@ -88,6 +100,11 @@ export default function TripsScreen() {
 							})
 						}
 						onLongPress={() => handleLongPress(nextTicket.id)}
+						onTopPress={
+							isToday(nextTicket)
+								? () => setSelectedInfomobilityTripId(nextTicket.id)
+								: undefined
+						}
 					/>
 				</View>
 			)}
@@ -130,6 +147,11 @@ export default function TripsScreen() {
 											})
 										}
 										onLongPress={() => handleLongPress(ticket.id)}
+										onTopPress={
+											isToday(ticket)
+												? () => setSelectedInfomobilityTripId(ticket.id)
+												: undefined
+										}
 									/>
 								))}
 							</>
@@ -155,6 +177,11 @@ export default function TripsScreen() {
 											})
 										}
 										onLongPress={() => handleLongPress(ticket.id)}
+										onTopPress={
+											isToday(ticket)
+												? () => setSelectedInfomobilityTripId(ticket.id)
+												: undefined
+										}
 									/>
 								))}
 							</>
@@ -164,6 +191,18 @@ export default function TripsScreen() {
 					<EmptyState activeChip={activeChip} />
 				)}
 			</ScrollView>
+			{/* Infomobilità Percorso Modal */}
+			<BottomSheet
+				isVisible={!!selectedInfomobilityTripId}
+				onClose={() => setSelectedInfomobilityTripId(null)}
+				title="Infomobilità Percorso"
+			>
+				{selectedInfomobilityTripId && (
+					<View className="mt-2 -mx-5 px-5">
+						<RouteInfomobilityContent tripId={selectedInfomobilityTripId} />
+					</View>
+				)}
+			</BottomSheet>
 		</View>
 	);
 }

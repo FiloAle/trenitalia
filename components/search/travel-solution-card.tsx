@@ -1,8 +1,12 @@
 import { getTrainInfo } from "@/api/delay";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { formatClassName, formatOfferName } from "@/utils/format";
 import { STATIONS } from "@/constants/stations";
+import {
+	formatClassName,
+	formatOfferName,
+	formatTrainName,
+} from "@/utils/format";
 import { Image } from "expo-image";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
@@ -86,6 +90,7 @@ interface TravelSolutionCardProps {
 	onLongPress?: () => void;
 	bulkDelay?: string;
 	isInfomobilityMode?: boolean;
+	onTopPress?: () => void;
 }
 
 export function TravelSolutionCard({
@@ -102,6 +107,7 @@ export function TravelSolutionCard({
 	onLongPress,
 	bulkDelay,
 	isInfomobilityMode,
+	onTopPress,
 }: TravelSolutionCardProps) {
 	const [liveDelay, setLiveDelay] = useState<string | null | undefined>(
 		bulkDelay !== undefined ? bulkDelay : undefined,
@@ -115,10 +121,13 @@ export function TravelSolutionCard({
 	const getFormattedStationName = (name: string | null | undefined) => {
 		if (!name) return "";
 		const cleanName = name.trim().toLowerCase();
-		const station = STATIONS.find(s => s.name.toLowerCase() === cleanName);
+		const station = STATIONS.find((s) => s.name.toLowerCase() === cleanName);
 		if (station) return station.name;
 		// Fallback: Title Case
-		return name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+		return name
+			.split(" ")
+			.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+			.join(" ");
 	};
 
 	const isToday = useMemo(() => {
@@ -212,41 +221,7 @@ export function TravelSolutionCard({
 	}, [isPurchasedTrip, isInfomobilityMode, solution, isToday]);
 
 	const getReadableType = (type: string) => {
-		const normalizedType = type.trim().toLowerCase();
-		if (
-			normalizedType.includes("frecciarossa") ||
-			normalizedType === "frrossa"
-		) {
-			return "FRECCIAROSSA";
-		} else if (
-			normalizedType.includes("frecciargento") ||
-			normalizedType === "frargento"
-		) {
-			return "FRECCIARGENTO";
-		} else if (
-			normalizedType.includes("frecciabianca") ||
-			normalizedType === "frbianca"
-		) {
-			return "FRECCIABIANCA";
-		} else if (
-			normalizedType.includes("intercity") ||
-			normalizedType === "icnotte" ||
-			normalizedType === "ic" ||
-			normalizedType === "ni"
-		) {
-			return "InterCity";
-		} else if (normalizedType.includes("tper")) {
-			return "Trenitalia TPER";
-		} else if (
-			normalizedType.includes("reg") ||
-			normalizedType === "rv" ||
-			normalizedType === "re"
-		) {
-			return "Regionale";
-		} else if (normalizedType.includes("eurocity") || normalizedType === "ec") {
-			return "EuroCity";
-		}
-		return type;
+		return formatTrainName(type);
 	};
 
 	const renderTrainLogos = (trains: TravelSolution["trains"]) => {
@@ -411,9 +386,19 @@ export function TravelSolutionCard({
 					/>
 				</Svg>
 			)}
-			<View className={`${!(solution.price > 0) && !isInfomobilityMode ? "opacity-40" : ""} p-5 pb-0`}>
+			<View
+				className={`${!(solution.price > 0) && !isInfomobilityMode ? "opacity-40" : ""} p-5 pb-0`}
+			>
 				{/* Top Row: Logos & Diretto/Cambi */}
-				<View className="flex-row justify-between items-center -mt-1">
+				<Pressable
+					className="flex-row justify-between items-center -mt-1"
+					onPress={(e) => {
+						if (onTopPress) {
+							e.stopPropagation();
+							onTopPress();
+						}
+					}}
+				>
 					<View className="flex-1">{renderTrainLogos(solution.trains)}</View>
 					{/* Right: Diretto / Cambi */}
 					<View className="flex-row items-center ml-2">
@@ -448,12 +433,14 @@ export function TravelSolutionCard({
 											: solution.trains.length === 1
 												? "Diretto"
 												: `${solution.trains.length - 1} ${
-														solution.trains.length - 1 === 1 ? "Cambio" : "Cambi"
+														solution.trains.length - 1 === 1
+															? "Cambio"
+															: "Cambi"
 													}`}
 							</ThemedText>
 						</Pressable>
 					</View>
-				</View>
+				</Pressable>
 
 				{/* Dashed Separator */}
 				<View
@@ -495,7 +482,7 @@ export function TravelSolutionCard({
 							: false;
 					const isPurchasable =
 						isPurchasedTrip || (solution.price && solution.price > 0);
-					
+
 					// If it's a purchased trip from a past/future day, don't show strike-through delays
 					const shouldShowDelayStrikethrough = isPurchasedTrip ? isToday : true;
 
@@ -523,7 +510,7 @@ export function TravelSolutionCard({
 											{solution.departureTime}
 										</ThemedText>
 										<ThemedText
-											className={`text-[20px] font-google-sans-bold !text-rose-500 mt-0.5 ${(isPurchasedTrip || isInfomobilityMode) ? "-mb-5" : ""}`}
+											className={`text-[20px] font-google-sans-bold !text-rose-500 mt-0.5 ${isPurchasedTrip || isInfomobilityMode ? "-mb-5" : ""}`}
 										>
 											{addMinutes(solution.departureTime, delayNum)}
 										</ThemedText>
@@ -536,10 +523,19 @@ export function TravelSolutionCard({
 							</View>
 
 							<View
-								className={`absolute left-0 right-0 ${hasDelay ? "top-[18px]" : "bottom-0"} -mb-[1px] items-center justify-center pointer-events-none`}
+								className={`absolute left-0 right-0 ${hasDelay ? "top-[18px]" : "bottom-0"} -mb-[1px] items-center justify-center`}
+								pointerEvents="box-none"
 							>
-								<View className="flex-row items-center">
-									<View className="w-10 items-end justify-center">
+								<Pressable
+									className="flex-row items-center"
+									onPress={(e) => {
+										if (onTopPress) {
+											e.stopPropagation();
+											onTopPress();
+										}
+									}}
+								>
+									<View className="w-10 items-end justify-center pointer-events-none">
 										<View className="h-[2px] w-6 bg-neutral-300" />
 									</View>
 									<View className="bg-neutral-100 px-2.5 py-1 rounded-full mx-1">
@@ -557,10 +553,11 @@ export function TravelSolutionCard({
 											className="!text-neutral-300 -ml-[13px]"
 										/>
 									</View>
-								</View>
+								</Pressable>
 								{(() => {
 									if (
-										(!isPurchasedTrip && !isInfomobilityMode) &&
+										!isPurchasedTrip &&
+										!isInfomobilityMode &&
 										(!solution.price || solution.price <= 0)
 									)
 										return null;
@@ -571,7 +568,7 @@ export function TravelSolutionCard({
 											: solution.delay
 												? solution.delay
 												: null;
-									
+
 									if (isPurchasedTrip && !isToday) {
 										return null;
 									}
@@ -598,7 +595,9 @@ export function TravelSolutionCard({
 												IN ORARIO
 											</ThemedText>
 										);
-									} else if (String(delayVal).toLowerCase().trim() === "non partito") {
+									} else if (
+										String(delayVal).toLowerCase().trim() === "non partito"
+									) {
 										const [hours, minutes] = solution.departureTime
 											.split(":")
 											.map(Number);
@@ -613,7 +612,11 @@ export function TravelSolutionCard({
 										const diffMinutes =
 											(departureDate.getTime() - now.getTime()) / (1000 * 60);
 
-										if ((!isPurchasedTrip && !isInfomobilityMode) && diffMinutes > 15) {
+										if (
+											!isPurchasedTrip &&
+											!isInfomobilityMode &&
+											diffMinutes > 15
+										) {
 											return null;
 										}
 
@@ -648,7 +651,7 @@ export function TravelSolutionCard({
 											{solution.arrivalTime}
 										</ThemedText>
 										<ThemedText
-											className={`text-[20px] font-google-sans-bold !text-rose-500 mt-0.5 ${(isPurchasedTrip || isInfomobilityMode) ? "-mb-5" : ""}`}
+											className={`text-[20px] font-google-sans-bold !text-rose-500 mt-0.5 ${isPurchasedTrip || isInfomobilityMode ? "-mb-5" : ""}`}
 										>
 											{addMinutes(solution.arrivalTime, delayNum)}
 										</ThemedText>
@@ -705,7 +708,7 @@ export function TravelSolutionCard({
 					}
 
 					return (
-						<View className="flex-row items-center justify-between mt-6 mb-1 -mx-5 px-5">
+						<View className="flex-row items-center justify-between mt-7 -mx-5 px-5">
 							<View className="flex-row items-center gap-3">
 								<View className="flex-row items-center gap-1">
 									<Icon

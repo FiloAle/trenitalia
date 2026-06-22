@@ -47,17 +47,22 @@ export default function StationBoardScreen() {
 
 			{/* Station Info Panel */}
 			<View className="bg-primary-600 px-5 pb-6 pt-2">
-				<View className="flex-row items-center">
-					<Icon
-						name="subway"
-						size={22}
-						color="white"
-						weight={500}
-						style={{ marginRight: 6, marginTop: -3 }}
-					/>
-					<ThemedText className="text-[20px] font-google-sans-semibold !text-white flex-shrink">
-						{stationName}
-					</ThemedText>
+				<View className="flex-row items-center justify-between">
+					<View className="flex-row items-center flex-1 pr-2">
+						<Icon
+							name="subway"
+							size={22}
+							color="white"
+							weight={500}
+							style={{ marginRight: 6, marginTop: -3 }}
+						/>
+						<ThemedText className="text-[20px] font-google-sans-semibold !text-white flex-shrink">
+							{stationName}
+						</ThemedText>
+					</View>
+					<View className="flex-row items-center">
+						<Icon name="bookmark_border" size={20} className="!text-white" />
+					</View>
 				</View>
 				{lastUpdate ? (
 					<ThemedText className="text-[13px] font-google-sans-regular !text-white/80 mt-1">

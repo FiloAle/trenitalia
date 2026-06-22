@@ -1,23 +1,23 @@
-import { getViaggiatrenoUrl } from "@/api/proxy-helper";
 import { getBulkStationDelays } from "@/api/delay";
 import { searchJourneys, setSelectedSolutionCache } from "@/api/search";
 import { BottomSheet } from "@/components/modals/bottom-sheet";
+import { CalendarPanel } from "@/components/search/calendar-panel";
+import { PassengersPanel } from "@/components/search/passengers-panel";
 import {
 	TravelSolution,
 	TravelSolutionCard,
 } from "@/components/search/travel-solution-card";
-import { CalendarPanel } from "@/components/search/calendar-panel";
-import { PassengersPanel } from "@/components/search/passengers-panel";
 import { ThemedText } from "@/components/themed-text";
-import { TimelineEventRow } from "@/components/train-details/timeline-event-row";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import { PageHeader } from "@/components/ui/page-header";
-import { STATIONS } from "@/constants/stations";
-import { TimelineStation } from "@/constants/train-details-mock";
 import { formatClassName, formatOfferName } from "@/utils/format";
-import { SelectionItem, getGlobalSelectionList, setGlobalSelectionList } from "@/utils/selection-store";
+import {
+	SelectionItem,
+	getGlobalSelectionList,
+	setGlobalSelectionList,
+} from "@/utils/selection-store";
 import { getTrainStopsCount } from "@/utils/viaggiatreno";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -25,7 +25,6 @@ import {
 	ActivityIndicator,
 	Dimensions,
 	FlatList,
-	Image,
 	InteractionManager,
 	Platform,
 	Pressable,
@@ -47,213 +46,12 @@ const sortOptions = [
 	"Prezzo",
 ];
 
-const LOGOS: Record<string, any> = {
-	Frecciarossa: require("@/assets/logos/frecciarossa.png"),
-	Intercity: require("@/assets/logos/intercity.png"),
-	InterCity: require("@/assets/logos/intercity.png"),
-	Regionale: require("@/assets/logos/regionale.png"),
-	FrRossa: require("@/assets/logos/frecciarossa.png"),
-	ICnotte: require("@/assets/logos/intercity.png"),
-	Regv: require("@/assets/logos/regionale.png"),
-	Reg: require("@/assets/logos/regionale.png"),
-	"Reg Tper": require("@/assets/logos/tper.png"),
-	"Regv Tper": require("@/assets/logos/tper.png"),
-};
+import { RouteInfomobilityContent } from "@/components/train-details/route-infomobility-content";
 
 // MOCK_SOLUTIONS removed in favor of live API
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const DATE_ITEM_WIDTH = 80;
-
-const InfomobilityTrainBlock = ({
-	train,
-	LOGOS,
-	isToday,
-}: {
-	train: any;
-	LOGOS: any;
-	isToday: boolean;
-}) => {
-	const [showPrev, setShowPrev] = useState(false);
-	const [showNext, setShowNext] = useState(false);
-
-	const normalizedType = train.trainInfo.type.trim().toLowerCase();
-	const logoKey = Object.keys(LOGOS).find(
-		(k) => k.toLowerCase() === normalizedType,
-	);
-	const logoSource = logoKey ? LOGOS[logoKey] : undefined;
-
-	const passengerOrigin = train.trainInfo.origin;
-	const passengerDest = train.trainInfo.destination;
-
-	const normalizeStationName = (name: string) => {
-		return name
-			.toLowerCase()
-			.replace(/c\.le/g, "centrale")
-			.replace(/\/av/g, "")
-			.replace(/\(av\)/g, "")
-			.replace(/p\. ?ga.*/g, "porta garibaldi")
-			.replace(/p\.ta/g, "porta")
-			.replace(/ - /g, " ")
-			.replace(/-/g, " ")
-			.replace(/\s+/g, " ")
-			.trim();
-	};
-
-	const matchStation = (target: string) => {
-		const normTarget = normalizeStationName(target);
-
-		let idx = train.timeline.findIndex(
-			(s: any) => normalizeStationName(s.name) === normTarget,
-		);
-		if (idx !== -1) return idx;
-
-		idx = train.timeline.findIndex((s: any) => {
-			const normS = normalizeStationName(s.name);
-			return normS.includes(normTarget) || normTarget.includes(normS);
-		});
-		return idx;
-	};
-
-	let startIndex = matchStation(passengerOrigin);
-	let endIndex = matchStation(passengerDest);
-
-	if (startIndex === -1) startIndex = 0;
-	if (endIndex === -1 || endIndex < startIndex)
-		endIndex = train.timeline.length - 1;
-
-	const hasPrev = startIndex > 0;
-	const hasNext = endIndex < train.timeline.length - 1;
-
-	const visibleStations = train.timeline.filter((_: any, idx: number) => {
-		if (showPrev && showNext) return true;
-		if (showPrev && !showNext) return idx <= endIndex;
-		if (!showPrev && showNext) return idx >= startIndex;
-		return idx >= startIndex && idx <= endIndex;
-	});
-
-	return (
-		<View className="mb-10">
-			{/* Train Header */}
-			<View className="flex-row items-center justify-between mb-4 border-b border-neutral-100 pb-3">
-				<View className="flex-row items-center gap-3">
-					{logoSource ? (
-						<Image
-							source={logoSource}
-							style={{
-								height: 16,
-								width:
-									normalizedType.includes("freccia") ||
-									normalizedType === "frrossa"
-										? 85
-										: 65,
-							}}
-							resizeMode="contain"
-						/>
-					) : (
-						<View className="bg-neutral-100 px-2 py-1 rounded border border-neutral-200">
-							<ThemedText className="text-[13px] font-google-sans-bold !text-neutral-700 capitalize">
-								{train.trainInfo.type}
-							</ThemedText>
-						</View>
-					)}
-					<ThemedText className="text-[16px] font-google-sans-bold !text-neutral-900">
-						{train.trainInfo.number}
-					</ThemedText>
-				</View>
-
-				{/* Status Tag */}
-				{isToday && train.data.compRitardo && train.data.compRitardo[0] && (
-					<View
-						className="rounded-md px-2 py-1 border"
-						style={{
-							backgroundColor:
-								train.data.compRitardo[0] === "in orario" ||
-								train.data.compRitardo[0] === "non partito"
-									? "#f0fdf4"
-									: "#fee2e2",
-							borderColor:
-								train.data.compRitardo[0] === "in orario" ||
-								train.data.compRitardo[0] === "non partito"
-									? "#bbf7d0"
-									: "#fecaca",
-						}}
-					>
-						<ThemedText
-							className="text-[12px] font-google-sans-bold"
-							style={{
-								color:
-									train.data.compRitardo[0] === "in orario" ||
-									train.data.compRitardo[0] === "non partito"
-										? "#166534"
-										: "#ef4444",
-								textTransform:
-									train.data.compRitardo[0] === "in orario" ||
-									train.data.compRitardo[0] === "non partito"
-										? "capitalize"
-										: "uppercase",
-							}}
-						>
-							{train.data.compRitardo[0] === "in orario" ||
-							train.data.compRitardo[0] === "non partito"
-								? train.data.compRitardo[0]
-								: `+${train.data.compRitardo[0].replace(/[^0-9]/g, "")} MIN`}
-						</ThemedText>
-					</View>
-				)}
-			</View>
-
-			{/* Timeline */}
-			<View>
-				{hasPrev && (
-					<Pressable
-						onPress={() => setShowPrev(!showPrev)}
-						className="items-center py-3 bg-neutral-50 rounded-2xl mb-8"
-					>
-						<ThemedText className="text-[13px] font-google-sans-bold text-primary-600">
-							{showPrev
-								? "Nascondi fermate precedenti"
-								: "Mostra fermate precedenti"}
-						</ThemedText>
-					</Pressable>
-				)}
-
-				{visibleStations.map((station: TimelineStation, idx: number) => {
-					return (
-						<TimelineEventRow
-							key={station.id}
-							station={station}
-							nextStation={
-								idx < visibleStations.length - 1
-									? visibleStations[idx + 1]
-									: undefined
-							}
-							isFirst={idx === 0}
-							isLast={idx === visibleStations.length - 1}
-							isTruncatedTop={idx === 0 && hasPrev && !showPrev}
-							isTruncatedBottom={
-								idx === visibleStations.length - 1 && hasNext && !showNext
-							}
-						/>
-					);
-				})}
-
-				{hasNext && (
-					<Pressable
-						onPress={() => setShowNext(!showNext)}
-						className="items-center py-3 bg-neutral-50 rounded-2xl mt-8"
-					>
-						<ThemedText className="text-[13px] font-google-sans-bold text-primary-600">
-							{showNext
-								? "Nascondi fermate successive"
-								: "Mostra fermate successive"}
-						</ThemedText>
-					</Pressable>
-				)}
-			</View>
-		</View>
-	);
-};
 
 export default function SearchResultsScreen() {
 	const params = useLocalSearchParams();
@@ -266,7 +64,9 @@ export default function SearchResultsScreen() {
 
 	const [showCalendar, setShowCalendar] = useState(false);
 	const [showPassengersSheet, setShowPassengersSheet] = useState(false);
-	const [activeCalendarTab, setActiveCalendarTab] = useState<"andata" | "ritorno">("andata");
+	const [activeCalendarTab, setActiveCalendarTab] = useState<
+		"andata" | "ritorno"
+	>("andata");
 	const [hasReturn, setHasReturn] = useState(false);
 	const [returnDate, setReturnDate] = useState(() => {
 		const d = new Date(departureDate);
@@ -341,7 +141,9 @@ export default function SearchResultsScreen() {
 	const youths = passengersList.filter((p) => p.type === "Ragazzo").length;
 	const children = passengersList.filter((p) => p.type === "Bambino").length;
 
-	const dynamicPassengerText = `${adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : ""}${youths > 0 ? ` ${youths} Ragazz${youths > 1 ? "i" : "o"}` : ""}${children > 0 ? ` ${children} Bambin${children > 1 ? "i" : "i"}` : ""}`.trim() || "1 Adulto";
+	const dynamicPassengerText =
+		`${adults > 0 ? `${adults} Adult${adults > 1 ? "i" : "o"}` : ""}${youths > 0 ? ` ${youths} Ragazz${youths > 1 ? "i" : "o"}` : ""}${children > 0 ? ` ${children} Bambin${children > 1 ? "i" : "i"}` : ""}`.trim() ||
+		"1 Adulto";
 
 	const dynamicPassengerNamesText = passengersList
 		.filter((p) => p.itemType === "passenger")
@@ -359,10 +161,9 @@ export default function SearchResultsScreen() {
 	const dateScrollRef = useRef<FlatList>(null);
 
 	const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
-	const [isLoadingInfo, setIsLoadingInfo] = useState(false);
-	const [infoTrainsData, setInfoTrainsData] = useState<
-		{ trainInfo: any; timeline: TimelineStation[]; data: any }[] | null
-	>(null);
+	const [selectedInfoTrains, setSelectedInfoTrains] = useState<any[] | null>(
+		null,
+	);
 
 	const [bulkDelays, setBulkDelays] = useState<Record<string, string>>({});
 	const latestCoveredDelayTimeRef = useRef<Record<string, Date>>({});
@@ -514,165 +315,9 @@ export default function SearchResultsScreen() {
 		}
 	}, [solutions, currentSelectedDate, bulkDelays]);
 
-	const handleOpenInfomobilita = async (trains: TravelSolution["trains"]) => {
+	const handleOpenInfomobilita = (trains: TravelSolution["trains"]) => {
+		setSelectedInfoTrains(trains);
 		setIsInfoModalVisible(true);
-		setIsLoadingInfo(true);
-		setInfoTrainsData(null);
-
-		const fetchedData = [];
-
-		try {
-			for (const train of trains) {
-				const trainNumber = train.number;
-				const targetFetchUrl = getViaggiatrenoUrl(
-					`/cercaNumeroTrenoTrenoAutocomplete/${trainNumber}`,
-				);
-
-				const controller = new AbortController();
-				const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-				let autoText = "";
-				try {
-					const autoResponse = await fetch(targetFetchUrl, {
-						signal: controller.signal,
-					});
-					autoText = await autoResponse.text();
-				} catch (err) {
-					console.warn("Autocomplete fetch failed or timed out", err);
-					continue;
-				} finally {
-					clearTimeout(timeoutId);
-				}
-
-				if (!autoText || autoText.trim() === "") continue;
-
-				const firstLine = autoText.split("\n")[0];
-				if (!firstLine || !firstLine.includes("|")) continue;
-
-				const parts = firstLine.split("|");
-				if (parts.length < 2) continue;
-
-				const ids = parts[1].trim().split("-");
-				if (ids.length < 3) continue;
-
-				const tNum = ids[0];
-				const codLocOrig = ids[1];
-				const dataPartenza = ids[2];
-
-				const detailsTargetFetchUrl = getViaggiatrenoUrl(
-					`/andamentoTreno/${codLocOrig}/${tNum}/${dataPartenza}`,
-				);
-
-				const detailsController = new AbortController();
-				const detailsTimeoutId = setTimeout(
-					() => detailsController.abort(),
-					5000,
-				);
-
-				let data;
-				try {
-					const detailsResponse = await fetch(detailsTargetFetchUrl, {
-						signal: detailsController.signal,
-					});
-					data = await detailsResponse.json();
-				} catch (err) {
-					console.warn("Details fetch failed or timed out", err);
-					continue;
-				} finally {
-					clearTimeout(detailsTimeoutId);
-				}
-
-				const mappedStations = data.fermate.map((f: any) => {
-					const events = [];
-
-					if (
-						f.arrivo_teorico !== null ||
-						f.arrivoReale !== null ||
-						f.tipoFermata === "A"
-					) {
-						const programmedArr = f.arrivo_teorico || f.programmata;
-						if (programmedArr) {
-							const arrDate = new Date(programmedArr);
-							events.push({
-								label: "Arrivo Programmato",
-								time: `${arrDate.getHours().toString().padStart(2, "0")}:${arrDate.getMinutes().toString().padStart(2, "0")}`,
-							});
-						}
-						const realArr = f.arrivoReale || f.effettiva;
-						if (isToday && realArr) {
-							const realDate = new Date(realArr);
-							events.push({
-								label: "Arrivo Effettivo",
-								time: `${realDate.getHours().toString().padStart(2, "0")}:${realDate.getMinutes().toString().padStart(2, "0")}`,
-								isActual: true,
-							});
-						}
-					}
-
-					if (
-						f.partenza_teorica !== null ||
-						f.partenzaReale !== null ||
-						f.tipoFermata === "P"
-					) {
-						const programmedDep = f.partenza_teorica || f.programmata;
-						if (programmedDep) {
-							const depDate = new Date(programmedDep);
-							events.push({
-								label: "Partenza Programmata",
-								time: `${depDate.getHours().toString().padStart(2, "0")}:${depDate.getMinutes().toString().padStart(2, "0")}`,
-							});
-						}
-						const realDep = f.partenzaReale || f.effettiva;
-						if (isToday && realDep) {
-							const realDate = new Date(realDep);
-							events.push({
-								label: "Partenza Effettiva",
-								time: `${realDate.getHours().toString().padStart(2, "0")}:${realDate.getMinutes().toString().padStart(2, "0")}`,
-								isActual: true,
-							});
-						}
-					}
-
-					const bin =
-						f.binarioEffettivoPartenzaDescrizione ||
-						f.binarioProgrammatoPartenzaDescrizione ||
-						f.binarioEffettivoArrivoDescrizione ||
-						f.binarioProgrammatoArrivoDescrizione ||
-						"--";
-
-					const rawName = f.stazione;
-					const found = STATIONS.find(
-						(s: any) => s.name.toLowerCase() === rawName.toLowerCase(),
-					);
-					const name = found
-						? found.name
-						: rawName
-								.toLowerCase()
-								.split(" ")
-								.map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-								.join(" ");
-
-					return {
-						id: f.id,
-						name: name,
-						bin: bin,
-						events: events,
-					};
-				});
-
-				fetchedData.push({
-					trainInfo: train,
-					data: data,
-					timeline: mappedStations,
-				});
-			}
-
-			setInfoTrainsData(fetchedData);
-		} catch (e) {
-			console.error(e);
-		} finally {
-			setIsLoadingInfo(false);
-		}
 	};
 
 	const mapRoutesToSolutions = useCallback(
@@ -1392,15 +1037,19 @@ export default function SearchResultsScreen() {
 										parseDuration(solution.duration) === minDuration
 									}
 									onPressInfo={() => handleOpenInfomobilita(solution.trains)}
+									onTopPress={() => handleOpenInfomobilita(solution.trains)}
 									onPress={() => {
 										if (!solution.price) return;
 										setSelectedSolutionCache({
 											...solution,
-											delay: solution.trains.length > 0 ? bulkDelays[solution.trains[0].number] : undefined,
+											delay:
+												solution.trains.length > 0
+													? bulkDelays[solution.trains[0].number]
+													: undefined,
 											trains: solution.trains.map((t: any) => ({
 												...t,
-												delay: bulkDelays[t.number]
-											}))
+												delay: bulkDelays[t.number],
+											})),
 										});
 										router.push({
 											pathname: "/select-offer",
@@ -1495,7 +1144,7 @@ export default function SearchResultsScreen() {
 
 						<View className="flex-row items-center justify-between py-0.5">
 							<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
-								Solo treni diretti
+								Soluzioni senza cambi
 							</ThemedText>
 							<View
 								className={
@@ -1558,48 +1207,18 @@ export default function SearchResultsScreen() {
 			{/* Infomobilità Percorso Modal */}
 			<BottomSheet
 				isVisible={isInfoModalVisible}
-				onClose={() => setIsInfoModalVisible(false)}
+				onClose={() => {
+					setIsInfoModalVisible(false);
+					setSelectedInfoTrains(null);
+				}}
 				title="Infomobilità Percorso"
-				contentPaddingBottom={-insets.bottom}
 			>
-				{isLoadingInfo ? (
-					<View className="py-20 items-center justify-center">
-						<ActivityIndicator size="large" color="#004141" />
-						<ThemedText className="mt-4 text-[15px] font-google-sans-medium !text-neutral-500">
-							Recupero informazioni in tempo reale...
-						</ThemedText>
-					</View>
-				) : infoTrainsData && infoTrainsData.length > 0 ? (
-					<ScrollView
-						showsVerticalScrollIndicator={false}
-						className="mt-2"
-						contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
-					>
-						{infoTrainsData.map((train, tIdx) => {
-							return (
-								<View
-									key={`train-wrap-${tIdx}`}
-									className={tIdx < infoTrainsData.length - 1 ? "mb-8" : ""}
-								>
-									<InfomobilityTrainBlock
-										train={train}
-										LOGOS={LOGOS}
-										isToday={isToday}
-									/>
-								</View>
-							);
-						})}
-					</ScrollView>
-				) : (
-					<View className="py-20 items-center justify-center">
-						<Icon
-							name="search_off"
-							size={48}
-							className="!text-neutral-300 mb-4"
+				{selectedInfoTrains && (
+					<View className="mt-2 -mx-5 px-5">
+						<RouteInfomobilityContent
+							solutionTrains={selectedInfoTrains}
+							isTodayOverride={isToday}
 						/>
-						<ThemedText className="text-[16px] font-google-sans-medium !text-neutral-500">
-							Nessuna soluzione trovata in tempo reale.
-						</ThemedText>
 					</View>
 				)}
 			</BottomSheet>

@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
+import { Icon } from "@/components/ui/icon";
 import { TimelineStation } from "@/constants/train-details-mock";
 import { router } from "expo-router";
 import { Pressable, View } from "react-native";
@@ -12,6 +13,7 @@ interface TimelineEventRowProps {
 	isTruncatedBottom?: boolean;
 	isNextArrivalActual?: boolean;
 	isFreccia?: boolean;
+	isClickableStation?: boolean;
 }
 
 const TrackLine = ({
@@ -58,6 +60,7 @@ export function TimelineEventRow({
 	isTruncatedTop = false,
 	isTruncatedBottom = false,
 	isFreccia = false,
+	isClickableStation = false,
 }: TimelineEventRowProps) {
 	const arrivalEvents = station.events.filter((e) =>
 		e.label.includes("Arrivo"),
@@ -87,7 +90,9 @@ export function TimelineEventRow({
 	return (
 		<View
 			className="flex-row relative bg-white"
-			style={{ marginTop: isFirst ? 0 : -1 }}
+			style={{
+				marginTop: isFirst ? (isTruncatedTop ? 24 : 0) : -1,
+			}}
 		>
 			<View className="flex-1">
 				{/* Removed Arrival Events (Above Station Name) block */}
@@ -192,21 +197,48 @@ export function TimelineEventRow({
 									</ThemedText>
 								</View>
 							</Pressable>
-							{station.isCurrent && isFreccia && (
+							{station.isCurrent && isFreccia && station.orientamento && (
 								<View className="absolute top-[100%] right-0 w-[80px]">
 									<ThemedText className="text-[10px] font-google-sans-medium !text-neutral-500 text-right leading-tight">
-										Executive{"\n"}in coda
+										{station.orientamento
+											.split(" ")
+											.map((w, i) => (i === 1 ? `\n${w}` : w))
+											.join(" ")}
 									</ThemedText>
 								</View>
 							)}
 						</View>
 
 						{/* Station Name */}
-						<View className="ml-10 flex-1 flex-row items-center justify-between">
-							<ThemedText className="text-base font-google-sans-bold !text-primary-500 mr-2 flex-shrink">
-								{station.name}
-							</ThemedText>
-						</View>
+						<Pressable
+							className={`flex-row items-center flex-shrink mr-4 ${
+								isClickableStation
+									? "ml-7 bg-primary-500/10 rounded-xl px-2 py-1.5 self-start"
+									: "ml-10 self-start"
+							}`}
+							disabled={!isClickableStation}
+							onPress={() => {
+								if (isClickableStation) {
+									router.navigate({
+										pathname: "/station-board",
+										params: { station: station.name },
+									});
+								}
+							}}
+						>
+							<View className="flex-row items-center flex-shrink">
+								{isClickableStation && (
+									<Icon
+										name="subway"
+										size={20}
+										className="!text-primary-500 mr-1.5 -mt-0.5 flex-shrink-0"
+									/>
+								)}
+								<ThemedText className="text-base font-google-sans-bold !text-primary-500 flex-shrink">
+									{station.name}
+								</ThemedText>
+							</View>
+						</Pressable>
 					</View>
 				</View>
 
@@ -244,8 +276,10 @@ export function TimelineEventRow({
 									className="flex-row items-center justify-between mb-1"
 								>
 									<ThemedText
-										className={`text-[13px] font-google-sans-medium ${
-											ev.isActual ? "!text-neutral-900" : "!text-neutral-500"
+										className={`text-[13px] ${
+											ev.isActual
+												? "font-google-sans-bold !text-neutral-900"
+												: "font-google-sans-medium !text-neutral-500"
 										}`}
 									>
 										{ev.label}
@@ -255,17 +289,19 @@ export function TimelineEventRow({
 											className={`text-[13px] ${
 												ev.isDelayed
 													? "font-google-sans-regular !text-neutral-500 line-through"
-													: `font-google-sans-medium ${
+													: `font-google-sans-bold ${
 															ev.isActual
 																? "!text-primary-500"
 																: "!text-neutral-500"
-													  }`
+														}`
 											}`}
 										>
 											{ev.time}
 										</ThemedText>
 										{ev.isDelayed && ev.updatedTime && (
-											<ThemedText className="text-[13px] font-google-sans-medium !text-rose-600">
+											<ThemedText
+												className={`text-[13px] font-google-sans-bold ${ev.isLate ? "!text-rose-600" : "!text-primary-500"}`}
+											>
 												{ev.updatedTime}
 											</ThemedText>
 										)}

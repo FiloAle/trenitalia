@@ -2,6 +2,7 @@ import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { ThemedText } from "@/components/themed-text";
 import { TicketBottomActions } from "@/components/ticket-detail/ticket-bottom-actions";
 import { TicketCard } from "@/components/ticket-detail/ticket-card";
+import { RouteInfomobilityContent } from "@/components/train-details/route-infomobility-content";
 import { MainButton } from "@/components/ui/main-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { USER_DATA } from "@/constants/user";
@@ -16,6 +17,7 @@ export default function TicketDetailScreen() {
 	const insets = useSafeAreaInsets();
 	const [isGestisciOpen, setIsGestisciOpen] = useState(false);
 	const [isDettagliOpen, setIsDettagliOpen] = useState(false);
+	const [selectedInfomobilityTripId, setSelectedInfomobilityTripId] = useState<string | null>(null);
 
 	const tripId = params.tripId as string;
 	// Retrieve from global store
@@ -92,6 +94,11 @@ export default function TicketDetailScreen() {
 							offer={train.selectedOffer || "Super Economy"}
 							price={train.price}
 							onOpenDettagli={() => setIsDettagliOpen(true)}
+							onTopPress={
+								isToday
+									? () => setSelectedInfomobilityTripId(trip.id)
+									: undefined
+							}
 						/>
 					);
 				})}
@@ -176,6 +183,19 @@ export default function TicketDetailScreen() {
 					className="!h-16"
 					onPress={() => setIsDettagliOpen(false)}
 				/>
+			</BottomSheet>
+
+			{/* Infomobilità Percorso Modal */}
+			<BottomSheet
+				isVisible={!!selectedInfomobilityTripId}
+				onClose={() => setSelectedInfomobilityTripId(null)}
+				title="Infomobilità Percorso"
+			>
+				{selectedInfomobilityTripId && (
+					<View className="mt-2 -mx-5 px-5">
+						<RouteInfomobilityContent tripId={selectedInfomobilityTripId} />
+					</View>
+				)}
 			</BottomSheet>
 		</View>
 	);

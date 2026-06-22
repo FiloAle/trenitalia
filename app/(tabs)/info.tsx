@@ -1,22 +1,22 @@
+import { getViaggiatrenoUrl } from "@/api/proxy-helper";
+import { searchJourneys } from "@/api/search";
 import { BottomSheet } from "@/components/modals/bottom-sheet";
 import { FollowTrainModal } from "@/components/modals/follow-train-modal";
 import { TopDownModal } from "@/components/modals/top-down-modal";
+import { JourneySearchBar } from "@/components/search/journey-search-bar";
 import { SearchListItem } from "@/components/search/search-list-item";
 import { SectionHeader } from "@/components/search/section-header";
+import { TravelSolutionCard } from "@/components/search/travel-solution-card";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { TabSelector } from "@/components/ui/tab-selector";
 import { RECENT_STATIONS, STATIONS } from "@/constants/stations";
-import { JourneySearchBar } from "@/components/search/journey-search-bar";
-import { TravelSolutionCard } from "@/components/search/travel-solution-card";
-import { searchJourneys } from "@/api/search";
 import {
 	getRecentTrains,
 	RecentTrainSearch,
 } from "@/utils/recent-trains-store";
-import { getViaggiatrenoUrl } from "@/api/proxy-helper";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -96,14 +96,15 @@ export default function InfoScreen() {
 				.filter((r: any) => r.l?.length === 1) // Only direct solutions
 				.map((r: any) => ({
 					id: String(r.dx),
-					trains: r.l?.map((leg: any) => ({
-						type: leg.ts,
-						number: leg.n,
-						origin: leg.ds,
-						destination: leg.as,
-						departureTime: leg.dt,
-						arrivalTime: leg.at
-					})) || [],
+					trains:
+						r.l?.map((leg: any) => ({
+							type: leg.ts,
+							number: leg.n,
+							origin: leg.ds,
+							destination: leg.as,
+							departureTime: leg.dt,
+							arrivalTime: leg.at,
+						})) || [],
 					departureTime: r.dt,
 					arrivalTime: r.at,
 					duration: formatDuration(r.dur),
@@ -130,8 +131,11 @@ export default function InfoScreen() {
 		setExpandedNewsIndex(null);
 		setIsLoadingNotizie(true);
 		try {
-			const targetUrl = "http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/infomobilitaRSS/false";
-			const response = await fetch(getViaggiatrenoUrl("/infomobilitaRSS/false"));
+			const targetUrl =
+				"http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/infomobilitaRSS/false";
+			const response = await fetch(
+				getViaggiatrenoUrl("/infomobilitaRSS/false"),
+			);
 			const html = await response.text();
 			const regex =
 				/<li[^>]*>\s*<a[^>]*>([\s\S]*?)<\/a>\s*<div class="boxAcc"[^>]*>[\s\S]*?<div class="info-text[^"]*">([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/g;
@@ -210,16 +214,31 @@ export default function InfoScreen() {
 					<View className="flex-1">
 						<View className="px-5 pt-6 z-50">
 							{/* Search Box */}
-							<View className="rounded-2xl border border-neutral-200 bg-white px-4 h-[56px] justify-center">
-								<TextInput
-									className={`w-full text-[14px] text-neutral-950 p-0 m-0 ${trainNumber.length > 0 ? "font-google-sans-semibold" : "font-google-sans-medium"}`}
-									placeholder="N. Treno"
-									placeholderTextColor="#6b7280"
-									keyboardType="numeric"
-									maxLength={5}
-									value={trainNumber}
-									onChangeText={setTrainNumber}
-								/>
+							<View className="flex-row items-center gap-2">
+								<View className="flex-1 rounded-2xl border border-neutral-200 bg-white px-4 h-[56px] justify-center">
+									<TextInput
+										className={`w-full text-[14px] text-neutral-950 p-0 m-0 ${trainNumber.length > 0 ? "font-google-sans-semibold" : "font-google-sans-medium"}`}
+										placeholder="N. Treno"
+										placeholderTextColor="#6b7280"
+										keyboardType="numeric"
+										maxLength={5}
+										value={trainNumber}
+										onChangeText={setTrainNumber}
+									/>
+								</View>
+								<Pressable
+									onPress={() => {
+										if (trainNumber.trim().length > 0) {
+											router.navigate({
+												pathname: "/train-details",
+												params: { trainNumber: trainNumber.trim() },
+											});
+										}
+									}}
+									className="w-[56px] h-[56px] rounded-2xl bg-primary-500 items-center justify-center shrink-0"
+								>
+									<Icon name="search" size={24} className="!text-white" />
+								</Pressable>
 							</View>
 						</View>
 						<ScrollView
@@ -230,25 +249,25 @@ export default function InfoScreen() {
 						>
 							<View className="px-5">
 								{/* Recent Searches */}
-							{recentTrains.length > 0 && (
-								<View>
-									<SectionHeader title="ULTIME RICERCHE" />
-									{recentTrains.map((search, idx) => (
-										<SearchListItem
-											key={idx}
-											text={`${search.trainNumber} ${search.origin} - ${search.destination}`}
-											iconName="schedule"
-											weight={300}
-											onPress={() =>
-												router.navigate({
-													pathname: "/train-details",
-													params: { trainNumber: search.trainNumber },
-												})
-											}
-										/>
-									))}
-								</View>
-							)}
+								{recentTrains.length > 0 && (
+									<View>
+										<SectionHeader title="ULTIME RICERCHE" />
+										{recentTrains.map((search, idx) => (
+											<SearchListItem
+												key={idx}
+												text={`${search.trainNumber} ${search.origin} - ${search.destination}`}
+												iconName="schedule"
+												weight={300}
+												onPress={() =>
+													router.navigate({
+														pathname: "/train-details",
+														params: { trainNumber: search.trainNumber },
+													})
+												}
+											/>
+										))}
+									</View>
+								)}
 							</View>
 						</ScrollView>
 					</View>
@@ -275,55 +294,55 @@ export default function InfoScreen() {
 								/>
 							</View>
 						</View>
-					<FlatList
-						className="flex-1 px-5"
-						contentContainerStyle={{ paddingBottom: 200, paddingTop: 16 }}
-						showsVerticalScrollIndicator={false}
-						keyboardShouldPersistTaps="handled"
-						data={filteredStations}
-						keyExtractor={(item) => item.name}
-						initialNumToRender={20}
-						maxToRenderPerBatch={20}
-						windowSize={5}
-						ListHeaderComponent={
-							<View className="pb-2">
-								{/* Current Station */}
-								{!isSearching && (
-									<View className="mb-4 -mt-2.5">
-										<SearchListItem
-											iconName="my_location"
-											text="Milano Centrale"
-											className="!px-0"
-											weight={300}
-											onPress={() =>
-												router.navigate({
-													pathname: "/station-board",
-													params: { station: "Milano Centrale" },
-												})
-											}
-										/>
-									</View>
-								)}
+						<FlatList
+							className="flex-1 px-5"
+							contentContainerStyle={{ paddingBottom: 200, paddingTop: 16 }}
+							showsVerticalScrollIndicator={false}
+							keyboardShouldPersistTaps="handled"
+							data={filteredStations}
+							keyExtractor={(item) => item.name}
+							initialNumToRender={20}
+							maxToRenderPerBatch={20}
+							windowSize={5}
+							ListHeaderComponent={
+								<View className="pb-2">
+									{/* Current Station */}
+									{!isSearching && (
+										<View className="mb-4 -mt-2.5">
+											<SearchListItem
+												iconName="my_location"
+												text="Milano Centrale"
+												className="!px-0"
+												weight={300}
+												onPress={() =>
+													router.navigate({
+														pathname: "/station-board",
+														params: { station: "Milano Centrale" },
+													})
+												}
+											/>
+										</View>
+									)}
 
-								<SectionHeader
-									title={isSearching ? "RISULTATI" : "ULTIME RICERCHE"}
+									<SectionHeader
+										title={isSearching ? "RISULTATI" : "ULTIME RICERCHE"}
+									/>
+								</View>
+							}
+							renderItem={({ item }) => (
+								<SearchListItem
+									text={item.name}
+									iconName={isSearching ? "train" : "schedule"}
+									weight={300}
+									onPress={() =>
+										router.navigate({
+											pathname: "/station-board",
+											params: { station: item.name },
+										})
+									}
 								/>
-							</View>
-						}
-						renderItem={({ item }) => (
-							<SearchListItem
-								text={item.name}
-								iconName={isSearching ? "train" : "schedule"}
-								weight={300}
-								onPress={() =>
-									router.navigate({
-										pathname: "/station-board",
-										params: { station: item.name },
-									})
-								}
-							/>
-						)}
-					/>
+							)}
+						/>
 					</View>
 				);
 			}
@@ -341,17 +360,24 @@ export default function InfoScreen() {
 								onSearchComplete={(from, to) => fetchSolutions(from, to)}
 							/>
 						</View>
-						<ScrollView
-							className="flex-1"
-							showsVerticalScrollIndicator={false}
-							contentContainerStyle={{ paddingBottom: 200, paddingTop: 16 }}
-							keyboardShouldPersistTaps="handled"
-						>
-							{isLoadingSolutions ? (
+						{isLoadingSolutions ? (
+							<ScrollView
+								className="flex-1"
+								showsVerticalScrollIndicator={false}
+								contentContainerStyle={{ paddingBottom: 200, paddingTop: 16 }}
+								keyboardShouldPersistTaps="handled"
+							>
 								<View className="py-10 items-center justify-center">
 									<ActivityIndicator size="large" color="#006666" />
 								</View>
-							) : solutions.length > 0 ? (
+							</ScrollView>
+						) : solutions.length > 0 ? (
+							<ScrollView
+								className="flex-1"
+								showsVerticalScrollIndicator={false}
+								contentContainerStyle={{ paddingBottom: 200, paddingTop: 16 }}
+								keyboardShouldPersistTaps="handled"
+							>
 								<View className="px-5 gap-4">
 									{solutions.map((solution, idx) => (
 										<TravelSolutionCard
@@ -362,27 +388,37 @@ export default function InfoScreen() {
 											isInfomobilityMode={true}
 											onPress={() => {
 												// In Infomobility mode we want to open the first train's board
-												const firstLeg = solution.legs?.[0] || solution.trains?.[0];
-												if (firstLeg && (firstLeg.trainIdentifier || firstLeg.number)) {
+												const firstLeg =
+													solution.legs?.[0] || solution.trains?.[0];
+												if (
+													firstLeg &&
+													(firstLeg.trainIdentifier || firstLeg.number)
+												) {
 													router.navigate({
 														pathname: "/train-details",
-														params: { trainNumber: firstLeg.trainIdentifier || firstLeg.number },
+														params: {
+															trainNumber:
+																firstLeg.trainIdentifier || firstLeg.number,
+														},
 													});
 												}
 											}}
 										/>
 									))}
 								</View>
-							) : (
-								<View className="mt-10 items-center justify-center px-10">
-									<Icon name="visibility" size={64} color="#d1d5db" />
-									<ThemedText className="mt-6 text-center text-[16px] font-google-sans-medium !text-neutral-500">
-										Compila i campi "Partenza" e "Arrivo" per visualizzare le
-										soluzioni di viaggio per la giornata odierna
-									</ThemedText>
-								</View>
-							)}
-						</ScrollView>
+							</ScrollView>
+						) : (
+							<View
+								className="flex-1 items-center px-8"
+								style={{ paddingTop: 200 }}
+							>
+								<ThemedText className="text-center text-[15px] font-google-sans-regular !text-neutral-500">
+									{
+										"Effettua una ricerca per visualizzare le soluzioni\ndi viaggio per la giornata odierna"
+									}
+								</ThemedText>
+							</View>
+						)}
 					</View>
 				);
 			case "Treni seguiti":
@@ -509,180 +545,169 @@ export default function InfoScreen() {
 	};
 
 	return (
-		<TouchableWithoutFeedback onPress={() => { Keyboard.dismiss(); setActiveInput(null); }}>
+		<TouchableWithoutFeedback
+			onPress={() => {
+				Keyboard.dismiss();
+				setActiveInput(null);
+			}}
+		>
 			<View style={{ flex: 1 }}>
 				<View className="flex-1 bg-white">
 					<PageHeader
-					title="Infomobilità"
-					showBackButton={false}
-					rightElement={
-						<Pressable onPress={fetchNotizie}>
-							<Icon name="release_alert" size={24} color="white" />
-						</Pressable>
-					}
-				/>
-
-				{/* Tab Selector */}
-				<View className="px-5 pt-5 z-50">
-					<TabSelector
-						tabs={CHIPS}
-						activeTab={activeChip}
-						onTabChange={setActiveChip}
+						title="Infomobilità"
+						showBackButton={false}
+						rightElement={
+							<Pressable onPress={fetchNotizie}>
+								<Icon name="release_alert" size={24} color="white" />
+							</Pressable>
+						}
 					/>
+
+					{/* Tab Selector */}
+					<View className="px-5 pt-5 z-50">
+						<TabSelector
+							tabs={CHIPS}
+							activeTab={activeChip}
+							onTabChange={setActiveChip}
+						/>
+					</View>
+
+					{/* Main Content Area */}
+					<View className="flex-1">{renderContent()}</View>
+
+
 				</View>
 
-				{/* Main Content Area */}
-				<View className="flex-1">{renderContent()}</View>
-
-				{/* Search Button & Banner - Moves with keyboard */}
-				{activeChip === "N. Treno" && (
-					<KeyboardAvoidingView
-						behavior={Platform.OS === "ios" ? "padding" : undefined}
-						style={{
-							position: "absolute",
-							top: 0,
-							left: 0,
-							right: 0,
-							bottom: 0,
-						}}
-						pointerEvents="box-none"
-					>
-						<View
-							className="flex-1 justify-end px-5 pb-6"
-							pointerEvents="box-none"
-						>
-							<MainButton
-								title="Ricerca"
-								onPress={() => {
-									if (trainNumber.trim().length > 0) {
-										router.navigate({
-											pathname: "/train-details",
-											params: { trainNumber: trainNumber.trim() },
-										});
-									}
-								}}
-							/>
-						</View>
-					</KeyboardAvoidingView>
-				)}
-			</View>
-
-			<TopDownModal
-				isVisible={isDeleteModalVisible}
-				title="Attenzione"
-				description="Vuoi rimuovere questo viaggio dalla lista dei treni seguiti?"
-				iconName="warning_amber"
-				iconColor="#f59e0b"
-				iconBgColor="#fef3c7"
-				buttons={[
-					{
-						label: "Annulla",
-						onPress: () => setIsDeleteModalVisible(false),
-						variant: "secondary",
-					},
-					{
-						label: "Rimuovi",
-						onPress: () => {
-							setIsDeleteModalVisible(false);
-							setTimeout(() => setHasFollowedTrain(false), 300);
+				<TopDownModal
+					isVisible={isDeleteModalVisible}
+					title="Attenzione"
+					description="Vuoi rimuovere questo viaggio dalla lista dei treni seguiti?"
+					iconName="warning_amber"
+					iconColor="#f59e0b"
+					iconBgColor="#fef3c7"
+					buttons={[
+						{
+							label: "Annulla",
+							onPress: () => setIsDeleteModalVisible(false),
+							variant: "secondary",
 						},
-					},
-				]}
-			/>
-
-			<FollowTrainModal
-				isVisible={isFollowModalVisible}
-				onClose={() => setIsFollowModalVisible(false)}
-				onConfirm={() => {
-					setIsFollowModalVisible(false);
-					setTimeout(() => setIsSuccessModalVisible(true), 400);
-				}}
-				stations={["Reggio Emilia Av", "Bologna Centrale", "Cesena"]}
-				initialDays={[0]}
-			/>
-
-			<TopDownModal
-				isVisible={isSuccessModalVisible}
-				title="Notifica registrata"
-				description="Adesso riceverai le informazioni in tempo reale del treno seguito"
-				iconName="check"
-				buttons={[
-					{
-						label: "OK",
-						onPress: () => {
-							setIsSuccessModalVisible(false);
+						{
+							label: "Rimuovi",
+							onPress: () => {
+								setIsDeleteModalVisible(false);
+								setTimeout(() => setHasFollowedTrain(false), 300);
+							},
 						},
-					},
-				]}
-			/>
+					]}
+				/>
 
-			<BottomSheet
-				isVisible={isNotizieOpen}
-				onClose={() => setIsNotizieOpen(false)}
-				title="Notizie di Infomobilità"
-				contentPaddingBottom={-insets.bottom}
-			>
-				<ScrollView
-					showsVerticalScrollIndicator={false}
-					contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
-					style={{ height: Dimensions.get("window").height * 0.7 }}
+				<FollowTrainModal
+					isVisible={isFollowModalVisible}
+					onClose={() => setIsFollowModalVisible(false)}
+					onConfirm={() => {
+						setIsFollowModalVisible(false);
+						setTimeout(() => setIsSuccessModalVisible(true), 400);
+					}}
+					stations={[
+						"Milano Centrale",
+						"Piacenza",
+						"Parma",
+						"Reggio Emilia AV",
+						"Bologna Centrale",
+						"Rimini",
+						"Pesaro",
+						"Ancona",
+						"Pescara Centrale",
+						"Termoli",
+						"Foggia",
+						"Bari Centrale",
+						"Taranto"
+					]}
+					initialDays={[0]}
+				/>
+
+				<TopDownModal
+					isVisible={isSuccessModalVisible}
+					title="Notifica registrata"
+					description="Adesso riceverai le informazioni in tempo reale del treno seguito"
+					iconName="check"
+					buttons={[
+						{
+							label: "OK",
+							onPress: () => {
+								setIsSuccessModalVisible(false);
+							},
+						},
+					]}
+				/>
+
+				<BottomSheet
+					isVisible={isNotizieOpen}
+					onClose={() => setIsNotizieOpen(false)}
+					title="Notizie di Infomobilità"
+					contentPaddingBottom={-insets.bottom}
 				>
-					<View className="py-4">
-						{isLoadingNotizie ? (
-							<View className="flex-1 justify-center items-center">
-								<ActivityIndicator size="large" color="#004141" />
-							</View>
-						) : (
-							<View className="gap-4">
-								{notizie.length > 0 ? (
-									notizie.map((news, index) => (
-										<Pressable
-											key={index}
-											onPress={() =>
-												setExpandedNewsIndex(
-													expandedNewsIndex === index ? null : index,
-												)
-											}
-											className="p-4 bg-white rounded-2xl border border-neutral-200"
-										>
-											<View className="flex-row justify-between items-center gap-3">
-												<Icon name="info" size={20} color="#eab308" />
-												<ThemedText
-													numberOfLines={2}
-													className="flex-1 text-[15px] font-google-sans-bold !text-neutral-900 leading-snug"
-												>
-													{news.title}
-												</ThemedText>
-												<Icon
-													name={
-														expandedNewsIndex === index
-															? "expand_less"
-															: "expand_more"
-													}
-													size={24}
-													color="#9ca3af"
-												/>
-											</View>
-											{expandedNewsIndex === index && (
-												<View className="px-8 pt-7 pb-5">
-													<ThemedText className="text-[14px] font-google-sans-regular !text-neutral-700 leading-snug">
-														{news.content}
+					<ScrollView
+						showsVerticalScrollIndicator={false}
+						contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+						style={{ height: Dimensions.get("window").height * 0.7 }}
+					>
+						<View className="py-4">
+							{isLoadingNotizie ? (
+								<View className="flex-1 justify-center items-center">
+									<ActivityIndicator size="large" color="#004141" />
+								</View>
+							) : (
+								<View className="gap-4">
+									{notizie.length > 0 ? (
+										notizie.map((news, index) => (
+											<Pressable
+												key={index}
+												onPress={() =>
+													setExpandedNewsIndex(
+														expandedNewsIndex === index ? null : index,
+													)
+												}
+												className="p-4 bg-white rounded-2xl border border-neutral-200"
+											>
+												<View className="flex-row justify-between items-center gap-3">
+													<Icon name="info" size={20} color="#eab308" />
+													<ThemedText
+														numberOfLines={2}
+														className="flex-1 text-[15px] font-google-sans-bold !text-neutral-900 leading-snug"
+													>
+														{news.title}
 													</ThemedText>
+													<Icon
+														name={
+															expandedNewsIndex === index
+																? "expand_less"
+																: "expand_more"
+														}
+														size={24}
+														color="#9ca3af"
+													/>
 												</View>
-											)}
-										</Pressable>
-									))
-								) : (
-									<ThemedText className="text-center font-google-sans-medium !text-neutral-500 mt-4">
-										Nessuna notizia disponibile
-									</ThemedText>
-								)}
-							</View>
-						)}
-					</View>
-				</ScrollView>
-			</BottomSheet>
-		</View>
+												{expandedNewsIndex === index && (
+													<View className="px-8 pt-7 pb-5">
+														<ThemedText className="text-[14px] font-google-sans-regular !text-neutral-700 leading-snug">
+															{news.content}
+														</ThemedText>
+													</View>
+												)}
+											</Pressable>
+										))
+									) : (
+										<ThemedText className="text-center font-google-sans-medium !text-neutral-500 mt-4">
+											Nessuna notizia disponibile
+										</ThemedText>
+									)}
+								</View>
+							)}
+						</View>
+					</ScrollView>
+				</BottomSheet>
+			</View>
 		</TouchableWithoutFeedback>
 	);
 }

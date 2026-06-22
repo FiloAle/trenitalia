@@ -1,9 +1,10 @@
 import { getTrainInfo } from "@/api/delay";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
+import { STATIONS } from "@/constants/stations";
 import { USER_DATA } from "@/constants/user";
 import { generateAztec, getCachedAztec } from "@/utils/aztec";
-import { formatClassName, formatPersonName } from "@/utils/format";
+import { formatClassName, formatOfferName, formatPersonName, formatTrainName } from "@/utils/format";
 import Constants, { ExecutionEnvironment } from "expo-constants";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -142,6 +143,7 @@ interface TicketCardProps {
 	price?: number;
 	onOpenDettagli: () => void;
 	isPastTrip?: boolean;
+	onTopPress?: () => void;
 }
 
 export function TicketCard({
@@ -162,6 +164,7 @@ export function TicketCard({
 	price = 19.7,
 	onOpenDettagli,
 	isPastTrip,
+	onTopPress,
 }: TicketCardProps) {
 	const calculateDuration = (start: string, end: string) => {
 		const [sh, sm] = start.split(":").map(Number);
@@ -187,19 +190,28 @@ export function TicketCard({
 		typeLowerStr.includes("fr") ||
 		typeLowerStr === "f";
 
-	const coachNum = parseInt(carrozza || "1", 10) || 1;
-	let boardPos = "centro";
-	if (coachNum <= 3) boardPos = "testa";
-	else if (coachNum >= 9) boardPos = "coda";
-
-	const headColor = boardPos === "testa" ? "#006666" : "#A3A3A3";
-	const centerColor = boardPos === "centro" ? "#006666" : "#A3A3A3";
-	const rearColor = boardPos === "coda" ? "#006666" : "#A3A3A3";
-
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [binPartenza, setBinPartenza] = useState<string | null>(null);
 	const [binArrivo, setBinArrivo] = useState<string | null>(null);
 	const [ticketDelay, setTicketDelay] = useState<string | null>(null);
+	const [orientamento, setOrientamento] = useState<string | null>(null);
+
+	const coachNum = parseInt(carrozza || "1", 10) || 1;
+	let boardPos = "centro";
+	
+	if (orientamento && orientamento.toLowerCase().includes("coda")) {
+		// Executive/Coach 1 is in coda
+		if (coachNum <= 4) boardPos = "coda";
+		else if (coachNum >= 9) boardPos = "testa";
+	} else {
+		// Default or Executive/Coach 1 is in testa
+		if (coachNum <= 4) boardPos = "testa";
+		else if (coachNum >= 9) boardPos = "coda";
+	}
+
+	const headColor = boardPos === "testa" ? "#006666" : "#A3A3A3";
+	const centerColor = boardPos === "centro" ? "#006666" : "#A3A3A3";
+	const rearColor = boardPos === "coda" ? "#006666" : "#A3A3A3";
 
 	const addMinutes = (time: string, minutes: number) => {
 		if (!time) return time;
@@ -223,6 +235,7 @@ export function TicketCard({
 				const depInfo = await getTrainInfo(origin, num);
 				if (depInfo) {
 					if (depInfo.binario) setBinPartenza(depInfo.binario);
+					if (depInfo.orientamento) setOrientamento(depInfo.orientamento);
 
 					const delayStr = depInfo.delay;
 					if (delayStr !== null) {
@@ -267,14 +280,14 @@ export function TicketCard({
 			return {
 				source: require("../../assets/logos/small/rtper.png"),
 				ratio: 2.13,
-				readable: "Trenitalia TPER",
+				readable: formatTrainName(trainType),
 			};
 		}
 		if (typeLower.includes("reg") || typeLower === "rv" || typeLower === "re") {
 			return {
 				source: require("../../assets/logos/small/r.png"),
 				ratio: 2.03,
-				readable: "Regionale",
+				readable: formatTrainName(trainType),
 			};
 		}
 		if (
@@ -285,21 +298,21 @@ export function TicketCard({
 			return {
 				source: require("../../assets/logos/small/ic.png"),
 				ratio: 0.89,
-				readable: "InterCity",
+				readable: formatTrainName(trainType),
 			};
 		}
 		if (typeLower === "ec" || typeLower.includes("eurocity")) {
 			return {
 				source: require("../../assets/logos/small/ec.png"),
 				ratio: 1.1,
-				readable: "EuroCity",
+				readable: formatTrainName(trainType),
 			};
 		}
 		// Default to Frecciarossa
 		return {
 			source: require("../../assets/logos/small/f.png"),
 			ratio: 1.4,
-			readable: "FRECCIAROSSA",
+			readable: formatTrainName(trainType),
 		};
 	};
 
@@ -395,7 +408,15 @@ export function TicketCard({
 				</Svg>
 			)}
 			{/* Top row: Train and Date */}
-			<View className="flex-row items-center justify-between px-5 py-3">
+			<Pressable 
+				className="flex-row items-center justify-between px-5 py-3"
+				onPress={(e) => {
+					if (onTopPress) {
+						e.stopPropagation();
+						onTopPress();
+					}
+				}}
+			>
 				<View className="flex-row items-center">
 					<View>
 						<Image
@@ -414,7 +435,7 @@ export function TicketCard({
 				<ThemedText className="text-base font-google-sans-regular !text-neutral-900">
 					{dateString}
 				</ThemedText>
-			</View>
+			</Pressable>
 
 			{/* Dashed Separator */}
 			<View
@@ -486,8 +507,16 @@ export function TicketCard({
 							);
 						})()}
 
-						<View className="px-2 items-center justify-center relative mt-1">
-							<View className="flex-row items-center">
+						<Pressable 
+							className="px-2 items-center justify-center relative mt-1"
+							onPress={(e) => {
+								if (onTopPress) {
+									e.stopPropagation();
+									onTopPress();
+								}
+							}}
+						>
+							<View className="flex-row items-center pointer-events-none">
 								<View className="w-10 items-end justify-center">
 									<View className="h-[2px] w-6 bg-neutral-300" />
 								</View>
@@ -547,7 +576,7 @@ export function TicketCard({
 										</ThemedText>
 									);
 								})()}
-						</View>
+						</Pressable>
 
 						{(() => {
 							const getCleanNum = (val: string) =>

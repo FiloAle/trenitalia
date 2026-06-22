@@ -71,31 +71,15 @@ export function FollowTrainModal({
 		<BottomSheet
 			isVisible={isVisible}
 			onClose={onClose}
-			title="Segui treno e attiva notifiche"
+			title="Attiva notifiche"
 		>
 			<ScrollView
 				style={{ maxHeight: Dimensions.get("window").height * 0.75 }}
-				className="-mx-5 px-5 mb-[80px]"
+				className="-mx-5 px-5"
+				contentContainerStyle={{ paddingBottom: 100 }}
 				showsVerticalScrollIndicator={false}
 			>
-				{/* Toggle Switch */}
-				<View className="flex-row items-center justify-between py-4 border-b border-neutral-100 mb-4">
-					<ThemedText className="text-[15px] font-google-sans-bold !text-neutral-950">
-						Voglio ricevere le notifiche
-					</ThemedText>
-					<Switch
-						value={isNotificationsEnabled}
-						onValueChange={setIsNotificationsEnabled}
-						trackColor={{ false: "#d1d5db", true: "#006666" }}
-						thumbColor={Platform.OS === "ios" ? "#ffffff" : "#ffffff"}
-						ios_backgroundColor="#d1d5db"
-					/>
-				</View>
-
-				<View
-					style={{ opacity: isNotificationsEnabled ? 1 : 0.4 }}
-					pointerEvents={isNotificationsEnabled ? "auto" : "none"}
-				>
+				<View>
 					{/* Days Selector */}
 					<View className="mb-6">
 						<ThemedText className="text-xs font-google-sans-bold !text-neutral-950 mb-3 bg-neutral-100 py-2 -mx-5 px-5">
@@ -110,7 +94,7 @@ export function FollowTrainModal({
 										onPress={() => toggleDay(idx)}
 										className={`h-10 w-10 items-center justify-center rounded-full border ${
 											isSelected
-												? "border-primary-600 bg-primary-600"
+												? "border-primary-500 bg-primary-500"
 												: "border-neutral-200 bg-neutral-50"
 										}`}
 									>
@@ -140,9 +124,9 @@ export function FollowTrainModal({
 								style={{ top: 44 }}
 								pointerEvents="none"
 							>
-								<View className="w-[60px] h-full rounded-full bg-primary-600" />
+								<View className="w-[60px] h-full rounded-full bg-primary-500" />
 								<View className="w-[30px]" />
-								<View className="w-[60px] h-full rounded-full bg-primary-600" />
+								<View className="w-[60px] h-full rounded-full bg-primary-500" />
 							</View>
 
 							<TimePickerColumn
@@ -178,18 +162,16 @@ export function FollowTrainModal({
 								<Pressable
 									key={idx}
 									onPress={() => setSelectedStation(station)}
-									className={`flex-row items-center justify-between py-4 ${
-										idx !== stations.length ? "border-b border-neutral-100" : ""
-									}`}
+									className="flex-row items-center justify-between py-4"
 								>
 									<ThemedText className="text-[15px] font-google-sans-medium !text-neutral-950">
 										{station}
 									</ThemedText>
 									<View
-										className={`w-5 h-5 rounded-full border-2 items-center justify-center ${isSelected ? "border-primary-600" : "border-neutral-400"}`}
+										className={`w-5 h-5 rounded-full border-2 items-center justify-center ${isSelected ? "border-primary-500" : "border-neutral-400"}`}
 									>
 										{isSelected && (
-											<View className="w-2.5 h-2.5 rounded-full bg-primary-600" />
+											<View className="w-2.5 h-2.5 rounded-full bg-primary-500" />
 										)}
 									</View>
 								</Pressable>

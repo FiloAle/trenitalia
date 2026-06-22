@@ -124,10 +124,14 @@ export default function TrainDetailsScreen() {
 					return;
 				}
 
-				const lines = autoText.split("\n").filter(l => l.trim().length > 0);
+				const lines = autoText.split("\n").filter((l) => l.trim().length > 0);
 				lines.sort((a, b) => {
-					const aIsAltro = a.toLowerCase().includes("trenord") || a.toLowerCase().includes("italo");
-					const bIsAltro = b.toLowerCase().includes("trenord") || b.toLowerCase().includes("italo");
+					const aIsAltro =
+						a.toLowerCase().includes("trenord") ||
+						a.toLowerCase().includes("italo");
+					const bIsAltro =
+						b.toLowerCase().includes("trenord") ||
+						b.toLowerCase().includes("italo");
 					if (aIsAltro && !bIsAltro) return 1;
 					if (!aIsAltro && bIsAltro) return -1;
 					return 0;
@@ -233,8 +237,12 @@ export default function TrainDetailsScreen() {
 						}
 						const scheduledStr = formatTime(scheduledTs);
 						const actualStr = actualTs ? formatTime(actualTs) : null;
-						const isDelayed = actualTs && scheduledTs && actualTs > scheduledTs && actualStr !== scheduledStr;
-						
+						const isDelayed =
+							actualTs &&
+							scheduledTs &&
+							actualTs > scheduledTs &&
+							actualStr !== scheduledStr;
+
 						events.push({
 							label: "Arrivo",
 							time: scheduledStr,
@@ -260,8 +268,12 @@ export default function TrainDetailsScreen() {
 						}
 						const scheduledStr = formatTime(scheduledTs);
 						const actualStr = actualTs ? formatTime(actualTs) : null;
-						const isDelayed = actualTs && scheduledTs && actualTs > scheduledTs && actualStr !== scheduledStr;
-						
+						const isDelayed =
+							actualTs &&
+							scheduledTs &&
+							actualTs > scheduledTs &&
+							actualStr !== scheduledStr;
+
 						events.push({
 							label: "Partenza",
 							time: scheduledStr,
@@ -289,7 +301,7 @@ export default function TrainDetailsScreen() {
 
 				let currentIdx = 0;
 				for (let i = mappedStations.length - 1; i >= 0; i--) {
-					if (mappedStations[i].events.some(e => e.isActual)) {
+					if (mappedStations[i].events.some((e) => e.isActual)) {
 						currentIdx = i;
 						break;
 					}
@@ -467,7 +479,9 @@ export default function TrainDetailsScreen() {
 		formattedDate = formattedDate.split("-").reverse().join("/");
 	}
 
-	const trainPrefixStr = trainData.compNumeroTreno ? trainData.compNumeroTreno.split(" ")[0] : "";
+	const trainPrefixStr = trainData.compNumeroTreno
+		? trainData.compNumeroTreno.split(" ")[0]
+		: "";
 	const typeLowerStr = (
 		stationBoardCategory ||
 		trainData.categoriaDescrizione ||
@@ -489,40 +503,38 @@ export default function TrainDetailsScreen() {
 	return (
 		<View className="flex-1 bg-white">
 			{/* Header */}
-			<PageHeader
-				title="N. Treno"
-				rightElement={
-					<Pressable
-						onPress={() => setIsFollowModalVisible(true)}
-						className="p-2 -mr-2"
-					>
-						<Icon name="notifications_none" size={28} className="!text-white" />
-					</Pressable>
-				}
-			/>
+			<PageHeader title="N. Treno" />
 
 			{/* Train Info Panel */}
 			<View className="bg-primary-600 px-5 pb-6 pt-2">
-				<View className="flex-row items-center mb-1.5">
-					{logoData && (
-						<Image
-							source={logoData.source}
-							style={{
-								height: 16,
-								width: 16 * logoData.ratio,
-								marginRight: 6,
-								marginTop: -3,
-								tintColor: "white",
-							}}
-							resizeMode="contain"
-						/>
-					)}
-					<ThemedText className="text-[18px] font-google-sans-bold !text-white flex-shrink">
-						{logoData?.readable || "TRENO"}{" "}
-						<ThemedText className="text-[18px] font-google-sans-regular !text-white">
-							{trainNumOnly}
+				<View className="flex-row items-center justify-between mb-1.5">
+					<View className="flex-row items-center flex-1 pr-2">
+						{logoData && (
+							<Image
+								source={logoData.source}
+								style={{
+									height: 16,
+									width: 16 * logoData.ratio,
+									marginRight: 6,
+									marginTop: -3,
+									tintColor: "white",
+								}}
+								resizeMode="contain"
+							/>
+						)}
+						<ThemedText className="text-[18px] font-google-sans-bold !text-white flex-shrink">
+							{logoData?.readable || "TRENO"}{" "}
+							<ThemedText className="text-[18px] font-google-sans-regular !text-white">
+								{trainNumOnly}
+							</ThemedText>
 						</ThemedText>
-					</ThemedText>
+					</View>
+					<View className="flex-row items-center">
+						<Icon name="bookmark_border" size={20} className="!text-white mr-3" />
+						<Pressable onPress={() => setIsFollowModalVisible(true)}>
+							<Icon name="notifications_none" size={20} className="!text-white" />
+						</Pressable>
+					</View>
 				</View>
 
 				{/* Full Route */}
@@ -546,7 +558,7 @@ export default function TrainDetailsScreen() {
 				</View>
 
 				{/* Last Update & Delay */}
-				<View className="flex-row items-end justify-between mt-4">
+				<View className="flex-row items-center justify-between mt-6">
 					<ThemedText className="text-[13px] font-google-sans-regular !text-white/80">
 						{lastUpdateText}
 					</ThemedText>
@@ -574,6 +586,7 @@ export default function TrainDetailsScreen() {
 							isFirst={index === 0}
 							isLast={index === timeline.length - 1}
 							isFreccia={isFreccia}
+							isClickableStation={true}
 						/>
 					))}
 				</View>

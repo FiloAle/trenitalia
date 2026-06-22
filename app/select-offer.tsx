@@ -486,7 +486,15 @@ export default function SelectOfferScreen() {
 							segmentDate.setDate(segmentDate.getDate() + 1);
 						}
 					}
-					const segmentDdMMyyyy = `${String(segmentDate.getDate()).padStart(2, "0")}/${String(segmentDate.getMonth() + 1).padStart(2, "0")}/${segmentDate.getFullYear()}`;
+					const today = new Date();
+					const isToday = 
+						segmentDate.getDate() === today.getDate() &&
+						segmentDate.getMonth() === today.getMonth() &&
+						segmentDate.getFullYear() === today.getFullYear();
+						
+					const segmentDdMMyyyy = isToday
+						? "Oggi"
+						: `${String(segmentDate.getDate()).padStart(2, "0")}/${String(segmentDate.getMonth() + 1).padStart(2, "0")}/${segmentDate.getFullYear()}`;
 
 					const normalizedType = segment.type.trim().toLowerCase();
 					const logoKey = Object.keys(LOGOS).find(

@@ -6,6 +6,7 @@ export interface TrainInfo {
 	binario: string | null;
 	origin?: string | null;
 	destination?: string | null;
+	orientamento?: string | null;
 }
 
 function parseInfoFromHtml(html: string, trainNumber: string): TrainInfo | null {
@@ -38,7 +39,7 @@ function parseInfoFromHtml(html: string, trainNumber: string): TrainInfo | null 
 		if (val && val.length > 0) binario = val;
 	}
 
-	return { delay, binario, origin: null, destination: null };
+	return { delay, binario, origin: null, destination: null, orientamento: null };
 }
 
 function parseDelayFromHtml(html: string, trainNumber: string): string | null {
@@ -101,17 +102,27 @@ export async function getTrainInfo(
 					}
 
 					let binario = null;
+					let orientamento = null;
 					if (data.fermate && Array.isArray(data.fermate)) {
-						const fermata = data.fermate.find((f: any) => 
+						const idx = data.fermate.findIndex((f: any) => 
 							f.stazione.toLowerCase().includes(stationName.toLowerCase()) ||
 							stationName.toLowerCase().includes(f.stazione.toLowerCase())
 						);
-						if (fermata) {
+						if (idx !== -1) {
+							const fermata = data.fermate[idx];
 							binario = fermata.binarioEffettivoPartenzaDescrizione || 
 									  fermata.binarioProgrammatoPartenzaDescrizione || 
 									  fermata.binarioEffettivoArrivoDescrizione || 
 									  fermata.binarioProgrammatoArrivoDescrizione || 
 									  null;
+
+							if (data.compOrientamento && data.compOrientamento[idx] && data.compOrientamento[idx] !== "--") {
+								orientamento = data.compOrientamento[idx];
+							} else if (fermata.orientamento === "A") {
+								orientamento = "testa";
+							} else if (fermata.orientamento === "B") {
+								orientamento = "coda";
+							}
 						}
 					}
 
@@ -120,7 +131,8 @@ export async function getTrainInfo(
 							delay, 
 							binario, 
 							origin: data.origine || null, 
-							destination: data.destinazione || null 
+							destination: data.destinazione || null,
+							orientamento 
 						};
 						infoCache.set(cacheKey, { value: info, timestamp: Date.now() });
 						return info;
