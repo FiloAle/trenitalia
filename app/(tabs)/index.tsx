@@ -1,8 +1,9 @@
-import ParallaxScrollView from "@/components/parallax-scroll-view";
+import TrenitaliaLogo from "@/assets/logos/trenitalia.svg";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { DeviceEventEmitter, Pressable, StyleSheet, View } from "react-native";
+import { DeviceEventEmitter, Pressable, ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DiscountCard } from "@/components/home/discount-card";
 import { InfoBanner } from "@/components/home/info-banner";
@@ -13,9 +14,9 @@ import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { USER_DATA } from "@/constants/user";
 import { getPurchasedTrips, PurchasedTrip } from "@/utils/trips-store";
-import { router } from "expo-router";
 
 export default function HomeScreen() {
+	const insets = useSafeAreaInsets();
 	const [nextTrip, setNextTrip] = useState<PurchasedTrip | null>(null);
 
 	const handleOpenSearch = () => {
@@ -39,37 +40,58 @@ export default function HomeScreen() {
 	);
 
 	return (
-		<>
-			<ParallaxScrollView
-				headerBackgroundColor={{ light: "#004141", dark: "#004141" }}
-				lightColor="#f9fafb"
-				darkColor="#f9fafb"
-				headerImage={
-					<View className="flex-1 bg-primary-600">
-						<LinearGradient
-							colors={["#004141", "#004141"]}
-							style={StyleSheet.absoluteFill}
-						/>
-						<View className="flex-1 justify-end px-6 pb-8">
-							<ThemedText className="text-[18px] font-google-sans-regular !text-white">
-								Ciao {USER_DATA.firstName},
-							</ThemedText>
-							<ThemedText className="text-[24px] font-google-sans-bold !text-white">
-								Dove vuoi andare?
-							</ThemedText>
-							<Pressable
-								onPress={handleOpenSearch}
-								className="mt-6 flex-row items-center rounded-full bg-white px-5 py-4"
-							>
-								<Icon name="search" size={24} color="#4b5563" />
-								<ThemedText className="ml-3 text-[16px] font-google-sans-medium !text-neutral-600">
-									Cerca la tua destinazione
-								</ThemedText>
-							</Pressable>
-						</View>
-					</View>
-				}
+		<View className="flex-1 bg-white">
+			<View
+				className="bg-primary-500 overflow-hidden relative"
+				style={{ paddingTop: insets.top + 4 }}
 			>
+				<LinearGradient
+					pointerEvents="none"
+					colors={["rgba(0,0,0,0.5)", "rgba(0,0,0,0)"]}
+					start={{ x: 1, y: 0 }}
+					end={{ x: 0.5, y: 1 }}
+					style={{
+						position: "absolute",
+						top: 0,
+						left: 0,
+						right: 0,
+						height: 450,
+					}}
+				/>
+
+				<View className="h-14 flex-row items-center justify-between px-6 relative z-10">
+					<View style={{ width: 24 }} />
+					<View
+						className="absolute left-0 right-0 items-center justify-center pointer-events-none"
+						style={{ top: 0, bottom: 0 }}
+					>
+						<TrenitaliaLogo width={100} height={25} />
+					</View>
+					<View className="flex-row items-center gap-4">
+						<Icon name="notifications" size={24} className="!text-white" />
+					</View>
+				</View>
+
+				<View className="px-6 pt-10 pb-8 relative z-10">
+					<ThemedText className="text-[18px] font-google-sans-regular !text-white">
+						Ciao {USER_DATA.firstName},
+					</ThemedText>
+					<ThemedText className="text-[24px] font-google-sans-bold !text-white">
+						Dove vuoi andare?
+					</ThemedText>
+					<Pressable
+						onPress={handleOpenSearch}
+						className="mt-6 flex-row items-center rounded-full bg-white px-5 py-4 shadow-sm"
+					>
+						<Icon name="search" size={24} color="#4b5563" />
+						<ThemedText className="ml-3 text-[16px] font-google-sans-medium !text-neutral-600">
+							Cerca la tua destinazione
+						</ThemedText>
+					</Pressable>
+				</View>
+			</View>
+
+			<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
 				<View className="bg-white gap-8 px-5 py-8">
 					{nextTrip && (
 						<View className="gap-4">
@@ -120,7 +142,7 @@ export default function HomeScreen() {
 						<PromoCarousel />
 					</View>
 				</View>
-			</ParallaxScrollView>
-		</>
+			</ScrollView>
+		</View>
 	);
 }

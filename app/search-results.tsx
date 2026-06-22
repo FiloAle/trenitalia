@@ -39,14 +39,14 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { RouteInfomobilityContent } from "@/components/train-details/route-infomobility-content";
+
 const sortOptions = [
 	"Orario di partenza",
 	"Orario di arrivo",
 	"Durata",
 	"Prezzo",
 ];
-
-import { RouteInfomobilityContent } from "@/components/train-details/route-infomobility-content";
 
 // MOCK_SOLUTIONS removed in favor of live API
 
@@ -786,13 +786,12 @@ export default function SearchResultsScreen() {
 
 	return (
 		<View className="flex-1 bg-white">
-			{/* Top Green Header */}
-			<View className="bg-primary-600">
-				<PageHeader
-					title="Andata"
-					showBackButton={true}
-					showShareButton={false}
-				/>
+			{/* Header & Green Panel */}
+			<PageHeader
+				title="Andata"
+				showBackButton={true}
+				showShareButton={false}
+			>
 
 				{/* Stations Card */}
 				<View className="px-5">
@@ -984,7 +983,7 @@ export default function SearchResultsScreen() {
 						}}
 					/>
 				</View>
-			</View>
+			</PageHeader>
 
 			{/* Results List */}
 			<ScrollView className="flex-1 bg-neutral-50">

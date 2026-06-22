@@ -43,10 +43,9 @@ export default function StationBoardScreen() {
 	return (
 		<View className="flex-1 bg-white">
 			{/* Header */}
-			<PageHeader title="Stazione" />
-
-			{/* Station Info Panel */}
-			<View className="bg-primary-600 px-5 pb-6 pt-2">
+			<PageHeader title="Stazione">
+				{/* Station Info Panel */}
+				<View className="px-5 pb-6 pt-2">
 				<View className="flex-row items-center justify-between">
 					<View className="flex-row items-center flex-1 pr-2">
 						<Icon
@@ -69,7 +68,8 @@ export default function StationBoardScreen() {
 						{lastUpdate}
 					</ThemedText>
 				) : null}
-			</View>
+				</View>
+			</PageHeader>
 
 			{/* Tabs */}
 			<View className="px-5 py-5 z-50">

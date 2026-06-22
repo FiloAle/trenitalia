@@ -33,10 +33,9 @@ export default function ProfileScreen() {
 	return (
 		<View className="flex-1 bg-white">
 			{/* Page Header */}
-			<PageHeader title="Profilo" showBackButton={false} />
-
-			{/* Wallet Card Container */}
-			<View className="bg-primary-600 px-5 pt-2 pb-6">
+			<PageHeader title="Profilo" showBackButton={false}>
+				{/* Wallet Card Container */}
+				<View className="px-5 pt-2 pb-6">
 				<View
 					className="bg-white rounded-[22px] shadow-sm overflow-hidden"
 					style={{ minHeight: 180 }}
@@ -132,8 +131,9 @@ export default function ProfileScreen() {
 							</Pressable>
 						</View>
 					</View>
+					</View>
 				</View>
-			</View>
+			</PageHeader>
 
 			<ScrollView
 				className="flex-1"

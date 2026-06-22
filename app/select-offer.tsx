@@ -5,15 +5,18 @@ import { formatClassName, formatOfferName } from "@/utils/format";
 import { getGlobalSelectionList } from "@/utils/selection-store";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View , Platform } from "react-native";
 import Animated, {
 	FadeIn,
 	FadeOut,
 	LinearTransition,
 	withTiming,
 } from "react-native-reanimated";
-import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { TravelSolutionCard } from "@/components/search/travel-solution-card";
+import { StickyFooter } from "@/components/select-offer/sticky-footer";
+import { PageHeader } from "@/components/ui/page-header";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -50,10 +53,6 @@ const customExiting = () => {
 		},
 	};
 };
-
-import { TravelSolutionCard } from "@/components/search/travel-solution-card";
-import { StickyFooter } from "@/components/select-offer/sticky-footer";
-import { PageHeader } from "@/components/ui/page-header";
 
 const LOGOS: Record<string, { source: any; ratio: number }> = {
 	Frecciarossa: { source: require("@/assets/logos/small/f.png"), ratio: 1.4 },

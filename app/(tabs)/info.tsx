@@ -545,19 +545,13 @@ export default function InfoScreen() {
 	};
 
 	return (
-		<TouchableWithoutFeedback
-			onPress={() => {
-				Keyboard.dismiss();
-				setActiveInput(null);
-			}}
-		>
-			<View style={{ flex: 1 }}>
+		<View style={{ flex: 1 }}>
 				<View className="flex-1 bg-white">
 					<PageHeader
 						title="Infomobilità"
 						showBackButton={false}
 						rightElement={
-							<Pressable onPress={fetchNotizie}>
+							<Pressable onPress={fetchNotizie} className="p-2 -mr-2">
 								<Icon name="release_alert" size={24} color="white" />
 							</Pressable>
 						}
@@ -708,6 +702,5 @@ export default function InfoScreen() {
 					</ScrollView>
 				</BottomSheet>
 			</View>
-		</TouchableWithoutFeedback>
 	);
 }

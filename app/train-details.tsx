@@ -526,11 +526,9 @@ export default function TrainDetailsScreen() {
 
 	return (
 		<View className="flex-1 bg-white">
-			{/* Header */}
-			<PageHeader title="N. Treno" />
-
-			{/* Train Info Panel */}
-			<View className="bg-primary-600 px-5 pb-6 pt-2">
+			{/* Header & Train Info Panel */}
+			<PageHeader title="N. Treno">
+				<View className="px-5 pb-6 pt-2">
 				<View className="flex-row items-center justify-between mb-1.5">
 					<View className="flex-row items-center flex-1 pr-2">
 						{logoData && (
@@ -597,7 +595,8 @@ export default function TrainDetailsScreen() {
 						</View>
 					)}
 				</View>
-			</View>
+				</View>
+			</PageHeader>
 
 			<ScrollView className="flex-1 px-5 pt-4 pb-20">
 				{/* Timeline */}

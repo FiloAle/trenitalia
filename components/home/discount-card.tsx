@@ -2,9 +2,18 @@ import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 export function DiscountCard() {
+	const [isCopied, setIsCopied] = useState(false);
+
+	const handleCopy = () => {
+		setIsCopied(true);
+		setTimeout(() => {
+			setIsCopied(false);
+		}, 1500);
+	};
 	return (
 		<Pressable className="rounded-2xl overflow-hidden border border-neutral-200">
 			<View className="h-[140px] relative overflow-hidden bg-black">
@@ -23,12 +32,12 @@ export function DiscountCard() {
 					style={StyleSheet.absoluteFill}
 				/>
 				<View className="absolute top-0 bottom-0 left-0 right-0 px-4 items-center justify-end pb-3.5">
-					<ThemedText className="!text-white text-center font-google-sans-medium text-[15px]">
-						Utilizza il codice sconto{" "}
-						<ThemedText className="!text-white font-google-sans-bold text-[15px] underline">
+					<ThemedText className="!text-white text-center font-google-sans-regular text-[15px]">
+						Utilizza il codice{" "}
+						<ThemedText className="!text-white font-google-sans-semibold text-[15px] underline">
 							ESTATE25
-						</ThemedText>
-						{"\n"}per ottenere il 25% di sconto.
+						</ThemedText>{" "}
+						per ottenere{"\n"}il 25% di sconto su biglietti selezionati.
 					</ThemedText>
 				</View>
 			</View>
@@ -36,11 +45,11 @@ export function DiscountCard() {
 				<ThemedText className="!text-white font-google-sans-bold text-lg tracking-wider">
 					ESTATE25
 				</ThemedText>
-				<Pressable className="flex-row items-center">
+				<Pressable className="flex-row items-center" onPress={handleCopy}>
 					<ThemedText className="!text-white font-google-sans-medium text-[15px] mr-2">
-						Copia
+						{isCopied ? "Copiato" : "Copia"}
 					</ThemedText>
-					<Icon name="content_copy" size={20} color="white" />
+					<Icon name={isCopied ? "check" : "content_copy"} size={20} color="white" />
 				</Pressable>
 			</View>
 		</Pressable>
