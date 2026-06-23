@@ -79,35 +79,35 @@ export default function TripsScreen() {
 
 	return (
 		<View className="flex-1 bg-white">
-			<PageHeader title="I miei viaggi" showBackButton={false} />
-
-			{nextTicket && (
-				<View className="bg-primary-600 px-5 pb-6">
-					<ThemedText className="text-[15px] font-google-sans-medium !text-white/90 mb-3">
-						Il tuo prossimo viaggio
-					</ThemedText>
-					<TravelSolutionCard
-						isPurchasedTrip
-						solution={nextTicket as any}
-						route={{
-							from: nextTicket.trains[0].origin!,
-							to: nextTicket.trains[nextTicket.trains.length - 1].destination!,
-						}}
-						onPress={() =>
-							router.push({
-								pathname: "/ticket-detail" as any,
-								params: { tripId: nextTicket.id },
-							})
-						}
-						onLongPress={() => handleLongPress(nextTicket.id)}
-						onTopPress={
-							isToday(nextTicket)
-								? () => setSelectedInfomobilityTripId(nextTicket.id)
-								: undefined
-						}
-					/>
-				</View>
-			)}
+			<PageHeader title="I miei viaggi" showBackButton={false}>
+				{nextTicket && (
+					<View className="px-5 pt-2 pb-6">
+						<ThemedText className="text-[15px] font-google-sans-medium !text-white/90 mb-3">
+							Il tuo prossimo viaggio
+						</ThemedText>
+						<TravelSolutionCard
+							isPurchasedTrip
+							solution={nextTicket as any}
+							route={{
+								from: nextTicket.trains[0].origin!,
+								to: nextTicket.trains[nextTicket.trains.length - 1].destination!,
+							}}
+							onPress={() =>
+								router.push({
+									pathname: "/ticket-detail" as any,
+									params: { tripId: nextTicket.id },
+								})
+							}
+							onLongPress={() => handleLongPress(nextTicket.id)}
+							onTopPress={
+								isToday(nextTicket)
+									? () => setSelectedInfomobilityTripId(nextTicket.id)
+									: undefined
+							}
+						/>
+					</View>
+				)}
+			</PageHeader>
 
 			{/* Tab Selector */}
 			<View className="px-5 pt-5 bg-white z-50">

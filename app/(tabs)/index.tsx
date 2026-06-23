@@ -120,10 +120,10 @@ export default function HomeScreen() {
 							title="Notizie di infomobilità"
 							actionText="Vedi tutte"
 							onActionPress={() => {
-								router.push("/info");
-								setTimeout(() => {
-									DeviceEventEmitter.emit("openInfoNews");
-								}, 100);
+								router.push({
+									pathname: "/info",
+									params: { openNews: "true" },
+								});
 							}}
 						/>
 						<InfoBanner

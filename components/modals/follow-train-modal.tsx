@@ -3,14 +3,7 @@ import { ThemedText } from "@/components/themed-text";
 import { MainButton } from "@/components/ui/main-button";
 import { TimePickerColumn } from "@/components/ui/time-picker-column";
 import { useEffect, useState } from "react";
-import {
-	Dimensions,
-	Platform,
-	Pressable,
-	ScrollView,
-	Switch,
-	View,
-} from "react-native";
+import { Dimensions, Pressable, ScrollView, View } from "react-native";
 
 interface FollowTrainModalProps {
 	isVisible: boolean;

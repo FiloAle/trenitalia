@@ -1,4 +1,5 @@
 import { getStationBoardApi } from "@/api/station-board";
+import { getViaggiatrenoUrl } from "@/api/proxy-helper";
 import { FollowTrainModal } from "@/components/modals/follow-train-modal";
 import { TopDownModal } from "@/components/modals/top-down-modal";
 import { ThemedText } from "@/components/themed-text";
@@ -102,17 +103,11 @@ export default function TrainDetailsScreen() {
 			try {
 				setLoading(true);
 
-				// Costruiamo l'URL del proxy locale per bypassare ATS su iOS (Expo Go)
-				const hostUri = Constants.expoConfig?.hostUri;
-				const proxyBase = hostUri
-					? `http://${hostUri}/api/proxy?url=`
-					: "/api/proxy?url=";
-
 				// 1. Autocomplete for code and date
-				const autoUrl = `http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/${trainNumber}`;
-				const autoResponse = await fetch(
-					`${proxyBase}${encodeURIComponent(autoUrl)}`,
+				const autoUrl = getViaggiatrenoUrl(
+					`/cercaNumeroTrenoTrenoAutocomplete/${trainNumber}`,
 				);
+				const autoResponse = await fetch(autoUrl);
 				const autoText = await autoResponse.text();
 
 				if (!autoText || autoText.trim() === "") {
@@ -181,10 +176,10 @@ export default function TrainDetailsScreen() {
 				const dataPartenza = ids[2];
 
 				// 2. Fetch full details
-				const detailsUrl = `http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/andamentoTreno/${codLocOrig}/${tNum}/${dataPartenza}`;
-				const detailsResponse = await fetch(
-					`${proxyBase}${encodeURIComponent(detailsUrl)}`,
+				const detailsUrl = getViaggiatrenoUrl(
+					`/andamentoTreno/${codLocOrig}/${tNum}/${dataPartenza}`,
 				);
+				const detailsResponse = await fetch(detailsUrl);
 				const data: ViaggiaTrenoResponse = await detailsResponse.json();
 
 				setTrainData(data);
@@ -272,6 +267,7 @@ export default function TrainDetailsScreen() {
 							time: scheduledStr,
 							updatedTime: isDelayed ? actualStr! : undefined,
 							isDelayed: !!isDelayed,
+							isLate: !!isDelayed,
 							isActual: !!(f.arrivoReale || f.effettiva),
 						});
 					}
@@ -303,6 +299,7 @@ export default function TrainDetailsScreen() {
 							time: scheduledStr,
 							updatedTime: isDelayed ? actualStr! : undefined,
 							isDelayed: !!isDelayed,
+							isLate: !!isDelayed,
 							isActual: !!(f.partenzaReale || f.effettiva),
 						});
 					}

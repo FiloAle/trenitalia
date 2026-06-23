@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Platform, Pressable, Text, View } from "react-native";
 import Animated, {
 	useAnimatedStyle,
@@ -42,7 +42,7 @@ export function TabSelector({
 	const [tabWidth, setTabWidth] = useState(0);
 
 	const activeTabIndex = tabs.indexOf(activeTab);
-	
+
 	const animatedStyle = useAnimatedStyle(() => {
 		return {
 			transform: [
@@ -96,10 +96,7 @@ export function TabSelector({
 			{tabWidth > 0 && (
 				<Animated.View
 					className="absolute top-1 bottom-1 bg-primary-500 rounded-lg"
-					style={[
-						{ left: 4, width: tabWidth / tabs.length },
-						animatedStyle,
-					]}
+					style={[{ left: 4, width: tabWidth / tabs.length }, animatedStyle]}
 				/>
 			)}
 			{tabs.map((tab) => (

@@ -787,12 +787,7 @@ export default function SearchResultsScreen() {
 	return (
 		<View className="flex-1 bg-white">
 			{/* Header & Green Panel */}
-			<PageHeader
-				title="Andata"
-				showBackButton={true}
-				showShareButton={false}
-			>
-
+			<PageHeader title="Andata" showBackButton={true} showShareButton={false}>
 				{/* Stations Card */}
 				<View className="px-5">
 					<View className="bg-white/10 rounded-2xl px-4 mt-1 flex-row items-center h-[56px]">

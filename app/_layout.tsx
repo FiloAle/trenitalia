@@ -20,7 +20,7 @@ import { DefaultTheme, ThemeProvider } from "expo-router/react-navigation";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { LogBox, Platform } from "react-native";
@@ -44,6 +44,11 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 	/* ignore */
 });
 
+SplashScreen.setOptions({
+	duration: 500,
+	fade: true,
+});
+
 export const unstable_settings = {
 	anchor: "(tabs)",
 };
@@ -63,13 +68,22 @@ export default function RootLayout() {
 		GoogleSans_700Bold,
 	});
 
+	const [minTimeElapsed, setMinTimeElapsed] = useState(false);
+
 	useEffect(() => {
-		if (loaded || error) {
+		const timer = setTimeout(() => {
+			setMinTimeElapsed(true);
+		}, 1000);
+		return () => clearTimeout(timer);
+	}, []);
+
+	useEffect(() => {
+		if ((loaded || error) && minTimeElapsed) {
 			SplashScreen.hideAsync().catch(() => {
 				// Ignore errors when the splash screen is already hidden
 			});
 		}
-	}, [loaded, error]);
+	}, [loaded, error, minTimeElapsed]);
 
 	if (!loaded && !error) {
 		return null;

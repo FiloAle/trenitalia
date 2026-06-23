@@ -36,101 +36,101 @@ export default function ProfileScreen() {
 			<PageHeader title="Profilo" showBackButton={false}>
 				{/* Wallet Card Container */}
 				<View className="px-5 pt-2 pb-6">
-				<View
-					className="bg-white rounded-[22px] shadow-sm overflow-hidden"
-					style={{ minHeight: 180 }}
-				>
-					{/* Top Red SVG Area with White Margin */}
-					<View className="px-2 pt-2">
-						<View
-							className="rounded-t-[16px] overflow-hidden"
-							style={{
-								width: "100%",
-								height: cardHeight,
-								position: "relative",
-							}}
-						>
-							<Svg
-								width="100%"
-								height="100%"
-								viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
-								preserveAspectRatio="none"
+					<View
+						className="bg-white rounded-[22px] shadow-sm overflow-hidden"
+						style={{ minHeight: 180 }}
+					>
+						{/* Top Red SVG Area with White Margin */}
+						<View className="px-2 pt-2">
+							<View
+								className="rounded-t-[16px] overflow-hidden"
+								style={{
+									width: "100%",
+									height: cardHeight,
+									position: "relative",
+								}}
 							>
-								<Defs>
-									<LinearGradient id="redGrad" x1="0" y1="0" x2="0" y2="1">
-										<Stop offset="0" stopColor="#D91835" />
-										<Stop offset="1" stopColor="#460811" />
-									</LinearGradient>
-								</Defs>
-								<Path
-									d="M 0 0 L 350 0 L 350 120 L 250 120 C 230 120, 230 90, 210 90 L 0 90 Z"
-									fill="url(#redGrad)"
-								/>
-							</Svg>
+								<Svg
+									width="100%"
+									height="100%"
+									viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+									preserveAspectRatio="none"
+								>
+									<Defs>
+										<LinearGradient id="redGrad" x1="0" y1="0" x2="0" y2="1">
+											<Stop offset="0" stopColor="#D91835" />
+											<Stop offset="1" stopColor="#460811" />
+										</LinearGradient>
+									</Defs>
+									<Path
+										d="M 0 0 L 350 0 L 350 120 L 250 120 C 230 120, 230 90, 210 90 L 0 90 Z"
+										fill="url(#redGrad)"
+									/>
+								</Svg>
 
-							{/* Content overlaying the red SVG */}
-							<View className="absolute inset-0 p-5 flex-row justify-between">
-								<View className="flex-row">
-									<ThemedText className="text-[17px] font-google-sans-bold !text-white">
-										CartaFRECCIA
+								{/* Content overlaying the red SVG */}
+								<View className="absolute inset-0 p-5 flex-row justify-between">
+									<View className="flex-row">
+										<ThemedText className="text-[17px] font-google-sans-bold !text-white">
+											CartaFRECCIA
+										</ThemedText>
+										<Icon
+											name="chevron_right"
+											size={18}
+											className="!text-white"
+											weight={600}
+											style={{ marginBottom: -2 }}
+										/>
+									</View>
+									<View className="items-end justify-between h-full">
+										<ThemedText className="text-[14px] font-google-sans-bold !text-white mt-0.5">
+											{USER_DATA.loyaltyCode}
+										</ThemedText>
+										<Icon
+											name="qr_code_2"
+											size={32}
+											className="!text-white -mb-1"
+										/>
+									</View>
+								</View>
+							</View>
+						</View>
+
+						{/* Bottom User Info Area */}
+						<View className="px-6 pb-6" style={{ marginTop: -16 }}>
+							<ThemedText className="text-[20px] font-google-sans-bold !text-primary-500 mb-4">
+								{USER_DATA.firstName} {USER_DATA.lastName}
+							</ThemedText>
+
+							<View className="gap-1 mb-1">
+								<View className="flex-row items-center">
+									<Icon name="mail_outline" size={20} color="#6b7280" />
+									<ThemedText className="ml-3 text-[15px] font-google-sans-medium !text-neutral-600">
+										{USER_DATA.email}
+									</ThemedText>
+								</View>
+								<View className="flex-row items-center">
+									<Icon name="call" size={20} color="#6b7280" />
+									<ThemedText className="ml-3 text-[15px] font-google-sans-medium !text-neutral-600">
+										{USER_DATA.phone}
+									</ThemedText>
+								</View>
+							</View>
+
+							<View className="flex-row justify-end">
+								<Pressable className="flex-row items-center">
+									<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500 mr-1">
+										Dati personali
 									</ThemedText>
 									<Icon
 										name="chevron_right"
-										size={18}
-										className="!text-white"
+										size={20}
+										className="!text-primary-500"
 										weight={600}
-										style={{ marginBottom: -2 }}
 									/>
-								</View>
-								<View className="items-end justify-between h-full">
-									<ThemedText className="text-[14px] font-google-sans-bold !text-white mt-0.5">
-										{USER_DATA.loyaltyCode}
-									</ThemedText>
-									<Icon
-										name="qr_code_2"
-										size={32}
-										className="!text-white -mb-1"
-									/>
-								</View>
+								</Pressable>
 							</View>
 						</View>
-					</View>
-
-					{/* Bottom User Info Area */}
-					<View className="px-6 pb-6" style={{ marginTop: -16 }}>
-						<ThemedText className="text-[22px] font-google-sans-bold !text-primary-500 mb-4">
-							{USER_DATA.firstName} {USER_DATA.lastName}
-						</ThemedText>
-
-						<View className="gap-1 mb-1">
-							<View className="flex-row items-center">
-								<Icon name="mail_outline" size={20} color="#6b7280" />
-								<ThemedText className="ml-3 text-[15px] font-google-sans-medium !text-neutral-600">
-									{USER_DATA.email}
-								</ThemedText>
-							</View>
-							<View className="flex-row items-center">
-								<Icon name="call" size={20} color="#6b7280" />
-								<ThemedText className="ml-3 text-[15px] font-google-sans-medium !text-neutral-600">
-									{USER_DATA.phone}
-								</ThemedText>
-							</View>
-						</View>
-
-						<View className="flex-row justify-end">
-							<Pressable className="flex-row items-center">
-								<ThemedText className="text-[16px] font-google-sans-bold !text-primary-500 mr-1">
-									Dati personali
-								</ThemedText>
-								<Icon
-									name="chevron_right"
-									size={20}
-									className="!text-primary-500"
-									weight={600}
-								/>
-							</Pressable>
-						</View>
-					</View>
 					</View>
 				</View>
 			</PageHeader>

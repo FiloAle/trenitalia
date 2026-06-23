@@ -5,7 +5,7 @@ import { formatClassName, formatOfferName } from "@/utils/format";
 import { getGlobalSelectionList } from "@/utils/selection-store";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Pressable, ScrollView, View , Platform } from "react-native";
+import { Platform, Pressable, ScrollView, View } from "react-native";
 import Animated, {
 	FadeIn,
 	FadeOut,
@@ -478,19 +478,23 @@ export default function SelectOfferScreen() {
 					if (sIdx > 0 && segments[0].departureTime) {
 						const firstTrainDep = segments[0].departureTime;
 						const currTrainDep = segment.departureTime || "00:00";
-						const firstMins = parseInt(firstTrainDep.split(":")[0]) * 60 + parseInt(firstTrainDep.split(":")[1]);
-						const currMins = parseInt(currTrainDep.split(":")[0]) * 60 + parseInt(currTrainDep.split(":")[1]);
+						const firstMins =
+							parseInt(firstTrainDep.split(":")[0]) * 60 +
+							parseInt(firstTrainDep.split(":")[1]);
+						const currMins =
+							parseInt(currTrainDep.split(":")[0]) * 60 +
+							parseInt(currTrainDep.split(":")[1]);
 						// If current train departs at a numerically earlier time than the first train, it must be the next day
 						if (currMins < firstMins) {
 							segmentDate.setDate(segmentDate.getDate() + 1);
 						}
 					}
 					const today = new Date();
-					const isToday = 
+					const isToday =
 						segmentDate.getDate() === today.getDate() &&
 						segmentDate.getMonth() === today.getMonth() &&
 						segmentDate.getFullYear() === today.getFullYear();
-						
+
 					const segmentDdMMyyyy = isToday
 						? "Oggi"
 						: `${String(segmentDate.getDate()).padStart(2, "0")}/${String(segmentDate.getMonth() + 1).padStart(2, "0")}/${segmentDate.getFullYear()}`;
@@ -576,8 +580,12 @@ export default function SelectOfferScreen() {
 								<View style={{ height: 16 }} />
 								{isExpanded && (
 									<Animated.View
-										entering={Platform.OS === "web" ? undefined : FadeIn.duration(200)}
-										exiting={Platform.OS === "web" ? undefined : FadeOut.duration(200)}
+										entering={
+											Platform.OS === "web" ? undefined : FadeIn.duration(200)
+										}
+										exiting={
+											Platform.OS === "web" ? undefined : FadeOut.duration(200)
+										}
 									>
 										<View className="pb-2 pt-2">
 											{realClasses.map((c, cIdx) => {

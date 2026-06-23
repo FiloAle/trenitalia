@@ -9,7 +9,6 @@ import { SectionHeader } from "@/components/search/section-header";
 import { TravelSolutionCard } from "@/components/search/travel-solution-card";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { MainButton } from "@/components/ui/main-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { TabSelector } from "@/components/ui/tab-selector";
 import { RECENT_STATIONS, STATIONS } from "@/constants/stations";
@@ -26,12 +25,9 @@ import {
 	FlatList,
 	Image,
 	Keyboard,
-	KeyboardAvoidingView,
-	Platform,
 	Pressable,
 	ScrollView,
 	TextInput,
-	TouchableWithoutFeedback,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -120,11 +116,17 @@ export default function InfoScreen() {
 	};
 
 	useEffect(() => {
-		const subscription = DeviceEventEmitter.addListener("openInfoNews", () => {
-			fetchNotizie();
-		});
-		return () => subscription.remove();
-	}, []);
+		if (params.openNews === "true") {
+			// Clear the param so it doesn't trigger again on subsequent re-renders
+			router.setParams({ openNews: "" });
+			
+			// Wait 500ms to ensure the tab switch animation is fully completed.
+			// Opening a Modal during a navigation transition on iOS causes it to silently fail and lock up.
+			setTimeout(() => {
+				fetchNotizie();
+			}, 500);
+		}
+	}, [params.openNews]);
 
 	const fetchNotizie = async () => {
 		setIsNotizieOpen(true);
@@ -438,12 +440,12 @@ export default function InfoScreen() {
 								<View className="flex-row items-center justify-between px-4 py-3 border-b border-neutral-100">
 									<View className="flex-row items-center">
 										<Image
-											source={require("../../assets/logos/frecciarossa.png")}
+											source={require("../../assets/logos/small/f.png")}
 											style={{ width: 80, height: 12, marginRight: 8 }}
 											resizeMode="contain"
 										/>
 										<ThemedText className="text-sm font-google-sans-bold !text-neutral-900">
-											8807
+											FRECCIAROSSA 8807
 										</ThemedText>
 									</View>
 									<Pressable
@@ -546,161 +548,159 @@ export default function InfoScreen() {
 
 	return (
 		<View style={{ flex: 1 }}>
-				<View className="flex-1 bg-white">
-					<PageHeader
-						title="Infomobilità"
-						showBackButton={false}
-						rightElement={
-							<Pressable onPress={fetchNotizie} className="p-2 -mr-2">
-								<Icon name="release_alert" size={24} color="white" />
-							</Pressable>
-						}
+			<View className="flex-1 bg-white">
+				<PageHeader
+					title="Infomobilità"
+					showBackButton={false}
+					rightElement={
+						<Pressable onPress={fetchNotizie} className="p-2 -mr-2">
+							<Icon name="release_alert" size={24} color="white" />
+						</Pressable>
+					}
+				/>
+
+				{/* Tab Selector */}
+				<View className="px-5 pt-5 z-50">
+					<TabSelector
+						tabs={CHIPS}
+						activeTab={activeChip}
+						onTabChange={setActiveChip}
 					/>
-
-					{/* Tab Selector */}
-					<View className="px-5 pt-5 z-50">
-						<TabSelector
-							tabs={CHIPS}
-							activeTab={activeChip}
-							onTabChange={setActiveChip}
-						/>
-					</View>
-
-					{/* Main Content Area */}
-					<View className="flex-1">{renderContent()}</View>
-
-
 				</View>
 
-				<TopDownModal
-					isVisible={isDeleteModalVisible}
-					title="Attenzione"
-					description="Vuoi rimuovere questo viaggio dalla lista dei treni seguiti?"
-					iconName="warning_amber"
-					iconColor="#f59e0b"
-					iconBgColor="#fef3c7"
-					buttons={[
-						{
-							label: "Annulla",
-							onPress: () => setIsDeleteModalVisible(false),
-							variant: "secondary",
-						},
-						{
-							label: "Rimuovi",
-							onPress: () => {
-								setIsDeleteModalVisible(false);
-								setTimeout(() => setHasFollowedTrain(false), 300);
-							},
-						},
-					]}
-				/>
-
-				<FollowTrainModal
-					isVisible={isFollowModalVisible}
-					onClose={() => setIsFollowModalVisible(false)}
-					onConfirm={() => {
-						setIsFollowModalVisible(false);
-						setTimeout(() => setIsSuccessModalVisible(true), 400);
-					}}
-					stations={[
-						"Milano Centrale",
-						"Piacenza",
-						"Parma",
-						"Reggio Emilia AV",
-						"Bologna Centrale",
-						"Rimini",
-						"Pesaro",
-						"Ancona",
-						"Pescara Centrale",
-						"Termoli",
-						"Foggia",
-						"Bari Centrale",
-						"Taranto"
-					]}
-					initialDays={[0]}
-				/>
-
-				<TopDownModal
-					isVisible={isSuccessModalVisible}
-					title="Notifica registrata"
-					description="Adesso riceverai le informazioni in tempo reale del treno seguito"
-					iconName="check"
-					buttons={[
-						{
-							label: "OK",
-							onPress: () => {
-								setIsSuccessModalVisible(false);
-							},
-						},
-					]}
-				/>
-
-				<BottomSheet
-					isVisible={isNotizieOpen}
-					onClose={() => setIsNotizieOpen(false)}
-					title="Notizie di Infomobilità"
-					contentPaddingBottom={-insets.bottom}
-				>
-					<ScrollView
-						showsVerticalScrollIndicator={false}
-						contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
-						style={{ height: Dimensions.get("window").height * 0.7 }}
-					>
-						<View className="py-4">
-							{isLoadingNotizie ? (
-								<View className="flex-1 justify-center items-center">
-									<ActivityIndicator size="large" color="#004141" />
-								</View>
-							) : (
-								<View className="gap-4">
-									{notizie.length > 0 ? (
-										notizie.map((news, index) => (
-											<Pressable
-												key={index}
-												onPress={() =>
-													setExpandedNewsIndex(
-														expandedNewsIndex === index ? null : index,
-													)
-												}
-												className="p-4 bg-white rounded-2xl border border-neutral-200"
-											>
-												<View className="flex-row justify-between items-center gap-3">
-													<Icon name="info" size={20} color="#eab308" />
-													<ThemedText
-														numberOfLines={2}
-														className="flex-1 text-[15px] font-google-sans-bold !text-neutral-900 leading-snug"
-													>
-														{news.title}
-													</ThemedText>
-													<Icon
-														name={
-															expandedNewsIndex === index
-																? "expand_less"
-																: "expand_more"
-														}
-														size={24}
-														color="#9ca3af"
-													/>
-												</View>
-												{expandedNewsIndex === index && (
-													<View className="px-8 pt-7 pb-5">
-														<ThemedText className="text-[14px] font-google-sans-regular !text-neutral-700 leading-snug">
-															{news.content}
-														</ThemedText>
-													</View>
-												)}
-											</Pressable>
-										))
-									) : (
-										<ThemedText className="text-center font-google-sans-medium !text-neutral-500 mt-4">
-											Nessuna notizia disponibile
-										</ThemedText>
-									)}
-								</View>
-							)}
-						</View>
-					</ScrollView>
-				</BottomSheet>
+				{/* Main Content Area */}
+				<View className="flex-1">{renderContent()}</View>
 			</View>
+
+			<TopDownModal
+				isVisible={isDeleteModalVisible}
+				title="Attenzione"
+				description="Vuoi rimuovere questo viaggio dalla lista dei treni seguiti?"
+				iconName="warning_amber"
+				iconColor="#f59e0b"
+				iconBgColor="#fef3c7"
+				buttons={[
+					{
+						label: "Annulla",
+						onPress: () => setIsDeleteModalVisible(false),
+						variant: "secondary",
+					},
+					{
+						label: "Rimuovi",
+						onPress: () => {
+							setIsDeleteModalVisible(false);
+							setTimeout(() => setHasFollowedTrain(false), 300);
+						},
+					},
+				]}
+			/>
+
+			<FollowTrainModal
+				isVisible={isFollowModalVisible}
+				onClose={() => setIsFollowModalVisible(false)}
+				onConfirm={() => {
+					setIsFollowModalVisible(false);
+					setTimeout(() => setIsSuccessModalVisible(true), 400);
+				}}
+				stations={[
+					"Milano Centrale",
+					"Piacenza",
+					"Parma",
+					"Reggio Emilia AV",
+					"Bologna Centrale",
+					"Rimini",
+					"Pesaro",
+					"Ancona",
+					"Pescara Centrale",
+					"Termoli",
+					"Foggia",
+					"Bari Centrale",
+					"Taranto",
+				]}
+				initialDays={[0]}
+			/>
+
+			<TopDownModal
+				isVisible={isSuccessModalVisible}
+				title="Notifica registrata"
+				description="Adesso riceverai le informazioni in tempo reale del treno seguito"
+				iconName="check"
+				buttons={[
+					{
+						label: "OK",
+						onPress: () => {
+							setIsSuccessModalVisible(false);
+						},
+					},
+				]}
+			/>
+
+			<BottomSheet
+				isVisible={isNotizieOpen}
+				onClose={() => setIsNotizieOpen(false)}
+				title="Notizie di Infomobilità"
+				contentPaddingBottom={-insets.bottom}
+			>
+				<ScrollView
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+					style={{ height: Dimensions.get("window").height * 0.7 }}
+				>
+					<View className="py-4">
+						{isLoadingNotizie ? (
+							<View className="flex-1 justify-center items-center">
+								<ActivityIndicator size="large" color="#004141" />
+							</View>
+						) : (
+							<View className="gap-4">
+								{notizie.length > 0 ? (
+									notizie.map((news, index) => (
+										<Pressable
+											key={index}
+											onPress={() =>
+												setExpandedNewsIndex(
+													expandedNewsIndex === index ? null : index,
+												)
+											}
+											className="p-4 bg-white rounded-2xl border border-neutral-200"
+										>
+											<View className="flex-row justify-between items-center gap-3">
+												<Icon name="info" size={20} color="#eab308" />
+												<ThemedText
+													numberOfLines={2}
+													className="flex-1 text-[15px] font-google-sans-bold !text-neutral-900 leading-snug"
+												>
+													{news.title}
+												</ThemedText>
+												<Icon
+													name={
+														expandedNewsIndex === index
+															? "expand_less"
+															: "expand_more"
+													}
+													size={24}
+													color="#9ca3af"
+												/>
+											</View>
+											{expandedNewsIndex === index && (
+												<View className="px-8 pt-7 pb-5">
+													<ThemedText className="text-[14px] font-google-sans-regular !text-neutral-700 leading-snug">
+														{news.content}
+													</ThemedText>
+												</View>
+											)}
+										</Pressable>
+									))
+								) : (
+									<ThemedText className="text-center font-google-sans-medium !text-neutral-500 mt-4">
+										Nessuna notizia disponibile
+									</ThemedText>
+								)}
+							</View>
+						)}
+					</View>
+				</ScrollView>
+			</BottomSheet>
+		</View>
 	);
 }

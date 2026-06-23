@@ -1,6 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import React from "react";
 import { Pressable, View } from "react-native";
 
 interface SectionHeaderProps {

@@ -11,7 +11,7 @@ import { setPendingPassengers } from "@/utils/trips-store";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Platform, Pressable, ScrollView, TextInput, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 
 const PassengerInput = ({
 	label,

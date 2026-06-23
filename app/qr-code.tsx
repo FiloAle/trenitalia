@@ -2,19 +2,19 @@ import { Icon } from "@/components/ui/icon";
 import { MainButton } from "@/components/ui/main-button";
 import { USER_DATA } from "@/constants/user";
 import { generateAztec, getCachedAztec } from "@/utils/aztec";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
 	Dimensions,
 	Image,
+	Platform,
 	Pressable,
 	View,
-	Platform,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import QRCode from "react-native-qrcode-svg";
-import Constants, { ExecutionEnvironment } from "expo-constants";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 
@@ -30,7 +30,9 @@ export default function QRCodeScreen() {
 		"|" +
 		((params.pnr as string) || "undefined"); // Fallback to PNR string
 
-	const [aztecImageUri, setAztecImageUri] = useState<string | null>(getCachedAztec(qrValue, 16));
+	const [aztecImageUri, setAztecImageUri] = useState<string | null>(
+		getCachedAztec(qrValue, 16),
+	);
 
 	useEffect(() => {
 		generateAztec(qrValue, 16)
@@ -49,7 +51,8 @@ export default function QRCodeScreen() {
 
 			{/* Aztec / QR Code Container */}
 			<View className="flex-1 items-center justify-center px-10">
-				{Platform.OS === "web" || Constants.executionEnvironment === ExecutionEnvironment.StoreClient ? (
+				{Platform.OS === "web" ||
+				Constants.executionEnvironment === ExecutionEnvironment.StoreClient ? (
 					<QRCode
 						value={qrValue}
 						size={width * 0.8}

@@ -1,10 +1,13 @@
 import { getTrainInfo } from "@/api/delay";
 import { ThemedText } from "@/components/themed-text";
 import { Icon } from "@/components/ui/icon";
-import { STATIONS } from "@/constants/stations";
 import { USER_DATA } from "@/constants/user";
 import { generateAztec, getCachedAztec } from "@/utils/aztec";
-import { formatClassName, formatOfferName, formatPersonName, formatTrainName } from "@/utils/format";
+import {
+	formatClassName,
+	formatPersonName,
+	formatTrainName,
+} from "@/utils/format";
 import Constants, { ExecutionEnvironment } from "expo-constants";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -198,7 +201,7 @@ export function TicketCard({
 
 	const coachNum = parseInt(carrozza || "1", 10) || 1;
 	let boardPos = "centro";
-	
+
 	if (orientamento && orientamento.toLowerCase().includes("coda")) {
 		// Executive/Coach 1 is in coda
 		if (coachNum <= 4) boardPos = "coda";
@@ -408,7 +411,7 @@ export function TicketCard({
 				</Svg>
 			)}
 			{/* Top row: Train and Date */}
-			<Pressable 
+			<Pressable
 				className="flex-row items-center justify-between px-5 py-3"
 				onPress={(e) => {
 					if (onTopPress) {
@@ -507,7 +510,7 @@ export function TicketCard({
 							);
 						})()}
 
-						<Pressable 
+						<Pressable
 							className="px-2 items-center justify-center relative mt-1"
 							onPress={(e) => {
 								if (onTopPress) {

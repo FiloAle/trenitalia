@@ -1,57 +1,56 @@
 {
-	"expo": {
-		"name": "Trenitalia",
-		"slug": "Trenitalia",
-		"version": "1.0.0",
-		"orientation": "portrait",
-		"icon": "./assets/icons/trenitalia.png",
-		"scheme": "trenitalia",
-		"userInterfaceStyle": "light",
-		"ios": {
-			"supportsTablet": true,
-			"bundleIdentifier": "com.filippoaleee.Trenitalia",
-			"infoPlist": {
-				"NSAppTransportSecurity": {
-					"NSAllowsArbitraryLoads": true
-				}
-			}
-		},
-		"android": {
-			"adaptiveIcon": {
-				"backgroundColor": "#E6F4FE",
-				"foregroundImage": "./assets/logos/frecciarossa.png",
-				"backgroundImage": "./assets/logos/frecciarossa.png",
-				"monochromeImage": "./assets/logos/frecciarossa.png"
-			},
-			"predictiveBackGestureEnabled": false
-		},
-		"web": {
-			"output": "static",
-			"favicon": "./assets/logos/frecciarossa.png",
-			"bundler": "metro"
-		},
-		"plugins": [
-			"expo-router",
-			[
-				"expo-splash-screen",
-				{
-					"image": "./assets/logos/frecciarossa.png",
-					"imageWidth": 200,
-					"resizeMode": "contain",
-					"backgroundColor": "#ffffff",
-					"dark": {
-						"backgroundColor": "#000000"
-					}
-				}
-			],
-			"expo-font",
-			"expo-image",
-			"expo-status-bar",
-			"expo-web-browser"
-		],
-		"experiments": {
-			"typedRoutes": true,
-			"reactCompiler": true
-		}
-	}
+  "expo": {
+    "name": "Trenitalia",
+    "slug": "Trenitalia",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icons/trenitalia.png",
+    "scheme": "trenitalia",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.filippoaleee.Trenitalia",
+      "buildNumber": "2",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#006666",
+        "foregroundImage": "./assets/icons/trenitalia_mark.png",
+        "backgroundImage": "./assets/icons/trenitalia_mark.png",
+        "monochromeImage": "./assets/icons/trenitalia_mark.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.filippoaleee.Trenitalia"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/icons/trenitalia_mark.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/icons/trenitalia_mark.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#006666"
+        }
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
 }
